@@ -64,7 +64,7 @@ export class RotateGesture extends PointerGesture {
       lastRotation: 0,
       lastTime: 0,
       velocity: 0,
-      lastDelta: 0
+      lastDelta: 0,
     });
 
     return emitter;
@@ -230,7 +230,7 @@ export class RotateGesture extends PointerGesture {
 
     // Create custom event data
     const rotation = rotateState.lastRotation;
-    
+
     // Use the stored lastDelta for move events
     let delta = 0;
     if (state === 'start') {
