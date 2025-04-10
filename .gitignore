@@ -1,0 +1,17 @@
+*.swp
+.DS_Store
+._*
+.cache/
+.coveralls.yml
+.idea/
+.parcel-cache/
+bower_components/
+coverage
+dist/
+examples/
+node_modules/
+playground/
+tags
+yarn-error.log
+.env*
+.vscode/settings.json

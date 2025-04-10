@@ -1,0 +1,10 @@
+*.json
+.github
+dev/
+*ignore
+*rc
+*.log
+*.lock
+*-lock.yaml
+*.mjs
+vite.config.*

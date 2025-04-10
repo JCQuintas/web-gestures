@@ -1,0 +1,68 @@
+{
+  "name": "gesture-events",
+  "version": "1.0.0",
+  "description": "The core engine of GestureEvents, a modern and robust multi-pointer gesture detection library for JavaScript.",
+  "author": "Jose Quintas <juniorquintas@gmail.com>",
+  "keywords": [
+    "multitouch",
+    "gesture",
+    "library",
+    "wheel",
+    "pan",
+    "pinch",
+    "move",
+    "simultaneous",
+    "gestures",
+    "pointer",
+    "typescript"
+  ],
+  "source": "src/index.ts",
+  "directories": {
+    "test": "test"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/JCQuintas/gesture-events"
+  },
+  "license": "MIT",
+  "scripts": {
+    "dev": "vite",
+    "dev:build": "vite build",
+    "dev:preview": "vite preview",
+    "build": "pnpm run build:lib && pnpm run build:types && mv dist/src/* dist/ && rm -rf dist/src",
+    "build:types": "tsc --project tsconfig.build.json",
+    "build:lib": "vite build --config vite.config.lib.js",
+    "prepublishOnly": "pnpm run build:all",
+    "prettier": "prettier --check .",
+    "prettier:fix": "prettier --write .",
+    "test": "jest",
+    "test:debug": "node inspect $(pnpm bin)/jest --runInBand"
+  },
+  "devDependencies": {
+    "@eslint/js": "^9.24.0",
+    "@eslint/json": "^0.11.0",
+    "@eslint/markdown": "^6.3.0",
+    "@types/node": "^22.14.0",
+    "eslint": "^9.24.0",
+    "globals": "^16.0.0",
+    "prettier": "^3.5.3",
+    "typescript": "^5.8.3",
+    "typescript-eslint": "^8.29.1",
+    "vite": "^6.2.5"
+  },
+  "packageManager": "pnpm@10.8.0",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js",
+      "require": "./dist/index.cjs.js"
+    },
+    "./package.json": "./package.json"
+  },
+  "files": [
+    "dist",
+    "LICENSE",
+    "README.md"
+  ],
+  "sideEffects": false
+}
