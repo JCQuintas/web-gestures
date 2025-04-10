@@ -11,6 +11,7 @@
     "pan",
     "pinch",
     "move",
+    "rotate",
     "simultaneous",
     "gestures",
     "pointer",

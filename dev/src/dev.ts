@@ -3,6 +3,7 @@ import {
   MoveGesture,
   PanGesture,
   PinchGesture,
+  RotateGesture,
   TurnWheelEvent,
   TurnWheelGesture,
 } from '../../src';
@@ -30,6 +31,12 @@ const gestureManager = new GestureManager<{ roll: TurnWheelEvent }>({
       minPointers: 2,
       maxPointers: 10,
     }),
+    new RotateGesture({
+      name: 'rotate',
+      threshold: 0,
+      minPointers: 2,
+      maxPointers: 10,
+    }),
     new TurnWheelGesture({
       name: 'roll',
       preventDefault: true, // Prevent default scroll behavior
@@ -45,7 +52,10 @@ const resetPositionButton = document.getElementById('reset-position') as HTMLBut
 
 // Register multiple gestures at once for the element
 // This will return the element with properly typed event listeners
-const target = gestureManager.registerElement(['pan', 'move', 'pinch', 'roll'], gestureTarget);
+const target = gestureManager.registerElement(
+  ['pan', 'move', 'pinch', 'rotate', 'roll'],
+  gestureTarget
+);
 
 // Set up event listeners
 target.addEventListener('panStart', event => {
@@ -173,6 +183,28 @@ target.addEventListener('roll', event => {
   updatePosition();
 });
 
+// Add rotate gesture event listeners
+let rotation = 0;
+
+target.addEventListener('rotateStart', _ => {
+  addLogEntry(`Rotation started at: ${Math.round(rotation)}°`);
+});
+
+target.addEventListener('rotate', event => {
+  const detail = event.detail;
+
+  // Update rotation based on the rotation data
+  rotation = detail.rotation;
+
+  addLogEntry(`Rotating: ${Math.round(rotation)}° (delta: ${Math.round(detail.delta)}°)`);
+
+  updatePosition();
+});
+
+target.addEventListener('rotateEnd', _ => {
+  addLogEntry(`Rotation ended at: ${Math.round(rotation)}°`);
+});
+
 // State variables for element positioning
 let targetX = 0;
 let targetY = 0;
@@ -182,7 +214,7 @@ let prevDeltaY = 0;
 
 // Update element position
 function updatePosition() {
-  target.style.transform = `translate(${targetX}px, ${targetY}px) scale(${scale})`;
+  target.style.transform = `translate(${targetX}px, ${targetY}px) scale(${scale}) rotate(${rotation}deg)`;
 }
 
 // Log helper function
@@ -204,6 +236,7 @@ resetPositionButton.addEventListener('click', () => {
   targetX = 0;
   targetY = 0;
   scale = 1;
+  rotation = 0;
   prevDeltaX = 0;
   prevDeltaY = 0;
   updatePosition();

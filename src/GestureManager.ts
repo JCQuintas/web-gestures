@@ -9,6 +9,7 @@ import { PointerManager } from './PointerManager';
 import { MoveEvent } from './gestures/MoveGesture';
 import { PanEvent } from './gestures/PanGesture';
 import { PinchEvent } from './gestures/PinchGesture';
+import { RotateEvent } from './gestures/RotateGesture';
 import { TurnWheelEvent } from './gestures/TurnWheelGesture';
 import { StatefulEventMap } from './types';
 
@@ -39,6 +40,7 @@ type DefaultGestureEventMap = StatefulEventMap<{
   pan: PanEvent;
   pinch: PinchEvent;
   move: MoveEvent;
+  rotate: RotateEvent;
 }> & {
   turnWheel: TurnWheelEvent;
 };
