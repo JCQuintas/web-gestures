@@ -29,6 +29,7 @@ export class RotateGesture extends PointerGesture {
       lastRotation: number;
       lastTime: number;
       velocity: number;
+      lastDelta: number;
     }
   >();
 
@@ -63,6 +64,7 @@ export class RotateGesture extends PointerGesture {
       lastRotation: 0,
       lastTime: 0,
       velocity: 0,
+      lastDelta: 0
     });
 
     return emitter;
@@ -141,6 +143,9 @@ export class RotateGesture extends PointerGesture {
           // Adjust for angle wrapping (e.g., from 359° to 0°)
           if (delta > 180) delta -= 360;
           if (delta < -180) delta += 360;
+
+          // Store the delta for use in emitRotateEvent
+          rotateState.lastDelta = delta;
 
           // Update rotation value (cumulative)
           rotateState.lastRotation += delta;
@@ -225,16 +230,17 @@ export class RotateGesture extends PointerGesture {
 
     // Create custom event data
     const rotation = rotateState.lastRotation;
-
-    // For the delta, we want to use the last incremental change in angle
-    // This represents how much rotation happened since the last event
-    const delta =
-      state === 'start'
-        ? 0
-        : state === 'end'
-          ? rotation
-          : // For move events, use the actual last delta calculated in handlePointerEvent
-            rotateState.velocity * ((event.timeStamp - rotateState.lastTime) / 1000);
+    
+    // Use the stored lastDelta for move events
+    let delta = 0;
+    if (state === 'start') {
+      delta = 0;
+    } else if (state === 'end') {
+      delta = rotation; // Total rotation for end event
+    } else {
+      // For move events, use the last calculated delta
+      delta = rotateState.lastDelta;
+    }
 
     const customEventData: RotateGestureEventData = {
       centroid,
@@ -288,6 +294,7 @@ export class RotateGesture extends PointerGesture {
       rotateState.lastAngle = 0;
       rotateState.lastRotation = 0;
       rotateState.velocity = 0;
+      rotateState.lastDelta = 0;
     }
   }
 }

@@ -194,7 +194,7 @@ target.addEventListener('rotate', event => {
   const detail = event.detail;
 
   // Update rotation based on the rotation data
-  rotation = detail.rotation;
+  rotation = rotation + detail.delta;
 
   addLogEntry(`Rotating: ${Math.round(rotation)}° (delta: ${Math.round(detail.delta)}°)`);
 
