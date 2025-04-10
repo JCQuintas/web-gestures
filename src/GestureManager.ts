@@ -4,13 +4,13 @@
  * This class creates and manages gestures for different elements
  */
 
-import { StatefulEventMap } from 'src/types';
 import { Gesture, GestureEmitter } from './Gesture';
 import { PointerManager } from './PointerManager';
 import { MoveEvent } from './gestures/MoveGesture';
 import { PanEvent } from './gestures/PanGesture';
 import { PinchEvent } from './gestures/PinchGesture';
 import { TurnWheelEvent } from './gestures/TurnWheelGesture';
+import { StatefulEventMap } from './types';
 
 /**
  * Options for initializing the GestureManager
