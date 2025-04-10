@@ -2,38 +2,50 @@ import { Gesture, GestureOptions } from './Gesture';
 import { PointerData } from './PointerManager';
 
 /**
- * Extension of GestureOptions with pointer-specific properties
+ * Configuration options for pointer-based gestures, extending the base GestureOptions.
+ *
+ * These options provide fine-grained control over how pointer events are interpreted
+ * and when the gesture should be recognized.
  */
 export interface PointerGestureOptions extends GestureOptions {
   /**
-   * Minimum number of pointers required to activate the gesture
+   * Minimum number of pointers required to activate the gesture.
+   * The gesture will not start until at least this many pointers are active.
    *
    * @default 1
    */
   minPointers?: number;
 
   /**
-   * Maximum number of pointers allowed for this gesture
+   * Maximum number of pointers allowed for this gesture to remain active.
+   * If more than this many pointers are detected, the gesture may be canceled.
    *
-   * @default Infinity
+   * @default Infinity (no maximum)
    */
   maxPointers?: number;
+
   /**
-   * Threshold for gesture activation. If the distance between the pointers
-   * exceeds this value, the gesture will be considered active.
-   * This is useful for preventing accidental gestures when the pointers
-   * are too close together.
-   * @default 0
+   * Distance threshold in pixels for gesture activation.
+   *
+   * The gesture will only be recognized once the pointers have moved this many
+   * pixels from their starting positions. Higher values prevent accidental
+   * gesture recognition when the user makes small unintentional movements.
+   *
+   * @default 0 (no threshold)
    */
   threshold?: number;
 }
 
 /**
- * Base class for pointer-based gestures. This class extends the base Gesture class
- * with functionality specific to handling pointer events via the PointerManager.
+ * Base class for all pointer-based gestures.
  *
- * To implement a custom pointer gesture, check the implementation of
- * the built-in gestures like `PanGesture` or `PinchGesture`.
+ * This class extends the base Gesture class with specialized functionality for
+ * handling pointer events via the PointerManager. It provides common logic for
+ * determining when a gesture should activate, tracking pointer movements, and
+ * managing pointer thresholds.
+ *
+ * All pointer-based gesture implementations should extend this class rather than
+ * the base Gesture class.
  *
  * @example
  * ```ts
@@ -58,30 +70,27 @@ export interface PointerGestureOptions extends GestureOptions {
  * ```
  */
 export abstract class PointerGesture extends Gesture {
+  /** Function to unregister from the PointerManager when destroying this gesture */
   protected unregisterHandler: (() => void) | null = null;
 
   /**
-   * Minimum number of pointers required to activate the gesture
+   * Minimum number of simultaneous pointers required to activate the gesture.
+   * The gesture will not start until at least this many pointers are active.
    */
   protected minPointers: number;
 
   /**
-   * Maximum number of pointers allowed for this gesture
+   * Maximum number of simultaneous pointers allowed for this gesture.
+   * If more than this many pointers are detected, the gesture may be canceled.
    */
   protected maxPointers: number;
 
   /**
-   * Threshold for gesture activation. If the distance between the pointers
-   * exceeds this value, the gesture will be considered active.
-   * This is useful for preventing accidental gestures when the pointers
-   * are too close together.
-   * @default 0
+   * Movement threshold in pixels that must be exceeded before the gesture activates.
+   * Higher values reduce false positive gesture detection for small movements.
    */
   protected threshold: number;
 
-  /**
-   * Create a new PointerGesture instance
-   */
   constructor(options: PointerGestureOptions) {
     super(options);
     this.minPointers = options.minPointers ?? 1;
@@ -90,7 +99,8 @@ export abstract class PointerGesture extends Gesture {
   }
 
   /**
-   * Initialize the gesture by registering with the PointerManager
+   * Initialize the gesture by registering with the PointerManager singleton
+   * Must be called before the gesture can be used
    */
   public init(): void {
     super.init();
@@ -101,7 +111,12 @@ export abstract class PointerGesture extends Gesture {
   }
 
   /**
-   * Handle pointer events from the PointerManager
+   * Handler for pointer events from the PointerManager.
+   * Concrete gesture implementations must override this method to provide
+   * gesture-specific logic for recognizing and tracking the gesture.
+   *
+   * @param pointers - Map of active pointers by pointer ID
+   * @param event - The original pointer event from the browser
    */
   protected abstract handlePointerEvent(
     pointers: Map<number, PointerData>,
@@ -109,7 +124,10 @@ export abstract class PointerGesture extends Gesture {
   ): void;
 
   /**
-   * Clean up the gesture, unregistering from the PointerManager
+   * Clean up the gesture, unregistering from the PointerManager and
+   * releasing all event handlers and resources.
+   *
+   * Call this method when the gesture is no longer needed to prevent memory leaks.
    */
   public destroy(): void {
     if (this.unregisterHandler) {

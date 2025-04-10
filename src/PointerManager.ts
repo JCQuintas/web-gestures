@@ -1,42 +1,118 @@
 /**
- * PointerManager - Centralized manager for all pointer events
+ * PointerManager - Centralized manager for pointer events in the gesture recognition system
  *
- * This class handles all pointer events and distributes them to registered gesture handlers
+ * This singleton class abstracts the complexity of working with pointer events by:
+ * 1. Capturing and tracking all active pointers (touch, mouse, pen)
+ * 2. Normalizing pointer data into a consistent format
+ * 3. Managing pointer capture for proper tracking across elements
+ * 4. Distributing events to registered gesture recognizers
  */
 
+/**
+ * Normalized representation of a pointer, containing all relevant information
+ * from the original PointerEvent plus additional tracking data.
+ *
+ * This data structure encapsulates everything gesture recognizers need to know
+ * about a pointer's current state.
+ */
 export type PointerData = {
+  /** Unique identifier for this pointer */
   pointerId: number;
+  /** X-coordinate relative to the viewport */
   clientX: number;
+  /** Y-coordinate relative to the viewport */
   clientY: number;
+  /** X-coordinate relative to the document, including scroll offset */
   pageX: number;
+  /** Y-coordinate relative to the document, including scroll offset */
   pageY: number;
+  /** The DOM element that was the target of this pointer event */
   target: EventTarget | null;
+  /** Timestamp when the event occurred */
   timeStamp: number;
+  /** Type of pointer event: 'pointerdown', 'pointermove', 'pointerup', etc. */
   type: string;
+  /** Whether this is the primary pointer in a multi-pointer scenario */
   isPrimary: boolean;
+  /** Pressure value, ranges from 0 to 1 (1 is maximum pressure) */
   pressure: number;
+  /** Width of the contact area in CSS pixels */
   width: number;
+  /** Height of the contact area in CSS pixels */
   height: number;
+  /** Indicates the type of pointing device: 'mouse', 'touch', or 'pen' */
   pointerType: string;
+  /** Reference to the original browser PointerEvent */
   srcEvent: PointerEvent;
 };
 
+/**
+ * Configuration options for initializing the PointerManager.
+ */
 export type PointerManagerOptions = {
+  /**
+   * Root element to attach pointer event listeners to.
+   * Events within this element's bounds will be tracked.
+   */
   root: HTMLElement;
+
+  /**
+   * CSS touch-action property to apply to the root element.
+   * Controls how the browser responds to touch input.
+   *
+   * Common values:
+   * - "none": Disable browser handling of all gestures
+   * - "pan-x": Allow horizontal panning only
+   * - "pan-y": Allow vertical panning only
+   * - "auto": Default browser behavior
+   *
+   * @default "auto"
+   */
   touchAction?: string;
+
+  /**
+   * Whether to use passive event listeners for better scrolling performance.
+   * When true, listeners cannot call preventDefault() on touch events.
+   *
+   * @default true
+   */
   passive?: boolean;
 };
 
+/**
+ * Singleton manager for handling pointer events across the application.
+ *
+ * PointerManager serves as the foundational layer for gesture recognition,
+ * providing a centralized system for tracking active pointers and distributing
+ * pointer events to gesture recognizers.
+ *
+ * It normalizes browser pointer events into a consistent format and simplifies
+ * multi-touch handling by managing pointer capture and tracking multiple
+ * simultaneous pointers.
+ */
 export class PointerManager {
+  /** Singleton instance reference */
   private static instance: PointerManager | null = null;
 
+  /** Root element where pointer events are captured */
   private root: HTMLElement;
+
+  /** CSS touch-action property value applied to the root element */
   private touchAction: string;
+
+  /** Whether to use passive event listeners */
   private passive: boolean;
+
+  /** Map of all currently active pointers by their pointerId */
   private pointers: Map<number, PointerData> = new Map();
+
+  /** Set of registered gesture handlers that receive pointer events */
   private gestureHandlers: Set<(pointers: Map<number, PointerData>, event: PointerEvent) => void> =
     new Set();
 
+  /**
+   * Use PointerManager.getInstance() instead.
+   */
   private constructor(options: PointerManagerOptions) {
     this.root = options.root;
     this.touchAction = options.touchAction || 'auto';
@@ -46,7 +122,14 @@ export class PointerManager {
   }
 
   /**
-   * Get singleton instance of PointerManager
+   * Get or create the singleton instance of PointerManager.
+   *
+   * On first call, options must be provided to initialize the manager.
+   * Subsequent calls can omit options as the instance is already created.
+   *
+   * @param options - Configuration options (required on first call only)
+   * @returns The singleton PointerManager instance
+   * @throws Error if first call doesn't include options
    */
   public static getInstance(options?: PointerManagerOptions): PointerManager {
     if (!PointerManager.instance && options) {
@@ -59,7 +142,13 @@ export class PointerManager {
   }
 
   /**
-   * Register a gesture handler to receive pointer events
+   * Register a handler function to receive pointer events.
+   *
+   * The handler will be called whenever pointer events occur within the root element.
+   * It receives the current map of all active pointers and the original event.
+   *
+   * @param handler - Function to receive pointer events and current pointer state
+   * @returns An unregister function that removes this handler when called
    */
   public registerGestureHandler(
     handler: (pointers: Map<number, PointerData>, event: PointerEvent) => void
@@ -73,14 +162,22 @@ export class PointerManager {
   }
 
   /**
-   * Get all active pointers
+   * Get a copy of the current active pointers map.
+   *
+   * Returns a new Map containing all currently active pointers.
+   * Modifying the returned map will not affect the internal pointers state.
+   *
+   * @returns A new Map containing all active pointers
    */
   public getPointers(): Map<number, PointerData> {
     return new Map(this.pointers);
   }
 
   /**
-   * Setup event listeners for pointer events
+   * Set up event listeners for pointer events on the root element.
+   *
+   * This method attaches all necessary event listeners and configures
+   * the CSS touch-action property on the root element.
    */
   private setupEventListeners(): void {
     // Set touch-action CSS property
@@ -96,7 +193,14 @@ export class PointerManager {
   }
 
   /**
-   * Handle all pointer events
+   * Event handler for all pointer events.
+   *
+   * This method:
+   * 1. Updates the internal pointers map based on the event type
+   * 2. Manages pointer capture for tracking pointers outside the root element
+   * 3. Notifies all registered handlers with the current state
+   *
+   * @param event - The original pointer event from the browser
    */
   private handlePointerEvent = (event: PointerEvent): void => {
     const { type, pointerId } = event;
@@ -133,14 +237,24 @@ export class PointerManager {
   };
 
   /**
-   * Notify all registered gesture handlers
+   * Notify all registered gesture handlers about a pointer event.
+   *
+   * Each handler receives the current map of active pointers and the original event.
+   *
+   * @param event - The original pointer event that triggered this notification
    */
   private notifyHandlers(event: PointerEvent): void {
     this.gestureHandlers.forEach(handler => handler(this.pointers, event));
   }
 
   /**
-   * Create a standardized pointer data object from a PointerEvent
+   * Create a normalized PointerData object from a browser PointerEvent.
+   *
+   * This method extracts all relevant information from the original event
+   * and formats it in a consistent way for gesture recognizers to use.
+   *
+   * @param event - The original browser pointer event
+   * @returns A new PointerData object representing this pointer
    */
   private createPointerData(event: PointerEvent): PointerData {
     return {
@@ -162,7 +276,11 @@ export class PointerManager {
   }
 
   /**
-   * Clean up all event listeners
+   * Clean up all event listeners and reset the PointerManager state.
+   *
+   * This method should be called when the PointerManager is no longer needed
+   * to prevent memory leaks. It removes all event listeners, clears the
+   * internal state, and resets the singleton instance.
    */
   public destroy(): void {
     this.root.removeEventListener('pointerdown', this.handlePointerEvent);
