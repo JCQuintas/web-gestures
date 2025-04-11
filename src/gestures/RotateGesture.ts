@@ -1,5 +1,12 @@
 /**
  * RotateGesture - Detects rotation movements between two or more pointers
+ *
+ * This gesture tracks when multiple pointers rotate around a common center point, firing events when:
+ * - Two or more pointers begin a rotation motion (start)
+ * - The pointers continue rotating (ongoing)
+ * - One or more pointers are released or lifted (end)
+ *
+ * This gesture is commonly used for rotation controls in drawing or image manipulation interfaces.
  */
 
 import { GestureEventData, GestureState } from '../Gesture';
@@ -7,32 +14,67 @@ import { PointerGesture, PointerGestureOptions } from '../PointerGesture';
 import { PointerData } from '../PointerManager';
 import { calculateCentroid, createEventName, getAngle } from '../utils';
 
+/**
+ * Configuration options for the RotateGesture
+ * Uses the same options as the base PointerGesture
+ */
 export type RotateGestureOptions = PointerGestureOptions;
 
+/**
+ * Event data specific to rotate gesture events
+ * Contains information about rotation angle, delta, and velocity
+ */
 export type RotateGestureEventData = GestureEventData & {
-  rotation: number; // Current rotation in degrees (0-359)
-  delta: number; // Change in rotation since last event
-  velocity: number; // Angular velocity in degrees per second
+  /** Current absolute rotation in degrees (0-359) */
+  rotation: number;
+  /** Change in rotation since the last event in degrees */
+  delta: number;
+  /** Angular velocity in degrees per second */
+  velocity: number;
+  /** The original DOM pointer event that triggered this gesture event */
   srcEvent: PointerEvent;
 };
 
+/**
+ * Type definition for the CustomEvent created by RotateGesture
+ */
 export type RotateEvent = CustomEvent<RotateGestureEventData>;
 
+/**
+ * RotateGesture class for handling rotation interactions
+ *
+ * This gesture detects when users rotate multiple pointers around a central point,
+ * and dispatches rotation-related events with angle and angular velocity information.
+ */
 export class RotateGesture extends PointerGesture {
-  // Map of elements to their specific rotate gesture state
+  /**
+   * Map of elements to their specific rotate gesture state
+   * Tracks angles, rotation, and velocity for each element
+   */
   private rotateEmitters = new Map<
     HTMLElement,
     {
+      /** Whether the rotation gesture is currently active for this element */
       active: boolean;
+      /** The initial angle between pointers when the gesture began */
       startAngle: number;
+      /** The most recent angle between pointers during the gesture */
       lastAngle: number;
+      /** Accumulated rotation in degrees (can exceed 360° for multiple rotations) */
       lastRotation: number;
+      /** Timestamp of the last rotate event, used for velocity calculation */
       lastTime: number;
+      /** Current angular velocity in degrees per second */
       velocity: number;
+      /** The most recent change in angle since the last event */
       lastDelta: number;
     }
   >();
 
+  /**
+   * Creates a new RotateGesture instance
+   * @param options Configuration options for the gesture
+   */
   constructor(options: RotateGestureOptions) {
     super(options);
   }

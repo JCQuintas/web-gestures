@@ -1,5 +1,13 @@
 /**
  * MoveGesture - Detects when a pointer enters, moves within, and leaves an element
+ *
+ * This gesture tracks pointer movements over an element, firing events when:
+ * - A pointer enters the element (start)
+ * - A pointer moves within the element (ongoing)
+ * - A pointer leaves the element (end)
+ *
+ * Unlike other gestures which often require specific actions to trigger,
+ * the move gesture fires automatically when pointers interact with the target element.
  */
 
 import { GestureEventData, GestureState } from '../Gesture';
@@ -7,30 +15,58 @@ import { PointerGesture, PointerGestureOptions } from '../PointerGesture';
 import { PointerData } from '../PointerManager';
 import { calculateCentroid, createEventName } from '../utils';
 
+/**
+ * Configuration options for the MoveGesture
+ * Extends the base PointerGestureOptions
+ */
 export type MoveGestureOptions = PointerGestureOptions;
 
+/**
+ * Event data specific to move gesture events
+ * Includes the source pointer event and standard gesture data
+ */
 export type MoveGestureEventData = GestureEventData & {
+  /** The original DOM pointer event that triggered this gesture event */
   srcEvent: PointerEvent;
 };
 
+/**
+ * Type definition for the CustomEvent created by MoveGesture
+ */
 export type MoveEvent = CustomEvent<MoveGestureEventData>;
 
+/**
+ * MoveGesture class for handling pointer movement over elements
+ *
+ * This gesture detects when pointers enter, move within, or leave target elements,
+ * and dispatches corresponding custom events.
+ */
 export class MoveGesture extends PointerGesture {
-  // Map of elements to their specific move gesture state
+  /**
+   * Map of elements to their specific move gesture state
+   * Tracks active status and last known pointer position for each element
+   */
   private moveEmitters = new Map<
     HTMLElement,
     {
+      /** Whether the move gesture is currently active for this element */
       active: boolean;
+      /** The last recorded pointer position for this element */
       lastPosition: { x: number; y: number } | null;
     }
   >();
 
+  /**
+   * Creates a new MoveGesture instance
+   * @param options Configuration options for the gesture
+   */
   constructor(options: MoveGestureOptions) {
     super(options);
   }
 
   /**
    * Clone this gesture with the same options
+   * @returns A new MoveGesture instance with identical configuration
    */
   public clone(): MoveGesture {
     return new MoveGesture({
@@ -45,6 +81,8 @@ export class MoveGesture extends PointerGesture {
 
   /**
    * Override createEmitter to add move-specific state
+   * @param element The DOM element to attach the gesture to
+   * @returns The emitter object created by the parent class
    */
   public createEmitter(element: HTMLElement) {
     const emitter = super.createEmitter(element);
@@ -64,6 +102,7 @@ export class MoveGesture extends PointerGesture {
 
   /**
    * Override removeEmitter to clean up move-specific state and element event listeners
+   * @param element The DOM element to remove the gesture from
    */
   protected removeEmitter(element: HTMLElement): void {
     element.removeEventListener('pointerenter', this.handleElementEnter.bind(this, element));
@@ -74,6 +113,8 @@ export class MoveGesture extends PointerGesture {
 
   /**
    * Handle pointer enter events for a specific element
+   * @param element The DOM element the pointer entered
+   * @param event The original pointer event
    */
   private handleElementEnter(element: HTMLElement, event: PointerEvent): void {
     const moveState = this.moveEmitters.get(element);
@@ -96,6 +137,8 @@ export class MoveGesture extends PointerGesture {
 
   /**
    * Handle pointer leave events for a specific element
+   * @param element The DOM element the pointer left
+   * @param event The original pointer event
    */
   private handleElementLeave(element: HTMLElement, event: PointerEvent): void {
     const moveState = this.moveEmitters.get(element);
@@ -112,6 +155,8 @@ export class MoveGesture extends PointerGesture {
 
   /**
    * Handle pointer events for the move gesture (only handles move events now)
+   * @param pointers Map of active pointers
+   * @param event The original pointer event
    */
   protected handlePointerEvent(pointers: Map<number, PointerData>, event: PointerEvent): void {
     if (event.type !== 'pointermove') return;
@@ -142,6 +187,10 @@ export class MoveGesture extends PointerGesture {
 
   /**
    * Emit move-specific events
+   * @param element The DOM element the event is related to
+   * @param state The current state of the gesture (start, ongoing, end)
+   * @param pointers Array of active pointers
+   * @param event The original pointer event
    */
   private emitMoveEvent(
     element: HTMLElement,
@@ -179,6 +228,7 @@ export class MoveGesture extends PointerGesture {
 
   /**
    * Reset the gesture state for a specific element
+   * @param element The DOM element to reset the gesture state for
    */
   private reset(element: HTMLElement): void {
     const emitterState = this.getEmitterState(element);

@@ -1,33 +1,72 @@
 /**
  * TurnWheelGesture - Detects wheel events on an element
+ *
+ * This gesture tracks mouse wheel or touchpad scroll events on elements, firing events when:
+ * - The user scrolls/wheels on the element (ongoing)
+ *
+ * Unlike other gestures which may have start/ongoing/end states,
+ * wheel gestures are always considered "ongoing" since they are discrete events.
  */
 
 import { Gesture, GestureEventData, GestureOptions } from '../Gesture';
 import { PointerData } from '../PointerManager';
 import { calculateCentroid, createEventName } from '../utils';
 
+/**
+ * Configuration options for the TurnWheelGesture
+ * Uses the base gesture options without pointer-specific options
+ */
 export type TurnWheelGestureOptions = GestureOptions;
 
+/**
+ * Event data specific to wheel gesture events
+ * Contains information about scroll delta amounts and mode
+ */
 export type TurnWheelGestureEventData = GestureEventData & {
+  /** Horizontal scroll amount */
   deltaX: number;
+  /** Vertical scroll amount */
   deltaY: number;
+  /** Z-axis scroll amount (depth) */
   deltaZ: number;
+  /**
+   * The unit of measurement for the delta values
+   * 0: Pixels, 1: Lines, 2: Pages
+   */
   deltaMode: number;
+  /** The original DOM wheel event that triggered this gesture event */
   srcEvent: WheelEvent;
 };
 
+/**
+ * Type definition for the CustomEvent created by TurnWheelGesture
+ */
 export type TurnWheelEvent = CustomEvent<TurnWheelGestureEventData>;
 
+/**
+ * TurnWheelGesture class for handling wheel/scroll interactions
+ *
+ * This gesture detects when users scroll or use the mouse wheel on elements,
+ * and dispatches corresponding scroll events with delta information.
+ * Unlike most gestures, it extends directly from Gesture rather than PointerGesture.
+ */
 export class TurnWheelGesture extends Gesture {
-  // Map of elements to their specific wheel gesture state
+  /**
+   * Map of elements to their specific wheel gesture state
+   * Stores the wheel event handler for each element
+   */
   private wheelEmitters = new Map<
     HTMLElement,
     {
-      // Add wheel-specific state
+      /** Bound event handler function for this element */
       wheelHandler: (e: WheelEvent) => void;
     }
   >();
 
+  /**
+   * Creates a new TurnWheelGesture instance
+   * @param options Configuration options for the gesture
+   */
   constructor(options: TurnWheelGestureOptions) {
     super(options);
   }
@@ -45,6 +84,8 @@ export class TurnWheelGesture extends Gesture {
 
   /**
    * Override createEmitter to add wheel-specific state and element-specific event listeners
+   * @param element The element to attach the wheel event listener to
+   * @returns The emitter for the element
    */
   public createEmitter(element: HTMLElement) {
     const emitter = super.createEmitter(element);
@@ -65,6 +106,7 @@ export class TurnWheelGesture extends Gesture {
 
   /**
    * Override removeEmitter to clean up wheel-specific state and element event listeners
+   * @param element The element to remove the wheel event listener from
    */
   protected removeEmitter(element: HTMLElement): void {
     const wheelState = this.wheelEmitters.get(element);
@@ -82,6 +124,8 @@ export class TurnWheelGesture extends Gesture {
 
   /**
    * Handle wheel events for a specific element
+   * @param element The element that received the wheel event
+   * @param event The original wheel event
    */
   private handleWheelEvent(element: HTMLElement, event: WheelEvent): void {
     // Get pointers from the PointerManager to use for centroid calculation
@@ -94,6 +138,9 @@ export class TurnWheelGesture extends Gesture {
 
   /**
    * Emit wheel-specific events
+   * @param element The element to dispatch the custom event on
+   * @param pointers The current pointers on the element
+   * @param event The original wheel event
    */
   private emitWheelEvent(element: HTMLElement, pointers: PointerData[], event: WheelEvent): void {
     // Calculate centroid - either from existing pointers or from the wheel event position

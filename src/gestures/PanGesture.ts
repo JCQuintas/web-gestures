@@ -1,5 +1,12 @@
 /**
  * PanGesture - Detects panning (dragging) movements
+ *
+ * This gesture tracks pointer dragging movements across elements, firing events when:
+ * - The drag movement begins and passes the threshold distance (start)
+ * - The drag movement continues (ongoing)
+ * - The drag movement ends (end)
+ *
+ * The gesture can be configured to recognize movement only in specific directions.
  */
 
 import { GestureEventData, GestureState } from '../Gesture';
@@ -7,37 +14,83 @@ import { PointerGesture, PointerGestureOptions } from '../PointerGesture';
 import { PointerData } from '../PointerManager';
 import { calculateCentroid, createEventName, getDirection, isDirectionAllowed } from '../utils';
 
+/**
+ * Configuration options for PanGesture
+ * Extends PointerGestureOptions with direction constraints
+ */
 export type PanGestureOptions = PointerGestureOptions & {
+  /**
+   * Optional array of allowed directions for the pan gesture
+   * If not specified, all directions are allowed
+   */
   direction?: Array<'up' | 'down' | 'left' | 'right'>;
 };
 
+/**
+ * Event data specific to pan gesture events
+ * Contains information about movement distance, direction, and velocity
+ */
 export type PanGestureEventData = GestureEventData & {
+  /** Horizontal distance moved in pixels */
   deltaX: number;
+  /** Vertical distance moved in pixels */
   deltaY: number;
+  /** The primary direction of movement (up, down, left, right, or null if no clear direction) */
   direction: 'up' | 'down' | 'left' | 'right' | null;
+  /** Horizontal velocity in pixels per second */
   velocityX: number;
+  /** Vertical velocity in pixels per second */
   velocityY: number;
+  /** Total velocity magnitude in pixels per second */
   velocity: number;
+  /** The original DOM pointer event that triggered this gesture event */
   srcEvent: PointerEvent;
 };
 
+/**
+ * Type definition for the CustomEvent created by PanGesture
+ */
 export type PanEvent = CustomEvent<PanGestureEventData>;
 
+/**
+ * State tracking for a specific emitter element
+ */
 export type EmitterState = {
+  /** Whether the pan gesture is currently active for this element */
   active: boolean;
+  /** Map of pointer IDs to their initial state when the gesture began */
   startPointers: Map<number, PointerData>;
+  /** The initial centroid position when the gesture began */
   startCentroid: { x: number; y: number } | null;
+  /** The most recent centroid position during the gesture */
   lastCentroid: { x: number; y: number } | null;
+  /** Whether the movement threshold has been reached to activate the gesture */
   movementThresholdReached: boolean;
 };
 
+/**
+ * PanGesture class for handling panning/dragging interactions
+ *
+ * This gesture detects when users drag across elements with one or more pointers,
+ * and dispatches directional movement events with delta and velocity information.
+ */
 export class PanGesture extends PointerGesture {
-  // Additional options for pan gesture
+  /**
+   * Allowed directions for the pan gesture
+   * Default allows all directions
+   */
   private direction: Array<'up' | 'down' | 'left' | 'right'>;
 
-  // Map of elements to their specific pan gesture state
+  /**
+   * Map of elements to their specific pan gesture state
+   * Tracks pointers, centroids and threshold state for each element
+   */
   private panEmitters = new Map<HTMLElement, EmitterState>();
 
+  /**
+   * Creates a new PanGesture instance
+   * @param options Configuration options for the gesture, including direction constraints
+   */
   constructor(options: PanGestureOptions) {
     super(options);
     this.direction = options.direction || ['up', 'down', 'left', 'right'];

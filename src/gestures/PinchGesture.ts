@@ -1,5 +1,12 @@
 /**
- * PinchGesture - Detects pinch (zoom) movements with two pointers
+ * PinchGesture - Detects pinch (zoom) movements with two or more pointers
+ *
+ * This gesture tracks when multiple pointers move toward or away from each other, firing events when:
+ * - Two or more pointers begin moving (start)
+ * - The pointers continue changing distance (ongoing)
+ * - One or more pointers are released or lifted (end)
+ *
+ * This gesture is commonly used to implement zoom functionality in touch interfaces.
  */
 
 import { GestureEventData, GestureState } from '../Gesture';
@@ -7,31 +14,65 @@ import { PointerGesture, PointerGestureOptions } from '../PointerGesture';
 import { PointerData } from '../PointerManager';
 import { calculateCentroid, createEventName, getDistance } from '../utils';
 
+/**
+ * Configuration options for the PinchGesture
+ * Uses the same options as the base PointerGesture
+ */
 export type PinchGestureOptions = PointerGestureOptions;
 
+/**
+ * Event data specific to pinch gesture events
+ * Contains information about scale, distance, and velocity
+ */
 export type PinchGestureEventData = GestureEventData & {
+  /** Relative scale factor comparing current distance to initial distance (1.0 = no change) */
   scale: number;
+  /** Current distance between pointers in pixels */
   distance: number;
+  /** Speed of the pinch movement in pixels per second */
   velocity: number;
+  /** The original DOM pointer event that triggered this gesture event */
   srcEvent: PointerEvent;
 };
 
+/**
+ * Type definition for the CustomEvent created by PinchGesture
+ */
 export type PinchEvent = CustomEvent<PinchGestureEventData>;
 
+/**
+ * PinchGesture class for handling pinch/zoom interactions
+ *
+ * This gesture detects when users move multiple pointers toward or away from each other,
+ * and dispatches scale-related events with distance and velocity information.
+ */
 export class PinchGesture extends PointerGesture {
-  // Map of elements to their specific pinch gesture state
+  /**
+   * Map of elements to their specific pinch gesture state
+   * Tracks distances, scale, and velocity for each element
+   */
   private pinchEmitters = new Map<
     HTMLElement,
     {
+      /** Whether the pinch gesture is currently active for this element */
       active: boolean;
+      /** The initial distance between pointers when the gesture began */
       startDistance: number;
+      /** The most recent distance between pointers during the gesture */
       lastDistance: number;
+      /** The most recent scale value (ratio of current to initial distance) */
       lastScale: number;
+      /** Timestamp of the last pinch event, used for velocity calculation */
       lastTime: number;
+      /** Current velocity of the pinch movement in pixels per second */
       velocity: number;
     }
   >();
 
+  /**
+   * Creates a new PinchGesture instance
+   * @param options Configuration options for the gesture
+   */
   constructor(options: PinchGestureOptions) {
     super(options);
   }
