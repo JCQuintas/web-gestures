@@ -156,8 +156,8 @@ export class PanGesture extends PointerGesture {
           }
           // If we've already crossed the threshold, continue tracking
           else if (panState.movementThresholdReached && emitterState.active) {
-            // Emit move event
-            this.emitPanEvent(targetElement, 'move', relevantPointers, event, currentCentroid);
+            // Emit ongoing event
+            this.emitPanEvent(targetElement, 'ongoing', relevantPointers, event, currentCentroid);
           }
 
           // Update last centroid

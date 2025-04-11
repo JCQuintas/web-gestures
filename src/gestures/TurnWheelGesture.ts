@@ -105,7 +105,7 @@ export class TurnWheelGesture extends Gesture {
       centroid,
       target: event.target,
       srcEvent: event, // Cast to expected type
-      state: 'move', // Wheel events are always in "move" state
+      state: 'ongoing', // Wheel events are always in "ongoing" state
       pointers,
       timeStamp: event.timeStamp,
       deltaX: event.deltaX,
@@ -124,7 +124,7 @@ export class TurnWheelGesture extends Gesture {
     }
 
     // Event names to trigger
-    const eventName = createEventName(this.name, 'move');
+    const eventName = createEventName(this.name, 'ongoing');
 
     // Dispatch custom events on the element
     const domEvent = new CustomEvent(eventName, {

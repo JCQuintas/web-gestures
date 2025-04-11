@@ -160,10 +160,10 @@ export class RotateGesture extends PointerGesture {
           rotateState.lastAngle = currentAngle;
           rotateState.lastTime = event.timeStamp;
 
-          // Emit move event if there's an actual rotation
+          // Emit ongoing event if there's an actual rotation
           // We don't want to emit events for tiny movements that might be just noise
           if (Math.abs(delta) > 0.1) {
-            this.emitRotateEvent(targetElement, 'move', relevantPointers, event);
+            this.emitRotateEvent(targetElement, 'ongoing', relevantPointers, event);
           }
         }
         break;

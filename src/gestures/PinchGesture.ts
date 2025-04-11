@@ -152,8 +152,8 @@ export class PinchGesture extends PointerGesture {
           pinchState.lastScale = scale;
           pinchState.lastTime = event.timeStamp;
 
-          // Emit move event
-          this.emitPinchEvent(targetElement, 'move', relevantPointers, event);
+          // Emit ongoing event
+          this.emitPinchEvent(targetElement, 'ongoing', relevantPointers, event);
         }
         break;
 

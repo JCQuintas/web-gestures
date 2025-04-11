@@ -8,11 +8,11 @@ import { PointerData, PointerManager } from './PointerManager';
  * The possible states of a gesture during its lifecycle.
  *
  * - 'start': The gesture has been recognized and is beginning
- * - 'move': The gesture is in progress (e.g., a finger is moving)
+ * - 'ongoing': The gesture is in progress (e.g., a finger is moving)
  * - 'end': The gesture has completed successfully
  * - 'cancel': The gesture was interrupted or terminated abnormally
  */
-export type GestureState = 'start' | 'move' | 'end' | 'cancel';
+export type GestureState = 'start' | 'ongoing' | 'end' | 'cancel';
 
 /**
  * Core data structure passed to gesture event handlers.

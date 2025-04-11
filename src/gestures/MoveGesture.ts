@@ -2,7 +2,7 @@
  * MoveGesture - Detects when a pointer enters, moves within, and leaves an element
  */
 
-import { GestureEventData } from '../Gesture';
+import { GestureEventData, GestureState } from '../Gesture';
 import { PointerGesture, PointerGestureOptions } from '../PointerGesture';
 import { PointerData } from '../PointerManager';
 import { calculateCentroid, createEventName } from '../utils';
@@ -132,12 +132,12 @@ export class MoveGesture extends PointerGesture {
       return;
     }
 
-    // Update position and emit move event
+    // Update position
     const currentPosition = { x: event.clientX, y: event.clientY };
     moveState.lastPosition = currentPosition;
 
-    // Emit move event
-    this.emitMoveEvent(targetElement, 'move', pointersArray, event);
+    // Emit ongoing event
+    this.emitMoveEvent(targetElement, 'ongoing', pointersArray, event);
   }
 
   /**
@@ -145,7 +145,7 @@ export class MoveGesture extends PointerGesture {
    */
   private emitMoveEvent(
     element: HTMLElement,
-    state: 'start' | 'move' | 'end',
+    state: GestureState,
     pointers: PointerData[],
     event: PointerEvent
   ): void {
