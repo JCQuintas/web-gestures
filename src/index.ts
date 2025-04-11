@@ -14,6 +14,7 @@ export { MoveGesture } from './gestures/MoveGesture';
 export { PanGesture } from './gestures/PanGesture';
 export { PinchGesture } from './gestures/PinchGesture';
 export { RotateGesture } from './gestures/RotateGesture';
+export { TapGesture } from './gestures/TapGesture';
 export { TurnWheelGesture } from './gestures/TurnWheelGesture';
 
 // Export types
@@ -40,6 +41,11 @@ export type {
   RotateGestureEventData,
   RotateGestureOptions,
 } from './gestures/RotateGesture';
+export type {
+  TapEvent,
+  TapGestureEventData,
+  TapGestureOptions,
+} from './gestures/TapGesture';
 export type {
   TurnWheelEvent,
   TurnWheelGestureEventData,

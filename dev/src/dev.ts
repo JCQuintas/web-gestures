@@ -4,12 +4,18 @@ import {
   PanGesture,
   PinchGesture,
   RotateGesture,
+  TapEvent,
+  TapGesture,
   TurnWheelEvent,
   TurnWheelGesture,
 } from '../../src';
 
 // Initialize gesture manager with templates
-const gestureManager = new GestureManager<{ roll: TurnWheelEvent }>({
+const gestureManager = new GestureManager<{
+  roll: TurnWheelEvent;
+  tap: TapEvent;
+  doubleTap: TapEvent;
+}>({
   root: document.body,
   touchAction: 'none',
   gestures: [
@@ -41,6 +47,14 @@ const gestureManager = new GestureManager<{ roll: TurnWheelEvent }>({
       name: 'roll',
       preventDefault: true, // Prevent default scroll behavior
     }),
+    new TapGesture({
+      name: 'tap',
+      taps: 1,
+    }),
+    new TapGesture({
+      name: 'doubleTap',
+      taps: 2,
+    }),
   ],
 });
 
@@ -53,7 +67,7 @@ const resetPositionButton = document.getElementById('reset-position') as HTMLBut
 // Register multiple gestures at once for the element
 // This will return the element with properly typed event listeners
 const target = gestureManager.registerElement(
-  ['pan', 'move', 'pinch', 'rotate', 'roll'],
+  ['pan', 'move', 'pinch', 'rotate', 'roll', 'tap', 'doubleTap'],
   gestureTarget
 );
 
@@ -203,6 +217,26 @@ target.addEventListener('rotate', event => {
 
 target.addEventListener('rotateEnd', _ => {
   addLogEntry(`Rotation ended at: ${Math.round(rotation)}°`);
+});
+
+target.addEventListener('tap', event => {
+  const detail = event.detail;
+  addLogEntry(
+    `Tap detected at: x=${Math.round(detail.centroid.x)}, y=${Math.round(detail.centroid.y)}`
+  );
+
+  // Change background color on tap
+  target.style.backgroundColor = '#00ff00';
+  setTimeout(() => {
+    target.style.backgroundColor = '#4287f5';
+  }, 200);
+});
+
+target.addEventListener('doubleTap', event => {
+  const detail = event.detail;
+  addLogEntry(
+    `DoubleTap detected at: x=${Math.round(detail.centroid.x)}, y=${Math.round(detail.centroid.y)}`
+  );
 });
 
 // State variables for element positioning

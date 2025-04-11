@@ -1,3 +1,4 @@
+import { TapEvent } from 'src/gestures/TapGesture';
 import { Gesture, GestureEmitter } from './Gesture';
 import { PointerManager } from './PointerManager';
 import { MoveEvent } from './gestures/MoveGesture';
@@ -61,6 +62,7 @@ type DefaultGestureEventMap = StatefulEventMap<{
   move: MoveEvent;
   rotate: RotateEvent;
 }> & {
+  tap: TapEvent;
   turnWheel: TurnWheelEvent;
 };
 
