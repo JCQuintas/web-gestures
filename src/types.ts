@@ -38,3 +38,7 @@ type StatefulKeys<T extends string> = `${T}Start` | T | `${T}End` | `${T}Cancel`
 export type StatefulEventMap<T> = {
   [K in keyof T as StatefulKeys<string & K>]: T[K];
 };
+
+export type InternalEvent = PointerEvent & {
+  forceReset: boolean;
+};

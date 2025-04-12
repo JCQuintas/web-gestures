@@ -41,11 +41,7 @@ export type {
   RotateGestureEventData,
   RotateGestureOptions,
 } from './gestures/RotateGesture';
-export type {
-  TapEvent,
-  TapGestureEventData,
-  TapGestureOptions,
-} from './gestures/TapGesture';
+export type { TapEvent, TapGestureEventData, TapGestureOptions } from './gestures/TapGesture';
 export type {
   TurnWheelEvent,
   TurnWheelGestureEventData,
@@ -53,4 +49,4 @@ export type {
 } from './gestures/TurnWheelGesture';
 
 // Export utility types
-export type * from './utils';
+export type { StatefulEventMap } from './types';

@@ -1,10 +1,10 @@
-import { TapEvent } from 'src/gestures/TapGesture';
 import { Gesture, GestureEmitter } from './Gesture';
 import { PointerManager } from './PointerManager';
 import { MoveEvent } from './gestures/MoveGesture';
 import { PanEvent } from './gestures/PanGesture';
 import { PinchEvent } from './gestures/PinchGesture';
 import { RotateEvent } from './gestures/RotateGesture';
+import { TapEvent } from './gestures/TapGesture';
 import { TurnWheelEvent } from './gestures/TurnWheelGesture';
 import { StatefulEventMap } from './types';
 

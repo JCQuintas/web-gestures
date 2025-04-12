@@ -74,6 +74,9 @@ const target = gestureManager.registerElement(
 // Set up event listeners
 target.addEventListener('panStart', event => {
   const detail = event.detail;
+  // Reset delta tracking at the start of each new pan
+  prevDeltaX = 0;
+  prevDeltaY = 0;
   addLogEntry(
     `Pan started at: x=${Math.round(detail.centroid.x)}, y=${Math.round(detail.centroid.y)}`
   );
@@ -96,6 +99,18 @@ target.addEventListener('panEnd', event => {
   const detail = event.detail;
   addLogEntry(
     `Pan ended at: x=${Math.round(detail.centroid.x)}, y=${Math.round(detail.centroid.y)}`
+  );
+
+  // Reset delta tracking
+  prevDeltaX = 0;
+  prevDeltaY = 0;
+});
+
+// Add handler for panCancel to reset delta tracking when gestures are interrupted (e.g. by contextmenu)
+target.addEventListener('panCancel', event => {
+  const detail = event.detail;
+  addLogEntry(
+    `Pan cancelled at: x=${Math.round(detail.centroid.x)}, y=${Math.round(detail.centroid.y)}`
   );
 
   // Reset delta tracking

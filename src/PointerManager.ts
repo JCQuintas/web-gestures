@@ -8,6 +8,8 @@
  * 4. Distributing events to registered gesture recognizers
  */
 
+import { InternalEvent } from './types';
+
 /**
  * Normalized representation of a pointer, containing all relevant information
  * from the original PointerEvent plus additional tracking data.
@@ -190,7 +192,65 @@ export class PointerManager {
     window.addEventListener('pointermove', this.handlePointerEvent, { passive: this.passive });
     window.addEventListener('pointerup', this.handlePointerEvent, { passive: this.passive });
     window.addEventListener('pointercancel', this.handlePointerEvent, { passive: this.passive });
+
+    // Add blur and contextmenu event listeners to interrupt all gestures
+    window.addEventListener('blur', this.handleInterruptEvents);
+    window.addEventListener('contextmenu', this.handleInterruptEvents);
+    // Also add contextmenu to the root element to ensure it catches the event early
+    this.root.addEventListener('contextmenu', this.handleInterruptEvents);
   }
+
+  /**
+   * Handle events that should interrupt all gestures.
+   * This clears all active pointers and notifies handlers with a pointercancel-like event.
+   *
+   * @param event - The event that triggered the interruption (blur or contextmenu)
+   */
+  private handleInterruptEvents = (event: Event): void => {
+    // For contextmenu events, we need to prevent default to ensure gestures are properly interrupted
+    if (event.type === 'contextmenu') {
+      // Don't prevent the context menu from appearing, just make sure we interrupt gestures
+      // The default behavior should still show the context menu
+    }
+
+    // Force a reset even if there are no active pointers to ensure any lingering gesture state is cleared
+    // We'll create a synthetic event with a special forceReset flag that gesture handlers can check
+
+    // Create a synthetic pointer cancel event
+    const cancelEvent = new PointerEvent('pointercancel', {
+      bubbles: true,
+      cancelable: true,
+    });
+
+    // Add a special property to the event to signal a complete reset
+    // This will be used in gesture handlers to perform a more thorough cleanup
+    (cancelEvent as InternalEvent).forceReset = true;
+
+    const firstPointer = this.pointers.values().next().value;
+    if (this.pointers.size > 0 && firstPointer) {
+      // If there are active pointers, use the first one as a template for coordinates
+
+      // Update the synthetic event with the pointer's coordinates
+      Object.defineProperties(cancelEvent, {
+        clientX: { value: firstPointer.clientX },
+        clientY: { value: firstPointer.clientY },
+        pointerId: { value: firstPointer.pointerId },
+        pointerType: { value: firstPointer.pointerType },
+      });
+
+      // Force update of all pointers to have type 'pointercancel'
+      for (const [pointerId, pointer] of this.pointers.entries()) {
+        const updatedPointer = { ...pointer, type: 'pointercancel' };
+        this.pointers.set(pointerId, updatedPointer);
+      }
+    }
+
+    // Notify all handlers about the interruption
+    this.notifyHandlers(cancelEvent);
+
+    // Clear all pointers
+    this.pointers.clear();
+  };
 
   /**
    * Event handler for all pointer events.
@@ -287,6 +347,9 @@ export class PointerManager {
     window.removeEventListener('pointermove', this.handlePointerEvent);
     window.removeEventListener('pointerup', this.handlePointerEvent);
     window.removeEventListener('pointercancel', this.handlePointerEvent);
+    window.removeEventListener('blur', this.handleInterruptEvents);
+    window.removeEventListener('contextmenu', this.handleInterruptEvents);
+    this.root.removeEventListener('contextmenu', this.handleInterruptEvents);
 
     this.pointers.clear();
     this.gestureHandlers.clear();

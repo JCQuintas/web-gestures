@@ -2,7 +2,7 @@
  * Utility functions for gesture calculations
  */
 
-import { GestureState } from 'src/Gesture';
+import { GestureState } from './Gesture';
 import { PointerData } from './PointerManager';
 
 /**

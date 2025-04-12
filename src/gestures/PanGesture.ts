@@ -12,6 +12,7 @@
 import { GestureEventData, GestureState } from '../Gesture';
 import { PointerGesture, PointerGestureOptions } from '../PointerGesture';
 import { PointerData } from '../PointerManager';
+import { InternalEvent } from '../types';
 import { calculateCentroid, createEventName, getDirection, isDirectionAllowed } from '../utils';
 
 /**
@@ -140,6 +141,26 @@ export class PanGesture extends PointerGesture {
    * Handle pointer events for the pan gesture
    */
   protected handlePointerEvent(pointers: Map<number, PointerData>, event: PointerEvent): void {
+    // Check for our special forceReset flag to handle interrupted gestures (from contextmenu, blur)
+    if ((event as InternalEvent).forceReset) {
+      // Reset all active pan gestures when we get a force reset event
+      this.emitters.forEach((_, element) => {
+        // Cancel any active gesture with a proper cancel event
+        const panState = this.panEmitters.get(element);
+        const emitterState = this.getEmitterState(element);
+
+        if (panState?.active || emitterState?.active) {
+          const relevantPointers = Array.from(pointers.values());
+          // Only emit if we have active state and necessary data
+          if (emitterState?.active && panState?.startCentroid && panState.lastCentroid) {
+            this.emitPanEvent(element, 'cancel', relevantPointers, event, panState.lastCentroid);
+          }
+          this.reset(element);
+        }
+      });
+      return;
+    }
+
     const pointersArray = Array.from(pointers.values());
 
     // Find which element (if any) is being targeted
