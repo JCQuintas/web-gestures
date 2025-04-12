@@ -43,6 +43,26 @@ export type RotateGestureEventData = GestureEventData & {
 export type RotateEvent = CustomEvent<RotateGestureEventData>;
 
 /**
+ * State tracking for a specific emitter element
+ */
+export type RotateGestureState = {
+  /** Whether the rotation gesture is currently active for this element */
+  active: boolean;
+  /** The initial angle between pointers when the gesture began */
+  startAngle: number;
+  /** The most recent angle between pointers during the gesture */
+  lastAngle: number;
+  /** Accumulated rotation in degrees (can exceed 360° for multiple rotations) */
+  lastRotation: number;
+  /** Timestamp of the last rotate event, used for velocity calculation */
+  lastTime: number;
+  /** Current angular velocity in degrees per second */
+  velocity: number;
+  /** The most recent change in angle since the last event */
+  lastDelta: number;
+};
+
+/**
  * RotateGesture class for handling rotation interactions
  *
  * This gesture detects when users rotate multiple pointers around a central point,
@@ -53,25 +73,7 @@ export class RotateGesture extends PointerGesture {
    * Map of elements to their specific rotate gesture state
    * Tracks angles, rotation, and velocity for each element
    */
-  private rotateEmitters = new Map<
-    HTMLElement,
-    {
-      /** Whether the rotation gesture is currently active for this element */
-      active: boolean;
-      /** The initial angle between pointers when the gesture began */
-      startAngle: number;
-      /** The most recent angle between pointers during the gesture */
-      lastAngle: number;
-      /** Accumulated rotation in degrees (can exceed 360° for multiple rotations) */
-      lastRotation: number;
-      /** Timestamp of the last rotate event, used for velocity calculation */
-      lastTime: number;
-      /** Current angular velocity in degrees per second */
-      velocity: number;
-      /** The most recent change in angle since the last event */
-      lastDelta: number;
-    }
-  >();
+  private rotateEmitters = new Map<HTMLElement, RotateGestureState>();
 
   /**
    * Creates a new RotateGesture instance

@@ -43,6 +43,26 @@ export type PinchGestureEventData = GestureEventData & {
 export type PinchEvent = CustomEvent<PinchGestureEventData>;
 
 /**
+ * State tracking for a specific emitter element
+ */
+export type PinchGestureState = {
+  /** Whether the pinch gesture is currently active for this element */
+  active: boolean;
+  /** The initial distance between pointers when the gesture began */
+  startDistance: number;
+  /** The most recent distance between pointers during the gesture */
+  lastDistance: number;
+  /** The most recent scale value (ratio of current to initial distance) */
+  lastScale: number;
+  /** Timestamp of the last pinch event, used for velocity calculation */
+  lastTime: number;
+  /** Current velocity of the pinch movement in pixels per second */
+  velocity: number;
+  /** Total accumulated scale factor across all pinch operations */
+  totalScale: number;
+};
+
+/**
  * PinchGesture class for handling pinch/zoom interactions
  *
  * This gesture detects when users move multiple pointers toward or away from each other,
@@ -53,25 +73,7 @@ export class PinchGesture extends PointerGesture {
    * Map of elements to their specific pinch gesture state
    * Tracks distances, scale, and velocity for each element
    */
-  private pinchEmitters = new Map<
-    HTMLElement,
-    {
-      /** Whether the pinch gesture is currently active for this element */
-      active: boolean;
-      /** The initial distance between pointers when the gesture began */
-      startDistance: number;
-      /** The most recent distance between pointers during the gesture */
-      lastDistance: number;
-      /** The most recent scale value (ratio of current to initial distance) */
-      lastScale: number;
-      /** Timestamp of the last pinch event, used for velocity calculation */
-      lastTime: number;
-      /** Current velocity of the pinch movement in pixels per second */
-      velocity: number;
-      /** Total accumulated scale factor across all pinch operations */
-      totalScale: number;
-    }
-  >();
+  private pinchEmitters = new Map<HTMLElement, PinchGestureState>();
 
   /**
    * Creates a new PinchGesture instance

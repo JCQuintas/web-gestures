@@ -44,6 +44,14 @@ export type TurnWheelGestureEventData = GestureEventData & {
 export type TurnWheelEvent = CustomEvent<TurnWheelGestureEventData>;
 
 /**
+ * State tracking for a specific emitter element
+ */
+export type TurnWheelGestureState = {
+  /** Bound event handler function for this element */
+  wheelHandler: (e: WheelEvent) => void;
+};
+
+/**
  * TurnWheelGesture class for handling wheel/scroll interactions
  *
  * This gesture detects when users scroll or use the mouse wheel on elements,
@@ -55,13 +63,7 @@ export class TurnWheelGesture extends Gesture {
    * Map of elements to their specific wheel gesture state
    * Stores the wheel event handler for each element
    */
-  private wheelEmitters = new Map<
-    HTMLElement,
-    {
-      /** Bound event handler function for this element */
-      wheelHandler: (e: WheelEvent) => void;
-    }
-  >();
+  private wheelEmitters = new Map<HTMLElement, TurnWheelGestureState>();
 
   /**
    * Creates a new TurnWheelGesture instance

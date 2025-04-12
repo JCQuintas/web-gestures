@@ -36,6 +36,16 @@ export type MoveGestureEventData = GestureEventData & {
 export type MoveEvent = CustomEvent<MoveGestureEventData>;
 
 /**
+ * State tracking for a specific emitter element
+ */
+export type MoveGestureState = {
+  /** Whether the move gesture is currently active for this element */
+  active: boolean;
+  /** The last recorded pointer position for this element */
+  lastPosition: { x: number; y: number } | null;
+};
+
+/**
  * MoveGesture class for handling pointer movement over elements
  *
  * This gesture detects when pointers enter, move within, or leave target elements,
@@ -46,15 +56,7 @@ export class MoveGesture extends PointerGesture {
    * Map of elements to their specific move gesture state
    * Tracks active status and last known pointer position for each element
    */
-  private moveEmitters = new Map<
-    HTMLElement,
-    {
-      /** Whether the move gesture is currently active for this element */
-      active: boolean;
-      /** The last recorded pointer position for this element */
-      lastPosition: { x: number; y: number } | null;
-    }
-  >();
+  private moveEmitters = new Map<HTMLElement, MoveGestureState>();
 
   /**
    * Creates a new MoveGesture instance
