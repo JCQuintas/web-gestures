@@ -112,37 +112,28 @@ target.addEventListener('panCancel', event => {
   );
 });
 
-// Add pinch gesture event listeners
-let initialPinchScale = 1;
-
 target.addEventListener('pinchStart', event => {
   const detail = event.detail;
-  initialPinchScale = scale;
 
   // Change background color to indicate active pinch
   target.style.backgroundColor = '#ff5722';
 
   addLogEntry(
-    `Pinch started at: x=${Math.round(detail.centroid.x)}, y=${Math.round(
-      detail.centroid.y
-    )}, distance=${Math.round(detail.distance)}`
+    `Pinch started at: distance=${Math.round(detail.distance)} scale=${detail.totalScale.toFixed(2)}`
   );
 });
 
 target.addEventListener('pinch', event => {
   const detail = event.detail;
 
-  // Update scale based on pinch scale
-  scale = initialPinchScale * detail.scale;
-  scale = Math.min(Math.max(0.5, scale), 5);
+  addLogEntry(`Pinch at: scale=${detail.totalScale.toFixed(2)}`);
 
-  addLogEntry(
-    `Pinch at: x=${Math.round(detail.centroid.x)}, y=${Math.round(
-      detail.centroid.y
-    )}, scale=${detail.scale.toFixed(2)}`
-  );
+  updatePosition(target, { scale: detail.totalScale });
+});
 
-  updatePosition(target, { scale });
+target2.addEventListener('pinch', event => {
+  const detail = event.detail;
+  updatePosition(target2, { scale: detail.totalScale });
 });
 
 target.addEventListener('pinchEnd', event => {

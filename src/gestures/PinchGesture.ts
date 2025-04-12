@@ -27,6 +27,8 @@ export type PinchGestureOptions = PointerGestureOptions;
 export type PinchGestureEventData = GestureEventData & {
   /** Relative scale factor comparing current distance to initial distance (1.0 = no change) */
   scale: number;
+  /** Total accumulated scale factor across all pinch operations */
+  totalScale: number;
   /** Current distance between pointers in pixels */
   distance: number;
   /** Speed of the pinch movement in pixels per second */
@@ -66,6 +68,8 @@ export class PinchGesture extends PointerGesture {
       lastTime: number;
       /** Current velocity of the pinch movement in pixels per second */
       velocity: number;
+      /** Total accumulated scale factor across all pinch operations */
+      totalScale: number;
     }
   >();
 
@@ -106,6 +110,7 @@ export class PinchGesture extends PointerGesture {
       lastScale: 1,
       lastTime: 0,
       velocity: 0,
+      totalScale: 1,
     });
 
     return emitter;
@@ -180,6 +185,14 @@ export class PinchGesture extends PointerGesture {
 
           // Calculate scale relative to starting distance
           const scale = pinchState.startDistance ? currentDistance / pinchState.startDistance : 1;
+
+          // If this is the first move event after activation, don't modify totalScale
+          if (pinchState.lastScale !== 1) {
+            // Calculate the relative scale change since last event
+            const scaleChange = scale / pinchState.lastScale;
+            // Apply this change to the total accumulated scale
+            pinchState.totalScale *= scaleChange;
+          }
 
           // Calculate velocity (change in scale over time)
           const deltaTime = (event.timeStamp - pinchState.lastTime) / 1000; // convert to seconds
@@ -280,6 +293,7 @@ export class PinchGesture extends PointerGesture {
       pointers,
       timeStamp: event.timeStamp,
       scale,
+      totalScale: pinchState.totalScale,
       distance,
       velocity: pinchState.velocity,
     };
@@ -324,6 +338,7 @@ export class PinchGesture extends PointerGesture {
       pinchState.lastDistance = 0;
       pinchState.lastScale = 1;
       pinchState.velocity = 0;
+      // Don't reset totalScale as it should persist between gestures
     }
   }
 }
