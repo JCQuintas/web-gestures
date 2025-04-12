@@ -60,6 +60,7 @@ const gestureManager = new GestureManager<{
 
 // DOM Elements
 const gestureTarget = document.getElementById('gesture-target') as HTMLDivElement;
+const gestureTarget2 = document.getElementById('gesture-target2') as HTMLDivElement;
 const logContainer = document.getElementById('log-container') as HTMLDivElement;
 const clearLogButton = document.getElementById('clear-log') as HTMLButtonElement;
 const resetPositionButton = document.getElementById('reset-position') as HTMLButtonElement;
@@ -70,6 +71,8 @@ const target = gestureManager.registerElement(
   ['pan', 'move', 'pinch', 'rotate', 'roll', 'tap', 'doubleTap'],
   gestureTarget
 );
+
+const target2 = gestureManager.registerElement(['pan', 'pinch', 'rotate'], gestureTarget2);
 
 // Set up event listeners
 target.addEventListener('panStart', event => {
@@ -83,12 +86,15 @@ target.addEventListener('panStart', event => {
 target.addEventListener('pan', event => {
   const detail = event.detail;
 
-  // Move the element based on delta
-  targetX = detail.totalDeltaX;
-  targetY = detail.totalDeltaY;
+  addLogEntry(
+    `Pan moved to: x=${Math.round(detail.totalDeltaX)}, y=${Math.round(detail.totalDeltaX)}`
+  );
+  updatePosition(target, { targetX: detail.totalDeltaX, targetY: detail.totalDeltaY });
+});
 
-  addLogEntry(`Pan moved to: x=${Math.round(targetX)}, y=${Math.round(targetY)}`);
-  updatePosition();
+target2.addEventListener('pan', event => {
+  const detail = event.detail;
+  updatePosition(target2, { targetX: detail.totalDeltaX, targetY: detail.totalDeltaY });
 });
 
 target.addEventListener('panEnd', event => {
@@ -136,7 +142,7 @@ target.addEventListener('pinch', event => {
     )}, scale=${detail.scale.toFixed(2)}`
   );
 
-  updatePosition();
+  updatePosition(target, { scale });
 });
 
 target.addEventListener('pinchEnd', event => {
@@ -197,7 +203,7 @@ target.addEventListener('roll', event => {
   scale = Math.min(Math.max(0.5, scale), 3);
 
   addLogEntry(`Wheel zoom at: scale=${scale.toFixed(2)}`);
-  updatePosition();
+  updatePosition(target, { scale });
 });
 
 // Add rotate gesture event listeners
@@ -215,7 +221,7 @@ target.addEventListener('rotate', event => {
 
   addLogEntry(`Rotating: ${Math.round(rotation)}° (delta: ${Math.round(detail.delta)}°)`);
 
-  updatePosition();
+  updatePosition(target, { rotation });
 });
 
 target.addEventListener('rotateEnd', _ => {
@@ -243,13 +249,31 @@ target.addEventListener('doubleTap', event => {
 });
 
 // State variables for element positioning
-let targetX = 0;
-let targetY = 0;
 let scale = 1;
 
 // Update element position
-function updatePosition() {
-  target.style.transform = `translate(${targetX}px, ${targetY}px) scale(${scale}) rotate(${rotation}deg)`;
+function updatePosition(
+  element: HTMLElement,
+  input: {
+    targetX?: number;
+    targetY?: number;
+    scale?: number;
+    rotation?: number;
+  }
+): void {
+  // Get the x and y from the transform property
+  const transform = window.getComputedStyle(element).transform;
+  const matrix = new DOMMatrix(transform);
+  const currentX = matrix.m41;
+  const currentY = matrix.m42;
+  const currentScale = Math.sqrt(matrix.a * matrix.a + matrix.b * matrix.b);
+  const currentRotation = Math.round(Math.atan2(matrix.b, matrix.a) * (180 / Math.PI));
+  const targetX = input.targetX ?? currentX;
+  const targetY = input.targetY ?? currentY;
+  const scale = input.scale ?? currentScale;
+  const rotation = input.rotation ?? currentRotation;
+
+  element.style.transform = `translate(${targetX}px, ${targetY}px) scale(${scale}) rotate(${rotation}deg)`;
 }
 
 // Log helper function
@@ -268,11 +292,9 @@ clearLogButton.addEventListener('click', () => {
 });
 
 resetPositionButton.addEventListener('click', () => {
-  targetX = 0;
-  targetY = 0;
   scale = 1;
   rotation = 0;
-  updatePosition();
+  updatePosition(target, { targetX: 0, targetY: 0, scale: 1, rotation: 0 });
   addLogEntry('Position reset');
 });
 
