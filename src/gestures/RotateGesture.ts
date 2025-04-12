@@ -29,6 +29,8 @@ export type RotateGestureEventData = GestureEventData & {
   rotation: number;
   /** Change in rotation since the last event in degrees */
   delta: number;
+  /** Total accumulated rotation in degrees across all gesture interactions */
+  totalRotation: number;
   /** Angular velocity in degrees per second */
   velocity: number;
   /** The original DOM pointer event that triggered this gesture event */
@@ -293,6 +295,7 @@ export class RotateGesture extends PointerGesture {
       timeStamp: event.timeStamp,
       rotation,
       delta,
+      totalRotation: rotateState.lastRotation,
       velocity: rotateState.velocity,
     };
 
@@ -334,9 +337,10 @@ export class RotateGesture extends PointerGesture {
       rotateState.active = false;
       rotateState.startAngle = 0;
       rotateState.lastAngle = 0;
-      rotateState.lastRotation = 0;
       rotateState.velocity = 0;
       rotateState.lastDelta = 0;
+      // lastRotation is always set to the accumulated rotation
+      // so we don't reset it here
     }
   }
 }

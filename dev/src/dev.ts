@@ -198,25 +198,29 @@ target.addEventListener('roll', event => {
 });
 
 // Add rotate gesture event listeners
-let rotation = 0;
-
-target.addEventListener('rotateStart', _ => {
-  addLogEntry(`Rotation started at: ${Math.round(rotation)}°`);
+target.addEventListener('rotateStart', event => {
+  const detail = event.detail;
+  addLogEntry(`Rotation started at: ${Math.round(detail.totalRotation)}°`);
 });
 
 target.addEventListener('rotate', event => {
   const detail = event.detail;
 
-  // Update rotation based on the rotation data
-  rotation = rotation + detail.delta;
+  addLogEntry(
+    `Rotating: ${Math.round(detail.totalRotation)}° (delta: ${Math.round(detail.delta)}°)`
+  );
 
-  addLogEntry(`Rotating: ${Math.round(rotation)}° (delta: ${Math.round(detail.delta)}°)`);
-
-  updatePosition(target, { rotation });
+  updatePosition(target, { rotation: detail.totalRotation });
 });
 
-target.addEventListener('rotateEnd', _ => {
-  addLogEntry(`Rotation ended at: ${Math.round(rotation)}°`);
+target2.addEventListener('rotate', event => {
+  const detail = event.detail;
+  updatePosition(target2, { rotation: detail.totalRotation });
+});
+
+target.addEventListener('rotateEnd', event => {
+  const detail = event.detail;
+  addLogEntry(`Rotation ended at: ${Math.round(detail.totalRotation)}°`);
 });
 
 target.addEventListener('tap', event => {
@@ -264,6 +268,8 @@ function updatePosition(
   const scale = input.scale ?? currentScale;
   const rotation = input.rotation ?? currentRotation;
 
+  addLogEntry(`Rot: ${rotation}`);
+
   element.style.transform = `translate(${targetX}px, ${targetY}px) scale(${scale}) rotate(${rotation}deg)`;
 }
 
@@ -284,7 +290,6 @@ clearLogButton.addEventListener('click', () => {
 
 resetPositionButton.addEventListener('click', () => {
   scale = 1;
-  rotation = 0;
   updatePosition(target, { targetX: 0, targetY: 0, scale: 1, rotation: 0 });
   addLogEntry('Position reset');
 });
