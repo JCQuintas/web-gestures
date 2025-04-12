@@ -75,8 +75,6 @@ const target = gestureManager.registerElement(
 target.addEventListener('panStart', event => {
   const detail = event.detail;
   // Reset delta tracking at the start of each new pan
-  prevDeltaX = 0;
-  prevDeltaY = 0;
   addLogEntry(
     `Pan started at: x=${Math.round(detail.centroid.x)}, y=${Math.round(detail.centroid.y)}`
   );
@@ -86,10 +84,8 @@ target.addEventListener('pan', event => {
   const detail = event.detail;
 
   // Move the element based on delta
-  targetX += detail.deltaX - prevDeltaX;
-  targetY += detail.deltaY - prevDeltaY;
-  prevDeltaX = detail.deltaX;
-  prevDeltaY = detail.deltaY;
+  targetX = detail.totalDeltaX;
+  targetY = detail.totalDeltaY;
 
   addLogEntry(`Pan moved to: x=${Math.round(targetX)}, y=${Math.round(targetY)}`);
   updatePosition();
@@ -100,10 +96,6 @@ target.addEventListener('panEnd', event => {
   addLogEntry(
     `Pan ended at: x=${Math.round(detail.centroid.x)}, y=${Math.round(detail.centroid.y)}`
   );
-
-  // Reset delta tracking
-  prevDeltaX = 0;
-  prevDeltaY = 0;
 });
 
 // Add handler for panCancel to reset delta tracking when gestures are interrupted (e.g. by contextmenu)
@@ -112,10 +104,6 @@ target.addEventListener('panCancel', event => {
   addLogEntry(
     `Pan cancelled at: x=${Math.round(detail.centroid.x)}, y=${Math.round(detail.centroid.y)}`
   );
-
-  // Reset delta tracking
-  prevDeltaX = 0;
-  prevDeltaY = 0;
 });
 
 // Add pinch gesture event listeners
@@ -258,8 +246,6 @@ target.addEventListener('doubleTap', event => {
 let targetX = 0;
 let targetY = 0;
 let scale = 1;
-let prevDeltaX = 0;
-let prevDeltaY = 0;
 
 // Update element position
 function updatePosition() {
@@ -286,8 +272,6 @@ resetPositionButton.addEventListener('click', () => {
   targetY = 0;
   scale = 1;
   rotation = 0;
-  prevDeltaX = 0;
-  prevDeltaY = 0;
   updatePosition();
   addLogEntry('Position reset');
 });
