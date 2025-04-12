@@ -46,6 +46,7 @@ const gestureManager = new GestureManager<{
     new TurnWheelGesture({
       name: 'roll',
       preventDefault: true, // Prevent default scroll behavior
+      sensitivity: 0.1,
     }),
     new TapGesture({
       name: 'tap',
@@ -72,7 +73,7 @@ const target = gestureManager.registerElement(
   gestureTarget
 );
 
-const target2 = gestureManager.registerElement(['pan', 'pinch', 'rotate'], gestureTarget2);
+const target2 = gestureManager.registerElement(['pan', 'pinch', 'rotate', 'roll'], gestureTarget2);
 
 // Set up event listeners
 target.addEventListener('panStart', event => {
@@ -142,11 +143,7 @@ target.addEventListener('pinchEnd', event => {
   // Reset background color
   target.style.backgroundColor = '#4287f5';
 
-  addLogEntry(
-    `Pinch ended at: x=${Math.round(detail.centroid.x)}, y=${Math.round(
-      detail.centroid.y
-    )}, final scale=${scale.toFixed(2)}`
-  );
+  addLogEntry(`Pinch ended at: final scale=${detail.totalScale.toFixed(2)}`);
 });
 
 // Add move gesture event listeners
@@ -188,13 +185,17 @@ target.addEventListener('moveEnd', event => {
 // Add wheel gesture event listeners
 target.addEventListener('roll', event => {
   const detail = event.detail;
-
+  console.log(1 + detail.totalDeltaY * -1);
+  const scale = Math.min(Math.max(0.5, 1 + detail.totalDeltaY * -1), 3);
   // Zoom the element based on wheel delta
-  scale += detail.deltaY * -0.01;
-  scale = Math.min(Math.max(0.5, scale), 3);
-
   addLogEntry(`Wheel zoom at: scale=${scale.toFixed(2)}`);
   updatePosition(target, { scale });
+});
+target2.addEventListener('roll', event => {
+  console.log(event.detail.deltaMode);
+  const detail = event.detail;
+  const scale = Math.min(Math.max(0.5, 1 + detail.totalDeltaY * -1), 3);
+  updatePosition(target2, { scale });
 });
 
 // Add rotate gesture event listeners
@@ -243,9 +244,6 @@ target.addEventListener('doubleTap', event => {
   );
 });
 
-// State variables for element positioning
-let scale = 1;
-
 // Update element position
 function updatePosition(
   element: HTMLElement,
@@ -268,8 +266,6 @@ function updatePosition(
   const scale = input.scale ?? currentScale;
   const rotation = input.rotation ?? currentRotation;
 
-  addLogEntry(`Rot: ${rotation}`);
-
   element.style.transform = `translate(${targetX}px, ${targetY}px) scale(${scale}) rotate(${rotation}deg)`;
 }
 
@@ -289,7 +285,6 @@ clearLogButton.addEventListener('click', () => {
 });
 
 resetPositionButton.addEventListener('click', () => {
-  scale = 1;
   updatePosition(target, { targetX: 0, targetY: 0, scale: 1, rotation: 0 });
   addLogEntry('Position reset');
 });

@@ -14,9 +14,16 @@ import { calculateCentroid, createEventName } from '../utils';
 
 /**
  * Configuration options for the TurnWheelGesture
- * Uses the base gesture options without pointer-specific options
+ * Uses the base gesture options with additional wheel-specific options
  */
-export type TurnWheelGestureOptions = GestureOptions;
+export type TurnWheelGestureOptions = GestureOptions & {
+  /**
+   * Sensitivity of the wheel gesture
+   * Values > 1 increase sensitivity, values < 1 decrease sensitivity
+   * @default 1
+   */
+  sensitivity?: number;
+};
 
 /**
  * Event data specific to wheel gesture events
@@ -29,6 +36,12 @@ export type TurnWheelGestureEventData = GestureEventData & {
   deltaY: number;
   /** Z-axis scroll amount (depth) */
   deltaZ: number;
+  /** Total accumulated horizontal delta since tracking began */
+  totalDeltaX: number;
+  /** Total accumulated vertical delta since tracking began */
+  totalDeltaY: number;
+  /** Total accumulated Z-axis delta since tracking began */
+  totalDeltaZ: number;
   /**
    * The unit of measurement for the delta values
    * 0: Pixels, 1: Lines, 2: Pages
@@ -49,6 +62,12 @@ export type TurnWheelEvent = CustomEvent<TurnWheelGestureEventData>;
 export type TurnWheelGestureState = {
   /** Bound event handler function for this element */
   wheelHandler: (e: WheelEvent) => void;
+  /** Total accumulated horizontal delta since tracking began */
+  totalDeltaX: number;
+  /** Total accumulated vertical delta since tracking began */
+  totalDeltaY: number;
+  /** Total accumulated Z-axis delta since tracking began */
+  totalDeltaZ: number;
 };
 
 /**
@@ -66,11 +85,18 @@ export class TurnWheelGesture extends Gesture {
   private wheelEmitters = new Map<HTMLElement, TurnWheelGestureState>();
 
   /**
+   * Scaling factor for delta values
+   * Values > 1 increase sensitivity, values < 1 decrease sensitivity
+   */
+  private scale: number;
+
+  /**
    * Creates a new TurnWheelGesture instance
    * @param options Configuration options for the gesture
    */
   constructor(options: TurnWheelGestureOptions) {
     super(options);
+    this.scale = options.sensitivity ?? 1;
   }
 
   /**
@@ -81,6 +107,7 @@ export class TurnWheelGesture extends Gesture {
       name: this.name,
       preventDefault: this.preventDefault,
       stopPropagation: this.stopPropagation,
+      sensitivity: this.scale,
     });
   }
 
@@ -101,6 +128,9 @@ export class TurnWheelGesture extends Gesture {
     // Add wheel-specific state
     this.wheelEmitters.set(element, {
       wheelHandler,
+      totalDeltaX: 0,
+      totalDeltaY: 0,
+      totalDeltaZ: 0,
     });
 
     return emitter;
@@ -134,6 +164,14 @@ export class TurnWheelGesture extends Gesture {
     const pointers = this.pointerManager?.getPointers() || new Map();
     const pointersArray = Array.from(pointers.values());
 
+    // Update the accumulated deltas
+    const wheelState = this.wheelEmitters.get(element);
+    if (wheelState) {
+      wheelState.totalDeltaX += event.deltaX * this.scale;
+      wheelState.totalDeltaY += event.deltaY * this.scale;
+      wheelState.totalDeltaZ += event.deltaZ * this.scale;
+    }
+
     // Emit the wheel event
     this.emitWheelEvent(element, pointersArray, event);
   }
@@ -149,18 +187,25 @@ export class TurnWheelGesture extends Gesture {
     const centroid =
       pointers.length > 0 ? calculateCentroid(pointers) : { x: event.clientX, y: event.clientY };
 
+    // Get the wheel state for this element
+    const wheelState = this.wheelEmitters.get(element);
+    if (!wheelState) return;
+
     // Create custom event data
     const customEventData: TurnWheelGestureEventData = {
       centroid,
       target: event.target,
-      srcEvent: event, // Cast to expected type
+      srcEvent: event,
       state: 'ongoing', // Wheel events are always in "ongoing" state
       pointers,
       timeStamp: event.timeStamp,
-      deltaX: event.deltaX,
-      deltaY: event.deltaY,
-      deltaZ: event.deltaZ,
+      deltaX: event.deltaX * this.scale,
+      deltaY: event.deltaY * this.scale,
+      deltaZ: event.deltaZ * this.scale,
       deltaMode: event.deltaMode,
+      totalDeltaX: wheelState.totalDeltaX,
+      totalDeltaY: wheelState.totalDeltaY,
+      totalDeltaZ: wheelState.totalDeltaZ,
     };
 
     // Apply default event behavior if configured
