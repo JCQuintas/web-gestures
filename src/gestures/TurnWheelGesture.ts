@@ -23,6 +23,30 @@ export type TurnWheelGestureOptions = GestureOptions & {
    * @default 1
    */
   sensitivity?: number;
+
+  /**
+   * Maximum value for totalDelta values
+   * Limits how large the accumulated wheel deltas can be
+   * Applied to totalDeltaX, totalDeltaY, and totalDeltaZ individually
+   * @default Number.MAX_SAFE_INTEGER
+   */
+  max?: number;
+
+  /**
+   * Minimum value for totalDelta values
+   * Sets a lower bound for accumulated wheel deltas
+   * Applied to totalDeltaX, totalDeltaY, and totalDeltaZ individually
+   * @default Number.MIN_SAFE_INTEGER
+   */
+  min?: number;
+
+  /**
+   * Initial value for totalDelta values
+   * Sets the starting value for accumulated wheel deltas
+   * Applied to totalDeltaX, totalDeltaY, and totalDeltaZ individually
+   * @default 0
+   */
+  initialDelta?: number;
 };
 
 /**
@@ -91,12 +115,33 @@ export class TurnWheelGesture extends Gesture {
   private scale: number;
 
   /**
+   * Maximum value for totalDelta values
+   * Limits how large the accumulated wheel deltas can be
+   */
+  private max: number;
+
+  /**
+   * Minimum value for totalDelta values
+   * Sets a lower bound for accumulated wheel deltas
+   */
+  private min: number;
+
+  /**
+   * Initial value for totalDelta values
+   * Sets the starting value for delta trackers
+   */
+  private initialDelta: number;
+
+  /**
    * Creates a new TurnWheelGesture instance
    * @param options Configuration options for the gesture
    */
   constructor(options: TurnWheelGestureOptions) {
     super(options);
     this.scale = options.sensitivity ?? 1;
+    this.max = options.max ?? Number.MAX_SAFE_INTEGER;
+    this.min = options.min ?? Number.MIN_SAFE_INTEGER;
+    this.initialDelta = options.initialDelta ?? 0;
   }
 
   /**
@@ -108,6 +153,9 @@ export class TurnWheelGesture extends Gesture {
       preventDefault: this.preventDefault,
       stopPropagation: this.stopPropagation,
       sensitivity: this.scale,
+      max: this.max,
+      min: this.min,
+      initialDelta: this.initialDelta,
     });
   }
 
@@ -128,9 +176,9 @@ export class TurnWheelGesture extends Gesture {
     // Add wheel-specific state
     this.wheelEmitters.set(element, {
       wheelHandler,
-      totalDeltaX: 0,
-      totalDeltaY: 0,
-      totalDeltaZ: 0,
+      totalDeltaX: this.initialDelta,
+      totalDeltaY: this.initialDelta,
+      totalDeltaZ: this.initialDelta,
     });
 
     return emitter;
@@ -167,9 +215,24 @@ export class TurnWheelGesture extends Gesture {
     // Update the accumulated deltas
     const wheelState = this.wheelEmitters.get(element);
     if (wheelState) {
+      // Update total deltas with scaled values
       wheelState.totalDeltaX += event.deltaX * this.scale;
       wheelState.totalDeltaY += event.deltaY * this.scale;
       wheelState.totalDeltaZ += event.deltaZ * this.scale;
+
+      // Apply proper min/max clamping for each axis
+      // Ensure values stay between min and max bounds
+      (['totalDeltaX', 'totalDeltaY', 'totalDeltaZ'] as const).forEach(axis => {
+        // First clamp at the minimum bound
+        if (wheelState[axis] < this.min) {
+          wheelState[axis] = this.min;
+        }
+
+        // Then clamp at the maximum bound
+        if (wheelState[axis] > this.max) {
+          wheelState[axis] = this.max;
+        }
+      });
     }
 
     // Emit the wheel event

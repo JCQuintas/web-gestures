@@ -47,6 +47,9 @@ const gestureManager = new GestureManager<{
       name: 'roll',
       preventDefault: true, // Prevent default scroll behavior
       sensitivity: 0.1,
+      min: 0.5,
+      max: 3,
+      initialDelta: 1,
     }),
     new TapGesture({
       name: 'tap',
@@ -185,16 +188,14 @@ target.addEventListener('moveEnd', event => {
 // Add wheel gesture event listeners
 target.addEventListener('roll', event => {
   const detail = event.detail;
-  console.log(1 + detail.totalDeltaY * -1);
-  const scale = Math.min(Math.max(0.5, 1 + detail.totalDeltaY * -1), 3);
+  const scale = detail.totalDeltaY;
   // Zoom the element based on wheel delta
   addLogEntry(`Wheel zoom at: scale=${scale.toFixed(2)}`);
   updatePosition(target, { scale });
 });
 target2.addEventListener('roll', event => {
-  console.log(event.detail.deltaMode);
   const detail = event.detail;
-  const scale = Math.min(Math.max(0.5, 1 + detail.totalDeltaY * -1), 3);
+  const scale = detail.totalDeltaY;
   updatePosition(target2, { scale });
 });
 
