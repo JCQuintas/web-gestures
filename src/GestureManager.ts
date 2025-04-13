@@ -11,7 +11,10 @@ import { PointerManager } from './PointerManager';
 /**
  * Configuration options for initializing the GestureManager
  */
-export type GestureManagerOptions<Name extends string, Gestures extends Gesture<Name>> = {
+export type GestureManagerOptions<
+  GestureName extends string,
+  Gestures extends Gesture<GestureName>,
+> = {
   /**
    * The root DOM element to which the PointerManager will attach its event listeners.
    * All gesture detection will be limited to events within this element.
@@ -51,24 +54,21 @@ export type GestureManagerOptions<Name extends string, Gestures extends Gesture<
  * Maps a gesture class to its event data type
  * Uses pattern matching on imported gesture types
  */
-type GestureEventType<
-  T,
-  G extends T = T,
-  GN extends string = G extends Gesture<infer N> ? N : never,
-> =
-  T extends PanGesture<GN>
+type GestureEventType<T> =
+  T extends PanGesture<infer GN>
     ? StatefulKeyToEventMap<GN, PanEvent>
-    : T extends PinchGesture<GN>
+    : T extends PinchGesture<infer GN>
       ? StatefulKeyToEventMap<GN, PinchEvent>
-      : T extends RotateGesture<GN>
+      : T extends RotateGesture<infer GN>
         ? StatefulKeyToEventMap<GN, RotateEvent>
-        : T extends TapGesture<GN>
+        : T extends TapGesture<infer GN>
           ? Record<GN, TapEvent>
-          : T extends MoveGesture<GN>
+          : T extends MoveGesture<infer GN>
             ? StatefulKeyToEventMap<GN, MoveEvent>
-            : T extends TurnWheelGesture<GN>
+            : T extends TurnWheelGesture<infer GN>
               ? Record<GN, TurnWheelEvent>
               : never;
+
 
 /**
  * Enhanced HTML element type with strongly-typed gesture event handlers.
@@ -285,6 +285,7 @@ export class GestureManager<
   public yolo(): GestureUnion {
     return {} as GestureUnion;
   }
+
   public yolo2(): GestureEventType<GestureUnion> {
     return {} as GestureEventType<GestureUnion>;
   }
