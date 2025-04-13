@@ -54,20 +54,31 @@ export type GestureManagerOptions<
  * Maps a gesture class to its event data type
  * Uses pattern matching on imported gesture types
  */
-type GestureEventType<T> =
-  T extends PanGesture<infer GN>
-    ? StatefulKeyToEventMap<GN, PanEvent>
-    : T extends PinchGesture<infer GN>
-      ? StatefulKeyToEventMap<GN, PinchEvent>
-      : T extends RotateGesture<infer GN>
-        ? StatefulKeyToEventMap<GN, RotateEvent>
-        : T extends TapGesture<infer GN>
-          ? Record<GN, TapEvent>
-          : T extends MoveGesture<infer GN>
-            ? StatefulKeyToEventMap<GN, MoveEvent>
-            : T extends TurnWheelGesture<infer GN>
-              ? Record<GN, TurnWheelEvent>
-              : never;
+type GestureEventType<T, GNU> = MergeUnions<
+  T extends Gesture<infer GN>
+    ? GN extends GNU
+      ? T extends PanGesture<infer GN>
+        ? StatefulKeyToEventMap<GN, PanEvent>
+        : T extends PinchGesture<infer GN>
+          ? StatefulKeyToEventMap<GN, PinchEvent>
+          : T extends RotateGesture<infer GN>
+            ? StatefulKeyToEventMap<GN, RotateEvent>
+            : T extends TapGesture<infer GN>
+              ? Record<GN, TapEvent>
+              : T extends MoveGesture<infer GN>
+                ? StatefulKeyToEventMap<GN, MoveEvent>
+                : T extends TurnWheelGesture<infer GN>
+                  ? Record<GN, TurnWheelEvent>
+                  : never
+      : never
+    : never
+>;
+
+type AllKeys<T> = T extends unknown ? keyof T : never;
+type AddMissingProps<T, K extends PropertyKey = AllKeys<T>> = T extends unknown
+  ? T & Record<Exclude<K, keyof T>, never>
+  : never;
+type MergeUnions<T> = { [K in keyof AddMissingProps<T>]: AddMissingProps<T>[K] };
 
 /**
  * Enhanced HTML element type with strongly-typed gesture event handlers.
@@ -101,12 +112,13 @@ type GestureEventType<T> =
  */
 export type GestureElement<
   T extends HTMLElement = HTMLElement,
-  EventMap = Record<string, unknown>,
+  GNU extends string = string,
+  GesturesUnion = Gesture<string>,
 > = Omit<T, 'addEventListener' | 'removeEventListener'> & {
-  addEventListener<K extends keyof EventMap>(
+  addEventListener<K extends GNU>(
     type: K,
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    listener: (this: HTMLElement, ev: EventMap[K]) => any,
+    listener: (this: HTMLElement, ev: GestureEventType<GesturesUnion, GNU>[K]) => any,
     options?: boolean | AddEventListenerOptions
   ): void;
   addEventListener<K extends keyof HTMLElementEventMap>(
@@ -120,10 +132,10 @@ export type GestureElement<
     listener: EventListenerOrEventListenerObject,
     options?: boolean | AddEventListenerOptions
   ): void;
-  removeEventListener<K extends keyof EventMap>(
+  removeEventListener<K extends GNU>(
     type: K,
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    listener: (this: HTMLElement, ev: EventMap[K]) => any,
+    listener: (this: HTMLElement, ev: GestureEventType<GesturesUnion, GNU>[K]) => any,
     options?: boolean | EventListenerOptions
   ): void;
   removeEventListener<K extends keyof HTMLElementEventMap>(
@@ -265,28 +277,32 @@ export class GestureManager<
     gestureNames: GNU | GNU[],
     element: T,
     options?: Partial<Record<GNU, Record<string, unknown>>>
-  ): GestureElement<T, GestureEventType<GestureUnion>> {
+  ): GestureElement<T, GNU, GestureEventType<GestureUnion, GNU>> {
     // Handle array of gesture names
     if (Array.isArray(gestureNames)) {
       gestureNames.forEach(name => {
         const gestureOptions = options?.[name];
         this._registerSingleGesture(name, element, gestureOptions);
       });
-      return element as GestureElement<T, GestureEventType<GestureUnion>>;
+      return element as GestureElement<T, GNU, GestureEventType<GestureUnion, GNU>>;
     }
 
     // Handle single gesture name
     const gestureOptions = options?.[gestureNames];
     this._registerSingleGesture(gestureNames, element, gestureOptions);
-    return element as GestureElement<T, GestureEventType<GestureUnion>>;
+    return element as GestureElement<T, GNU, GestureEventType<GestureUnion, GNU>>;
   }
 
   public yolo(): GestureUnion {
     return {} as GestureUnion;
   }
 
-  public yolo2(): GestureEventType<GestureUnion> {
-    return {} as GestureEventType<GestureUnion>;
+  public yolo2(): GestureEventType<GestureUnion, GestureNameUnion> {
+    return {} as GestureEventType<GestureUnion, GestureNameUnion>;
+  }
+
+  public yolo3(): GestureNameUnion {
+    return {} as GestureNameUnion;
   }
 
   /**
