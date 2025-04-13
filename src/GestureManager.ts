@@ -261,10 +261,10 @@ export class GestureManager<
    * );
    * ```
    */
-  public registerElement<T extends HTMLElement>(
-    gestureNames: GestureNameUnion | GestureNameUnion[],
+  public registerElement<T extends HTMLElement, GNU extends GestureNameUnion>(
+    gestureNames: GNU | GNU[],
     element: T,
-    options?: Partial<Record<GestureNameUnion, Record<string, unknown>>>
+    options?: Partial<Record<GNU, Record<string, unknown>>>
   ): GestureElement<T, GestureEventType<GestureUnion>> {
     // Handle array of gesture names
     if (Array.isArray(gestureNames)) {
