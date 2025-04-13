@@ -47,6 +47,13 @@ export type TurnWheelGestureOptions = GestureOptions & {
    * @default 0
    */
   initialDelta?: number;
+
+  /**
+   * Invert the direction of delta changes
+   * When true, reverses the sign of deltaX, deltaY, and deltaZ values
+   * @default false
+   */
+  invert?: boolean;
 };
 
 /**
@@ -138,6 +145,12 @@ export class TurnWheelGesture extends Gesture {
   private initialDelta: number;
 
   /**
+   * Whether to invert the direction of delta changes
+   * When true, reverses the sign of deltaX, deltaY, and deltaZ values
+   */
+  private invert: boolean;
+
+  /**
    * Creates a new TurnWheelGesture instance
    * @param options Configuration options for the gesture
    */
@@ -147,6 +160,7 @@ export class TurnWheelGesture extends Gesture {
     this.max = options.max ?? Number.MAX_SAFE_INTEGER;
     this.min = options.min ?? Number.MIN_SAFE_INTEGER;
     this.initialDelta = options.initialDelta ?? 0;
+    this.invert = options.invert ?? false;
   }
 
   /**
@@ -161,6 +175,7 @@ export class TurnWheelGesture extends Gesture {
       max: this.max,
       min: this.min,
       initialDelta: this.initialDelta,
+      invert: this.invert,
     });
   }
 
@@ -224,9 +239,9 @@ export class TurnWheelGesture extends Gesture {
     const wheelState = this.state;
 
     // Update total deltas with scaled values
-    wheelState.totalDeltaX += event.deltaX * this.scale;
-    wheelState.totalDeltaY += event.deltaY * this.scale;
-    wheelState.totalDeltaZ += event.deltaZ * this.scale;
+    wheelState.totalDeltaX += event.deltaX * this.scale * (this.invert ? 1 : -1);
+    wheelState.totalDeltaY += event.deltaY * this.scale * (this.invert ? 1 : -1);
+    wheelState.totalDeltaZ += event.deltaZ * this.scale * (this.invert ? 1 : -1);
 
     // Apply proper min/max clamping for each axis
     // Ensure values stay between min and max bounds
@@ -268,9 +283,9 @@ export class TurnWheelGesture extends Gesture {
       state: 'ongoing', // Wheel events are always in "ongoing" state
       pointers,
       timeStamp: event.timeStamp,
-      deltaX: event.deltaX * this.scale,
-      deltaY: event.deltaY * this.scale,
-      deltaZ: event.deltaZ * this.scale,
+      deltaX: event.deltaX * this.scale * (this.invert ? 1 : -1),
+      deltaY: event.deltaY * this.scale * (this.invert ? 1 : -1),
+      deltaZ: event.deltaZ * this.scale * (this.invert ? 1 : -1),
       deltaMode: event.deltaMode,
       totalDeltaX: wheelState.totalDeltaX,
       totalDeltaY: wheelState.totalDeltaY,
