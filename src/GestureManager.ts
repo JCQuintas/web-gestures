@@ -51,7 +51,11 @@ export type GestureManagerOptions<Name extends string, Gestures extends Gesture<
  * Maps a gesture class to its event data type
  * Uses pattern matching on imported gesture types
  */
-type GestureEventType<GN extends string, T extends Gesture<GN>> =
+type GestureEventType<
+  T,
+  G extends T = T,
+  GN extends string = G extends Gesture<infer N> ? N : never,
+> =
   T extends PanGesture<GN>
     ? StatefulKeyToEventMap<GN, PanEvent>
     : T extends PinchGesture<GN>
@@ -183,6 +187,7 @@ export class GestureManager<
   GestureName extends string,
   Gestures extends Gesture<GestureName>,
   GestureUnion extends Gesture<GestureName> = Gestures[][number],
+  GestureNameUnion extends string = GestureUnion extends Gesture<infer N> ? N : never,
 > {
   /** Repository of gesture templates that can be cloned for specific elements */
   private gestureTemplates: Map<string, Gesture<string>> = new Map();
@@ -258,30 +263,30 @@ export class GestureManager<
    * ```
    */
   public registerElement<T extends HTMLElement>(
-    gestureNames: GestureName | GestureName[],
+    gestureNames: GestureNameUnion | GestureNameUnion[],
     element: T,
     options?: Record<string, Record<string, unknown>>
-  ): GestureElement<T, GestureEventType<GestureName, Gestures>> {
+  ): GestureElement<T, GestureEventType<GestureUnion>> {
     // Handle array of gesture names
     if (Array.isArray(gestureNames)) {
       gestureNames.forEach(name => {
         const gestureOptions = options?.[name];
         this._registerSingleGesture(name, element, gestureOptions);
       });
-      return element as GestureElement<T, GestureEventType<GestureName, Gestures>>;
+      return element as GestureElement<T, GestureEventType<GestureUnion>>;
     }
 
     // Handle single gesture name
     const gestureOptions = options?.[gestureNames];
     this._registerSingleGesture(gestureNames, element, gestureOptions);
-    return element as GestureElement<T, GestureEventType<GestureName, Gestures>>;
+    return element as GestureElement<T, GestureEventType<GestureUnion>>;
   }
 
   public yolo(): GestureUnion {
     return {} as GestureUnion;
   }
-  public yolo2(): GestureEventType<GestureName, Gestures> {
-    return {} as GestureEventType<GestureName, Gestures>;
+  public yolo2(): GestureEventType<GestureUnion> {
+    return {} as GestureEventType<GestureUnion>;
   }
 
   /**
