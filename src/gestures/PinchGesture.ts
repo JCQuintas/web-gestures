@@ -73,7 +73,15 @@ export class PinchGesture extends PointerGesture {
    * Map of elements to their specific pinch gesture state
    * Tracks distances, scale, and velocity for each element
    */
-  private pinchEmitters = new Map<HTMLElement, PinchGestureState>();
+  private state: PinchGestureState = {
+    active: false,
+    startDistance: 0,
+    lastDistance: 0,
+    lastScale: 1,
+    lastTime: 0,
+    velocity: 0,
+    totalScale: 1,
+  };
 
   /**
    * Creates a new PinchGesture instance
@@ -105,7 +113,7 @@ export class PinchGesture extends PointerGesture {
   ): ReturnType<typeof PointerGesture.prototype.createEmitter> {
     const emitter = super.createEmitter(element);
 
-    this.pinchEmitters.set(element, {
+    this.state = {
       active: false,
       startDistance: 0,
       lastDistance: 0,
@@ -113,7 +121,7 @@ export class PinchGesture extends PointerGesture {
       lastTime: 0,
       velocity: 0,
       totalScale: 1,
-    });
+    };
 
     return emitter;
   }
@@ -122,7 +130,15 @@ export class PinchGesture extends PointerGesture {
    * Override removeEmitter to clean up pinch-specific state
    */
   protected removeEmitter(element: HTMLElement): void {
-    this.pinchEmitters.delete(element);
+    this.state = {
+      active: false,
+      startDistance: 0,
+      lastDistance: 0,
+      lastScale: 1,
+      lastTime: 0,
+      velocity: 0,
+      totalScale: 1,
+    };
     super.removeEmitter(element);
   }
 
@@ -138,9 +154,9 @@ export class PinchGesture extends PointerGesture {
 
     // Get element-specific states
     const emitterState = this.getEmitterState(targetElement);
-    const pinchState = this.pinchEmitters.get(targetElement);
+    const pinchState = this.state;
 
-    if (!emitterState || !pinchState) return;
+    if (!emitterState) return;
 
     // Filter pointers to only include those targeting our element or its children
     const relevantPointers = pointersArray.filter(
@@ -277,8 +293,7 @@ export class PinchGesture extends PointerGesture {
     pointers: PointerData[],
     event: PointerEvent
   ): void {
-    const pinchState = this.pinchEmitters.get(element);
-    if (!pinchState) return;
+    const pinchState = this.state;
 
     // Calculate current centroid
     const centroid = calculateCentroid(pointers);
@@ -327,20 +342,18 @@ export class PinchGesture extends PointerGesture {
    */
   private reset(element: HTMLElement): void {
     const emitterState = this.getEmitterState(element);
-    const pinchState = this.pinchEmitters.get(element);
+    const pinchState = this.state;
 
     if (emitterState) {
       emitterState.active = false;
       emitterState.startPointers.clear();
     }
 
-    if (pinchState) {
-      pinchState.active = false;
-      pinchState.startDistance = 0;
-      pinchState.lastDistance = 0;
-      pinchState.lastScale = 1;
-      pinchState.velocity = 0;
-      // Don't reset totalScale as it should persist between gestures
-    }
+    pinchState.active = false;
+    pinchState.startDistance = 0;
+    pinchState.lastDistance = 0;
+    pinchState.lastScale = 1;
+    pinchState.velocity = 0;
+    // Don't reset totalScale as it should persist between gestures
   }
 }

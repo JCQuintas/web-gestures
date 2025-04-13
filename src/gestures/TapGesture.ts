@@ -52,7 +52,7 @@ export type TapEvent = CustomEvent<TapGestureEventData>;
 /**
  * State tracking for a specific emitter element
  */
-export type EmitterState = {
+export type TapGestureState = {
   /** Whether the tap gesture is currently active for this element */
   active: boolean;
   /** Map of pointer IDs to their initial state when the gesture began */
@@ -87,7 +87,14 @@ export class TapGesture extends PointerGesture {
   /**
    * Map of elements to their specific tap gesture state
    */
-  private tapEmitters = new Map<HTMLElement, EmitterState>();
+  private state: TapGestureState = {
+    active: false,
+    startPointers: new Map(),
+    startCentroid: null,
+    currentTapCount: 0,
+    lastTapTime: 0,
+    lastPosition: null,
+  };
 
   /**
    * Creates a new TapGesture instance
@@ -121,14 +128,14 @@ export class TapGesture extends PointerGesture {
   public createEmitter(element: HTMLElement) {
     const emitter = super.createEmitter(element);
 
-    this.tapEmitters.set(element, {
+    this.state = {
       active: false,
       startPointers: new Map(),
       startCentroid: null,
       currentTapCount: 0,
       lastTapTime: 0,
       lastPosition: null,
-    });
+    };
 
     return emitter;
   }
@@ -137,7 +144,14 @@ export class TapGesture extends PointerGesture {
    * Override removeEmitter to clean up tap-specific state
    */
   protected removeEmitter(element: HTMLElement): void {
-    this.tapEmitters.delete(element);
+    this.state = {
+      active: false,
+      startPointers: new Map(),
+      startCentroid: null,
+      currentTapCount: 0,
+      lastTapTime: 0,
+      lastPosition: null,
+    };
     super.removeEmitter(element);
   }
 
@@ -153,9 +167,9 @@ export class TapGesture extends PointerGesture {
 
     // Get element-specific states
     const emitterState = this.getEmitterState(targetElement);
-    const tapState = this.tapEmitters.get(targetElement);
+    const tapState = this.state;
 
-    if (!emitterState || !tapState) return;
+    if (!emitterState) return;
 
     // Filter pointers to only include those targeting our element or its children
     const relevantPointers = pointersArray.filter(
@@ -265,9 +279,7 @@ export class TapGesture extends PointerGesture {
     event: PointerEvent,
     position: { x: number; y: number }
   ): void {
-    const tapState = this.tapEmitters.get(element);
-
-    if (!tapState) return;
+    const tapState = this.state;
 
     // Create custom event data for the tap event
     const customEventData: TapGestureEventData = {
@@ -305,9 +317,9 @@ export class TapGesture extends PointerGesture {
    * Cancel the current tap gesture
    */
   private cancelTap(element: HTMLElement, pointers: PointerData[], event: PointerEvent): void {
-    const tapState = this.tapEmitters.get(element);
+    const tapState = this.state;
 
-    if (tapState?.startCentroid || tapState?.lastPosition) {
+    if (tapState.startCentroid || tapState.lastPosition) {
       const position = tapState.lastPosition || tapState.startCentroid;
 
       // Create custom event data for the cancel event
@@ -342,18 +354,16 @@ export class TapGesture extends PointerGesture {
    */
   private resetTapState(element: HTMLElement): void {
     const emitterState = this.getEmitterState(element);
-    const tapState = this.tapEmitters.get(element);
+    const tapState = this.state;
 
     if (emitterState) {
       emitterState.active = false;
       emitterState.startPointers.clear();
     }
 
-    if (tapState) {
-      tapState.startCentroid = null;
-      tapState.lastPosition = null;
-      tapState.currentTapCount = 0;
-      tapState.lastTapTime = 0;
-    }
+    tapState.startCentroid = null;
+    tapState.lastPosition = null;
+    tapState.currentTapCount = 0;
+    tapState.lastTapTime = 0;
   }
 }

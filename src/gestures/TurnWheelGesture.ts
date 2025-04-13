@@ -106,7 +106,12 @@ export class TurnWheelGesture extends Gesture {
    * Map of elements to their specific wheel gesture state
    * Stores the wheel event handler for each element
    */
-  private wheelEmitters = new Map<HTMLElement, TurnWheelGestureState>();
+  private state: TurnWheelGestureState = {
+    wheelHandler: () => {},
+    totalDeltaX: 0,
+    totalDeltaY: 0,
+    totalDeltaZ: 0,
+  };
 
   /**
    * Scaling factor for delta values
@@ -174,12 +179,12 @@ export class TurnWheelGesture extends Gesture {
     element.addEventListener('wheel', wheelHandler);
 
     // Add wheel-specific state
-    this.wheelEmitters.set(element, {
+    this.state = {
       wheelHandler,
       totalDeltaX: this.initialDelta,
       totalDeltaY: this.initialDelta,
       totalDeltaZ: this.initialDelta,
-    });
+    };
 
     return emitter;
   }
@@ -189,15 +194,18 @@ export class TurnWheelGesture extends Gesture {
    * @param element The element to remove the wheel event listener from
    */
   protected removeEmitter(element: HTMLElement): void {
-    const wheelState = this.wheelEmitters.get(element);
+    const wheelState = this.state;
 
-    if (wheelState) {
-      // Remove the element-specific event listener
-      element.removeEventListener('wheel', wheelState.wheelHandler);
+    // Remove the element-specific event listener
+    element.removeEventListener('wheel', wheelState.wheelHandler);
 
-      // Remove the wheel state
-      this.wheelEmitters.delete(element);
-    }
+    // Remove the wheel state
+    this.state = {
+      wheelHandler: () => {},
+      totalDeltaX: 0,
+      totalDeltaY: 0,
+      totalDeltaZ: 0,
+    };
 
     super.removeEmitter(element);
   }
@@ -213,27 +221,26 @@ export class TurnWheelGesture extends Gesture {
     const pointersArray = Array.from(pointers.values());
 
     // Update the accumulated deltas
-    const wheelState = this.wheelEmitters.get(element);
-    if (wheelState) {
-      // Update total deltas with scaled values
-      wheelState.totalDeltaX += event.deltaX * this.scale;
-      wheelState.totalDeltaY += event.deltaY * this.scale;
-      wheelState.totalDeltaZ += event.deltaZ * this.scale;
+    const wheelState = this.state;
 
-      // Apply proper min/max clamping for each axis
-      // Ensure values stay between min and max bounds
-      (['totalDeltaX', 'totalDeltaY', 'totalDeltaZ'] as const).forEach(axis => {
-        // First clamp at the minimum bound
-        if (wheelState[axis] < this.min) {
-          wheelState[axis] = this.min;
-        }
+    // Update total deltas with scaled values
+    wheelState.totalDeltaX += event.deltaX * this.scale;
+    wheelState.totalDeltaY += event.deltaY * this.scale;
+    wheelState.totalDeltaZ += event.deltaZ * this.scale;
 
-        // Then clamp at the maximum bound
-        if (wheelState[axis] > this.max) {
-          wheelState[axis] = this.max;
-        }
-      });
-    }
+    // Apply proper min/max clamping for each axis
+    // Ensure values stay between min and max bounds
+    (['totalDeltaX', 'totalDeltaY', 'totalDeltaZ'] as const).forEach(axis => {
+      // First clamp at the minimum bound
+      if (wheelState[axis] < this.min) {
+        wheelState[axis] = this.min;
+      }
+
+      // Then clamp at the maximum bound
+      if (wheelState[axis] > this.max) {
+        wheelState[axis] = this.max;
+      }
+    });
 
     // Emit the wheel event
     this.emitWheelEvent(element, pointersArray, event);
@@ -251,8 +258,7 @@ export class TurnWheelGesture extends Gesture {
       pointers.length > 0 ? calculateCentroid(pointers) : { x: event.clientX, y: event.clientY };
 
     // Get the wheel state for this element
-    const wheelState = this.wheelEmitters.get(element);
-    if (!wheelState) return;
+    const wheelState = this.state;
 
     // Create custom event data
     const customEventData: TurnWheelGestureEventData = {

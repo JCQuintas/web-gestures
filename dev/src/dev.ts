@@ -46,7 +46,7 @@ const gestureManager = new GestureManager<{
     new TurnWheelGesture({
       name: 'roll',
       preventDefault: true, // Prevent default scroll behavior
-      sensitivity: 0.1,
+      sensitivity: 0.01,
       min: 0.5,
       max: 3,
       initialDelta: 1,

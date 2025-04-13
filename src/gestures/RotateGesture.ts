@@ -73,7 +73,15 @@ export class RotateGesture extends PointerGesture {
    * Map of elements to their specific rotate gesture state
    * Tracks angles, rotation, and velocity for each element
    */
-  private rotateEmitters = new Map<HTMLElement, RotateGestureState>();
+  private state: RotateGestureState = {
+    active: false,
+    startAngle: 0,
+    lastAngle: 0,
+    lastRotation: 0,
+    lastTime: 0,
+    velocity: 0,
+    lastDelta: 0,
+  };
 
   /**
    * Creates a new RotateGesture instance
@@ -103,7 +111,7 @@ export class RotateGesture extends PointerGesture {
   public createEmitter(element: HTMLElement) {
     const emitter = super.createEmitter(element);
 
-    this.rotateEmitters.set(element, {
+    this.state = {
       active: false,
       startAngle: 0,
       lastAngle: 0,
@@ -111,7 +119,7 @@ export class RotateGesture extends PointerGesture {
       lastTime: 0,
       velocity: 0,
       lastDelta: 0,
-    });
+    };
 
     return emitter;
   }
@@ -120,7 +128,15 @@ export class RotateGesture extends PointerGesture {
    * Override removeEmitter to clean up rotate-specific state
    */
   protected removeEmitter(element: HTMLElement): void {
-    this.rotateEmitters.delete(element);
+    this.state = {
+      active: false,
+      startAngle: 0,
+      lastAngle: 0,
+      lastRotation: 0,
+      lastTime: 0,
+      velocity: 0,
+      lastDelta: 0,
+    };
     super.removeEmitter(element);
   }
 
@@ -136,9 +152,9 @@ export class RotateGesture extends PointerGesture {
 
     // Get element-specific states
     const emitterState = this.getEmitterState(targetElement);
-    const rotateState = this.rotateEmitters.get(targetElement);
+    const rotateState = this.state;
 
-    if (!emitterState || !rotateState) return;
+    if (!emitterState) return;
 
     // Filter pointers to only include those targeting our element or its children
     const relevantPointers = pointersArray.filter(
@@ -268,8 +284,7 @@ export class RotateGesture extends PointerGesture {
     pointers: PointerData[],
     event: PointerEvent
   ): void {
-    const rotateState = this.rotateEmitters.get(element);
-    if (!rotateState) return;
+    const rotateState = this.state;
 
     // Calculate current centroid
     const centroid = calculateCentroid(pointers);
@@ -328,21 +343,19 @@ export class RotateGesture extends PointerGesture {
    */
   private reset(element: HTMLElement): void {
     const emitterState = this.getEmitterState(element);
-    const rotateState = this.rotateEmitters.get(element);
+    const rotateState = this.state;
 
     if (emitterState) {
       emitterState.active = false;
       emitterState.startPointers.clear();
     }
 
-    if (rotateState) {
-      rotateState.active = false;
-      rotateState.startAngle = 0;
-      rotateState.lastAngle = 0;
-      rotateState.velocity = 0;
-      rotateState.lastDelta = 0;
-      // lastRotation is always set to the accumulated rotation
-      // so we don't reset it here
-    }
+    rotateState.active = false;
+    rotateState.startAngle = 0;
+    rotateState.lastAngle = 0;
+    rotateState.velocity = 0;
+    rotateState.lastDelta = 0;
+    // lastRotation is always set to the accumulated rotation
+    // so we don't reset it here
   }
 }

@@ -56,7 +56,10 @@ export class MoveGesture extends PointerGesture {
    * Map of elements to their specific move gesture state
    * Tracks active status and last known pointer position for each element
    */
-  private moveEmitters = new Map<HTMLElement, MoveGestureState>();
+  private state: MoveGestureState = {
+    active: false,
+    lastPosition: null,
+  };
 
   /**
    * Creates a new MoveGesture instance
@@ -89,10 +92,10 @@ export class MoveGesture extends PointerGesture {
   public createEmitter(element: HTMLElement) {
     const emitter = super.createEmitter(element);
 
-    this.moveEmitters.set(element, {
+    this.state = {
       active: false,
       lastPosition: null,
-    });
+    };
 
     // Add event listeners for entering and leaving elements
     // These are different from pointer events handled by PointerManager
@@ -109,7 +112,10 @@ export class MoveGesture extends PointerGesture {
   protected removeEmitter(element: HTMLElement): void {
     element.removeEventListener('pointerenter', this.handleElementEnter.bind(this, element));
     element.removeEventListener('pointerleave', this.handleElementLeave.bind(this, element));
-    this.moveEmitters.delete(element);
+    this.state = {
+      active: false,
+      lastPosition: null,
+    };
     super.removeEmitter(element);
   }
 
@@ -119,8 +125,7 @@ export class MoveGesture extends PointerGesture {
    * @param event The original pointer event
    */
   private handleElementEnter(element: HTMLElement, event: PointerEvent): void {
-    const moveState = this.moveEmitters.get(element);
-    if (!moveState) return;
+    const moveState = this.state;
 
     // Get pointers from the PointerManager
     const pointers = this.pointerManager?.getPointers() || new Map();
@@ -143,8 +148,8 @@ export class MoveGesture extends PointerGesture {
    * @param event The original pointer event
    */
   private handleElementLeave(element: HTMLElement, event: PointerEvent): void {
-    const moveState = this.moveEmitters.get(element);
-    if (!moveState || !moveState.active) return;
+    const moveState = this.state;
+    if (!moveState.active) return;
 
     // Get pointers from the PointerManager
     const pointers = this.pointerManager?.getPointers() || new Map();
@@ -170,9 +175,9 @@ export class MoveGesture extends PointerGesture {
     if (!targetElement) return;
 
     // Get element-specific state
-    const moveState = this.moveEmitters.get(targetElement);
+    const moveState = this.state;
 
-    if (!moveState || !moveState.active) return;
+    if (!moveState.active) return;
 
     // Make sure we're still within pointer count constraints
     if (pointersArray.length < this.minPointers || pointersArray.length > this.maxPointers) {
@@ -200,8 +205,7 @@ export class MoveGesture extends PointerGesture {
     pointers: PointerData[],
     event: PointerEvent
   ): void {
-    const moveState = this.moveEmitters.get(element);
-    if (!moveState) return;
+    const moveState = this.state;
 
     const currentPosition = moveState.lastPosition || calculateCentroid(pointers);
 
@@ -234,16 +238,14 @@ export class MoveGesture extends PointerGesture {
    */
   private reset(element: HTMLElement): void {
     const emitterState = this.getEmitterState(element);
-    const moveState = this.moveEmitters.get(element);
+    const moveState = this.state;
 
     if (emitterState) {
       emitterState.active = false;
       emitterState.startPointers.clear();
     }
 
-    if (moveState) {
-      moveState.active = false;
-      moveState.lastPosition = null;
-    }
+    moveState.active = false;
+    moveState.lastPosition = null;
   }
 }
