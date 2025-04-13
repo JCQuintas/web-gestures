@@ -95,7 +95,7 @@ export class TapGesture extends PointerGesture {
     this.taps = options.taps ?? 1;
   }
 
-  public clone(): TapGesture {
+  public clone(overrides?: Record<string, unknown>): TapGesture {
     return new TapGesture({
       name: this.name,
       preventDefault: this.preventDefault,
@@ -105,6 +105,8 @@ export class TapGesture extends PointerGesture {
       maxPointers: this.maxPointers,
       maxDistance: this.maxDistance,
       taps: this.taps,
+      // Apply any overrides passed to the method
+      ...overrides,
     });
   }
 

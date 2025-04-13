@@ -101,7 +101,7 @@ export class PanGesture extends PointerGesture {
     this.direction = options.direction || ['up', 'down', 'left', 'right'];
   }
 
-  public clone(): PanGesture {
+  public clone(overrides?: Record<string, unknown>): PanGesture {
     return new PanGesture({
       name: this.name,
       preventDefault: this.preventDefault,
@@ -110,6 +110,8 @@ export class PanGesture extends PointerGesture {
       minPointers: this.minPointers,
       maxPointers: this.maxPointers,
       direction: [...this.direction],
+      // Apply any overrides passed to the method
+      ...overrides,
     });
   }
 

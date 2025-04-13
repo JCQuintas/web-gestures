@@ -82,10 +82,11 @@ export type GestureState = {
  *     super(options);
  *   }
  *
- *   clone() {
+ *   clone(overrides) {
  *     return new CustomGesture({
  *       name: this.name,
  *       // ... other options
+ *       ...overrides,
  *     });
  *   }
  * }
@@ -139,9 +140,10 @@ export abstract class Gesture {
   /**
    * Create a deep clone of this gesture for a new element
    *
-   * @returns A new instance of this gesture with the same configuration
+   * @param overrides - Optional configuration options that override the defaults
+   * @returns A new instance of this gesture with the same configuration and any overrides applied
    */
-  public abstract clone(): Gesture;
+  public abstract clone(overrides?: Record<string, unknown>): Gesture;
 
   /**
    * Register this gesture with the pointer manager

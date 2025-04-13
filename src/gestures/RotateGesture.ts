@@ -82,7 +82,7 @@ export class RotateGesture extends PointerGesture {
     super(options);
   }
 
-  public clone(): RotateGesture {
+  public clone(overrides?: Record<string, unknown>): RotateGesture {
     return new RotateGesture({
       name: this.name,
       preventDefault: this.preventDefault,
@@ -90,6 +90,8 @@ export class RotateGesture extends PointerGesture {
       threshold: this.threshold,
       minPointers: this.minPointers,
       maxPointers: this.maxPointers,
+      // Apply any overrides passed to the method
+      ...overrides,
     });
   }
 

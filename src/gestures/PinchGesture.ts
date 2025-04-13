@@ -82,7 +82,7 @@ export class PinchGesture extends PointerGesture {
     super(options);
   }
 
-  public clone(): PinchGesture {
+  public clone(overrides?: Record<string, unknown>): PinchGesture {
     return new PinchGesture({
       name: this.name,
       preventDefault: this.preventDefault,
@@ -90,6 +90,8 @@ export class PinchGesture extends PointerGesture {
       threshold: this.threshold,
       minPointers: this.minPointers,
       maxPointers: this.maxPointers,
+      // Apply any overrides passed to the method
+      ...overrides,
     });
   }
 

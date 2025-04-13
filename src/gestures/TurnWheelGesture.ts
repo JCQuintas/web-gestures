@@ -158,7 +158,7 @@ export class TurnWheelGesture extends Gesture {
     this.state.totalDeltaZ = this.initialDelta;
   }
 
-  public clone(): TurnWheelGesture {
+  public clone(overrides?: Record<string, unknown>): TurnWheelGesture {
     return new TurnWheelGesture({
       name: this.name,
       preventDefault: this.preventDefault,
@@ -168,6 +168,8 @@ export class TurnWheelGesture extends Gesture {
       min: this.min,
       initialDelta: this.initialDelta,
       invert: this.invert,
+      // Apply any overrides passed to the method
+      ...overrides,
     });
   }
 

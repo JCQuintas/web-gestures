@@ -56,10 +56,11 @@ export interface PointerGestureOptions extends GestureOptions {
  *     super(options);
  *   }
  *
- *   clone() {
+ *   clone(overrides) {
  *     return new CustomGesture({
  *       name: this.name,
  *       // ... other options
+ *       ...overrides,
  *     });
  *   }
  *

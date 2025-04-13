@@ -270,6 +270,7 @@ export class GestureManager<CustomEventMap = DefaultGestureEventMap> {
    *
    * @param gestureNames - Name(s) of the gesture(s) to register (must match template names)
    * @param element - The DOM element to attach the gesture(s) to
+   * @param options - Optional map of gesture-specific options to override when registering
    * @returns The same element with properly typed event listeners
    *
    * @example
@@ -279,22 +280,35 @@ export class GestureManager<CustomEventMap = DefaultGestureEventMap> {
    *
    * // Register a single gesture
    * const draggable = manager.registerElement('pan', dragHandle);
+   *
+   * // Register with customized options for each gesture
+   * const customElement = manager.registerElement(
+   *   ['pan', 'pinch', 'rotate'],
+   *   myElement,
+   *   {
+   *     pan: { threshold: 20, direction: ['left', 'right'] },
+   *     pinch: { threshold: 0.1 }
+   *   }
+   * );
    * ```
    */
   public registerElement<T extends HTMLElement>(
     gestureNames: string | string[],
-    element: T
+    element: T,
+    options?: Record<string, Record<string, unknown>>
   ): GestureElement<T, CustomEventMap> {
     // Handle array of gesture names
     if (Array.isArray(gestureNames)) {
       gestureNames.forEach(name => {
-        this._registerSingleGesture(name, element);
+        const gestureOptions = options?.[name];
+        this._registerSingleGesture(name, element, gestureOptions);
       });
       return element as GestureElement<T, CustomEventMap>;
     }
 
     // Handle single gesture name
-    this._registerSingleGesture(gestureNames, element);
+    const gestureOptions = options?.[gestureNames];
+    this._registerSingleGesture(gestureNames, element, gestureOptions);
     return element as GestureElement<T, CustomEventMap>;
   }
 
@@ -303,9 +317,14 @@ export class GestureManager<CustomEventMap = DefaultGestureEventMap> {
    *
    * @param gestureName - Name of the gesture to register
    * @param element - DOM element to attach the gesture to
+   * @param options - Optional options to override the gesture template configuration
    * @returns True if the registration was successful, false otherwise
    */
-  private _registerSingleGesture(gestureName: string, element: HTMLElement): boolean {
+  private _registerSingleGesture(
+    gestureName: string,
+    element: HTMLElement,
+    options?: Record<string, unknown>
+  ): boolean {
     // Find the gesture template
     const gestureTemplate = this.gestureTemplates.get(gestureName);
     if (!gestureTemplate) {
@@ -326,9 +345,9 @@ export class GestureManager<CustomEventMap = DefaultGestureEventMap> {
       this.unregisterElement(gestureName, element);
     }
 
-    // Clone the gesture template and create a new instance
-    // This allows each element to have its own state and event listeners
-    const gestureInstance = gestureTemplate.clone();
+    // Clone the gesture template and create a new instance with optional overrides
+    // This allows each element to have its own state, event listeners, and configuration
+    const gestureInstance = gestureTemplate.clone(options);
     gestureInstance.init();
     gestureInstance.setTargetElement(element);
 

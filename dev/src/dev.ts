@@ -76,7 +76,9 @@ const target = gestureManager.registerElement(
   gestureTarget
 );
 
-const target2 = gestureManager.registerElement(['pan', 'pinch', 'rotate', 'roll'], gestureTarget2);
+const target2 = gestureManager.registerElement(['pan', 'pinch', 'rotate', 'roll'], gestureTarget2, {
+  roll: { max: 10, min: 0.1 },
+});
 
 // Set up event listeners
 target.addEventListener('panStart', event => {
