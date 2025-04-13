@@ -7,7 +7,7 @@ import { PointerData } from './PointerManager';
  * These options provide fine-grained control over how pointer events are interpreted
  * and when the gesture should be recognized.
  */
-export interface PointerGestureOptions extends GestureOptions {
+export interface PointerGestureOptions<Name extends string> extends GestureOptions<Name> {
   /**
    * Minimum number of pointers required to activate the gesture.
    * The gesture will not start until at least this many pointers are active.
@@ -70,7 +70,7 @@ export interface PointerGestureOptions extends GestureOptions {
  * }
  * ```
  */
-export abstract class PointerGesture extends Gesture {
+export abstract class PointerGesture<Name extends string> extends Gesture<Name> {
   /** Function to unregister from the PointerManager when destroying this gesture */
   protected unregisterHandler: (() => void) | null = null;
 
@@ -92,7 +92,7 @@ export abstract class PointerGesture extends Gesture {
    */
   protected threshold: number;
 
-  constructor(options: PointerGestureOptions) {
+  constructor(options: PointerGestureOptions<Name>) {
     super(options);
     this.minPointers = options.minPointers ?? 1;
     this.maxPointers = options.maxPointers ?? Infinity;

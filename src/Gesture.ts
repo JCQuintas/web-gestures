@@ -36,9 +36,9 @@ export type GestureEventData = {
 /**
  * Configuration options for creating a gesture instance.
  */
-export type GestureOptions = {
+export type GestureOptions<Name extends string> = {
   /** Unique name identifying this gesture type */
-  name: string;
+  name: Name;
   /** Whether to prevent default browser action for gesture events */
   preventDefault?: boolean;
   /** Whether to stop propagation of gesture events */
@@ -92,9 +92,9 @@ export type GestureState = {
  * }
  * ```
  */
-export abstract class Gesture {
+export abstract class Gesture<Name extends string> {
   /** Unique name identifying this gesture type */
-  public name: string;
+  public readonly name: Name;
 
   /** Whether to prevent default browser action for gesture events */
   protected preventDefault: boolean;
@@ -121,7 +121,7 @@ export abstract class Gesture {
    *
    * @param options - Configuration options for this gesture
    */
-  constructor(options: GestureOptions) {
+  constructor(options: GestureOptions<Name>) {
     this.name = options.name;
     this.preventDefault = options.preventDefault ?? false;
     this.stopPropagation = options.stopPropagation ?? false;
@@ -143,7 +143,7 @@ export abstract class Gesture {
    * @param overrides - Optional configuration options that override the defaults
    * @returns A new instance of this gesture with the same configuration and any overrides applied
    */
-  public abstract clone(overrides?: Record<string, unknown>): Gesture;
+  public abstract clone(overrides?: Record<string, unknown>): Gesture<Name>;
 
   /**
    * Register this gesture with the pointer manager

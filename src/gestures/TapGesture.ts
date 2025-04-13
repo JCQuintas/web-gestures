@@ -15,7 +15,7 @@ import { calculateCentroid, createEventName } from '../utils';
  * Configuration options for TapGesture
  * Extends PointerGestureOptions with tap-specific settings
  */
-export type TapGestureOptions = PointerGestureOptions & {
+export type TapGestureOptions<Name extends string> = PointerGestureOptions<Name> & {
   /**
    * Maximum distance in pixels a pointer can move for the gesture to still be considered a tap
    * @default 10
@@ -69,7 +69,7 @@ export type TapGestureState = GestureState & {
  * This gesture detects when users tap on elements without significant movement,
  * and can recognize single taps, double taps, or other multi-tap sequences.
  */
-export class TapGesture extends PointerGesture {
+export class TapGesture<Name extends string> extends PointerGesture<Name> {
   protected state: TapGestureState = {
     active: false,
     startPointers: new Map(),
@@ -89,13 +89,13 @@ export class TapGesture extends PointerGesture {
    */
   private taps: number;
 
-  constructor(options: TapGestureOptions) {
+  constructor(options: TapGestureOptions<Name>) {
     super(options);
     this.maxDistance = options.maxDistance ?? 10;
     this.taps = options.taps ?? 1;
   }
 
-  public clone(overrides?: Record<string, unknown>): TapGesture {
+  public clone(overrides?: Record<string, unknown>): TapGesture<Name> {
     return new TapGesture({
       name: this.name,
       preventDefault: this.preventDefault,

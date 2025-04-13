@@ -16,7 +16,7 @@ import { calculateCentroid, createEventName } from '../utils';
  * Configuration options for the TurnWheelGesture
  * Uses the base gesture options with additional wheel-specific options
  */
-export type TurnWheelGestureOptions = GestureOptions & {
+export type TurnWheelGestureOptions<Name extends string> = GestureOptions<Name> & {
   /**
    * Sensitivity of the wheel gesture
    * Values > 1 increase sensitivity, values < 1 decrease sensitivity
@@ -106,7 +106,7 @@ export type TurnWheelGestureState = GestureState & {
  * and dispatches corresponding scroll events with delta information.
  * Unlike most gestures, it extends directly from Gesture rather than PointerGesture.
  */
-export class TurnWheelGesture extends Gesture {
+export class TurnWheelGesture<Name extends string> extends Gesture<Name> {
   protected state: TurnWheelGestureState = {
     active: false,
     startPointers: new Map(),
@@ -145,7 +145,7 @@ export class TurnWheelGesture extends Gesture {
    */
   private invert: boolean;
 
-  constructor(options: TurnWheelGestureOptions) {
+  constructor(options: TurnWheelGestureOptions<Name>) {
     super(options);
     this.scale = options.sensitivity ?? 1;
     this.max = options.max ?? Number.MAX_SAFE_INTEGER;
@@ -158,7 +158,7 @@ export class TurnWheelGesture extends Gesture {
     this.state.totalDeltaZ = this.initialDelta;
   }
 
-  public clone(overrides?: Record<string, unknown>): TurnWheelGesture {
+  public clone(overrides?: Record<string, unknown>): TurnWheelGesture<Name> {
     return new TurnWheelGesture({
       name: this.name,
       preventDefault: this.preventDefault,

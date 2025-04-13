@@ -18,7 +18,7 @@ import { calculateCentroid, calculateRotationAngle, createEventName } from '../u
  * Configuration options for the RotateGesture
  * Uses the same options as the base PointerGesture
  */
-export type RotateGestureOptions = PointerGestureOptions;
+export type RotateGestureOptions<Name extends string> = PointerGestureOptions<Name>;
 
 /**
  * Event data specific to rotate gesture events
@@ -66,7 +66,7 @@ export type RotateGestureState = GestureState & {
  * This gesture detects when users rotate multiple pointers around a central point,
  * and dispatches rotation-related events with angle and angular velocity information.
  */
-export class RotateGesture extends PointerGesture {
+export class RotateGesture<Name extends string> extends PointerGesture<Name> {
   protected state: RotateGestureState = {
     active: false,
     startPointers: new Map(),
@@ -78,11 +78,11 @@ export class RotateGesture extends PointerGesture {
     lastDelta: 0,
   };
 
-  constructor(options: RotateGestureOptions) {
+  constructor(options: RotateGestureOptions<Name>) {
     super(options);
   }
 
-  public clone(overrides?: Record<string, unknown>): RotateGesture {
+  public clone(overrides?: Record<string, unknown>): RotateGesture<Name> {
     return new RotateGesture({
       name: this.name,
       preventDefault: this.preventDefault,

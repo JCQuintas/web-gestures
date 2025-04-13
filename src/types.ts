@@ -39,6 +39,15 @@ export type StatefulEventMap<T> = {
   [K in keyof T as StatefulKeys<string & K>]: T[K];
 };
 
+/**
+ * StatefulKeyToEventMap is a utility type that maps each key of a given
+ * string type to a specific event type. It is used to create a mapping
+ * between gesture states and their corresponding event types.
+ */
+export type StatefulKeyToEventMap<Key extends string, Event> = {
+  [K in StatefulKeys<Key>]: Event;
+};
+
 export type InternalEvent = PointerEvent & {
   forceReset: boolean;
 };

@@ -19,7 +19,7 @@ import { calculateCentroid, createEventName } from '../utils';
  * Configuration options for the MoveGesture
  * Extends the base PointerGestureOptions
  */
-export type MoveGestureOptions = PointerGestureOptions;
+export type MoveGestureOptions<Name extends string> = PointerGestureOptions<Name>;
 
 /**
  * Event data specific to move gesture events
@@ -49,18 +49,18 @@ export type MoveGestureState = GestureState & {
  * This gesture detects when pointers enter, move within, or leave target elements,
  * and dispatches corresponding custom events.
  */
-export class MoveGesture extends PointerGesture {
+export class MoveGesture<Name extends string> extends PointerGesture<Name> {
   protected state: MoveGestureState = {
     active: false,
     lastPosition: null,
     startPointers: new Map(),
   };
 
-  constructor(options: MoveGestureOptions) {
+  constructor(options: MoveGestureOptions<Name>) {
     super(options);
   }
 
-  public clone(overrides?: Record<string, unknown>): MoveGesture {
+  public clone(overrides?: Record<string, unknown>): MoveGesture<Name> {
     return new MoveGesture({
       name: this.name,
       preventDefault: this.preventDefault,

@@ -19,7 +19,7 @@ import { calculateCentroid, createEventName, getDirection, isDirectionAllowed } 
  * Configuration options for PanGesture
  * Extends PointerGestureOptions with direction constraints
  */
-export type PanGestureOptions = PointerGestureOptions & {
+export type PanGestureOptions<Name extends string> = PointerGestureOptions<Name> & {
   /**
    * Optional array of allowed directions for the pan gesture
    * If not specified, all directions are allowed
@@ -79,7 +79,7 @@ export type PanGestureState = GestureState & {
  * This gesture detects when users drag across elements with one or more pointers,
  * and dispatches directional movement events with delta and velocity information.
  */
-export class PanGesture extends PointerGesture {
+export class PanGesture<Name extends string> extends PointerGesture<Name> {
   protected state: PanGestureState = {
     active: false,
     startPointers: new Map(),
@@ -96,12 +96,12 @@ export class PanGesture extends PointerGesture {
    */
   private direction: Array<'up' | 'down' | 'left' | 'right'>;
 
-  constructor(options: PanGestureOptions) {
+  constructor(options: PanGestureOptions<Name>) {
     super(options);
     this.direction = options.direction || ['up', 'down', 'left', 'right'];
   }
 
-  public clone(overrides?: Record<string, unknown>): PanGesture {
+  public clone(overrides?: Record<string, unknown>): PanGesture<Name> {
     return new PanGesture({
       name: this.name,
       preventDefault: this.preventDefault,

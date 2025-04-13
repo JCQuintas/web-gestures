@@ -1,10 +1,17 @@
+import { MoveEvent, MoveGesture } from 'src/gestures/MoveGesture';
+import { PanEvent, PanGesture } from 'src/gestures/PanGesture';
+import { PinchEvent, PinchGesture } from 'src/gestures/PinchGesture';
+import { RotateEvent, RotateGesture } from 'src/gestures/RotateGesture';
+import { TapEvent, TapGesture } from 'src/gestures/TapGesture';
+import { TurnWheelEvent, TurnWheelGesture } from 'src/gestures/TurnWheelGesture';
+import { StatefulKeyToEventMap } from 'src/types';
 import { Gesture } from './Gesture';
 import { PointerManager } from './PointerManager';
 
 /**
  * Configuration options for initializing the GestureManager
  */
-export type GestureManagerOptions = {
+export type GestureManagerOptions<Name extends string, Gestures extends Gesture<Name>> = {
   /**
    * The root DOM element to which the PointerManager will attach its event listeners.
    * All gesture detection will be limited to events within this element.
@@ -37,8 +44,27 @@ export type GestureManagerOptions = {
    * Array of gesture templates to register with the manager.
    * These serve as prototypes that can be cloned for individual elements.
    */
-  gestures?: Gesture[];
+  gestures?: Gestures[];
 };
+
+/**
+ * Maps a gesture class to its event data type
+ * Uses pattern matching on imported gesture types
+ */
+type GestureEventType<GN extends string, T extends Gesture<GN>> =
+  T extends PanGesture<GN>
+    ? StatefulKeyToEventMap<GN, PanEvent>
+    : T extends PinchGesture<GN>
+      ? StatefulKeyToEventMap<GN, PinchEvent>
+      : T extends RotateGesture<GN>
+        ? StatefulKeyToEventMap<GN, RotateEvent>
+        : T extends TapGesture<GN>
+          ? Record<GN, TapEvent>
+          : T extends MoveGesture<GN>
+            ? StatefulKeyToEventMap<GN, MoveEvent>
+            : T extends TurnWheelGesture<GN>
+              ? Record<GN, TurnWheelEvent>
+              : never;
 
 /**
  * Enhanced HTML element type with strongly-typed gesture event handlers.
@@ -48,8 +74,6 @@ export type GestureManagerOptions = {
  * custom gesture events.
  *
  * @template T - The base HTML element type
- * @template EventMap - The custom event map to use (if any)
- * @template MergedEventMap - The result of merging EventMap with DefaultGestureEventMap
  *
  * @example
  * ```typescript
@@ -155,24 +179,25 @@ export type GestureElement<
  * });
  * ```
  */
-export class GestureManager<CustomEventMap> {
-  /** The singleton PointerManager instance used for coordinating pointer events */
-  private pointerManager: PointerManager;
-
+export class GestureManager<
+  GestureName extends string,
+  Gestures extends Gesture<GestureName>,
+  GestureUnion extends Gesture<GestureName> = Gestures[][number],
+> {
   /** Repository of gesture templates that can be cloned for specific elements */
-  private gestureTemplates: Map<string, Gesture> = new Map();
+  private gestureTemplates: Map<string, Gesture<string>> = new Map();
 
   /** Maps DOM elements to their active gesture instances */
-  private elementGestureMap: Map<HTMLElement, Map<string, Gesture>> = new Map();
+  private elementGestureMap: Map<HTMLElement, Map<string, Gesture<string>>> = new Map();
 
   /**
    * Create a new GestureManager instance to coordinate gesture recognition
    *
    * @param options - Configuration options for the gesture manager
    */
-  constructor(options: GestureManagerOptions) {
+  constructor(options: GestureManagerOptions<GestureName, Gestures>) {
     // Initialize the PointerManager
-    this.pointerManager = PointerManager.getInstance({
+    PointerManager.getInstance({
       root: options.root,
       touchAction: options.touchAction,
       passive: options.passive,
@@ -192,28 +217,13 @@ export class GestureManager<CustomEventMap> {
    *
    * @param gesture - The gesture instance to use as a template
    */
-  public addGestureTemplate(gesture: Gesture): void {
+  private addGestureTemplate(gesture: Gesture<GestureName>): void {
     if (this.gestureTemplates.has(gesture.name)) {
       console.warn(
         `Gesture template with name "${gesture.name}" already exists. It will be overwritten.`
       );
     }
     this.gestureTemplates.set(gesture.name, gesture);
-  }
-
-  /**
-   * Remove a gesture template from the manager.
-   * This does not affect already created gesture instances on elements.
-   *
-   * @param gestureName - The name of the gesture template to remove
-   * @returns True if the template was found and removed, false otherwise
-   */
-  public removeGestureTemplate(gestureName: string): boolean {
-    if (this.gestureTemplates.has(gestureName)) {
-      this.gestureTemplates.delete(gestureName);
-      return true;
-    }
-    return false;
   }
 
   /**
@@ -248,23 +258,30 @@ export class GestureManager<CustomEventMap> {
    * ```
    */
   public registerElement<T extends HTMLElement>(
-    gestureNames: string | string[],
+    gestureNames: GestureName | GestureName[],
     element: T,
     options?: Record<string, Record<string, unknown>>
-  ): GestureElement<T, CustomEventMap> {
+  ): GestureElement<T, GestureEventType<GestureName, Gestures>> {
     // Handle array of gesture names
     if (Array.isArray(gestureNames)) {
       gestureNames.forEach(name => {
         const gestureOptions = options?.[name];
         this._registerSingleGesture(name, element, gestureOptions);
       });
-      return element as GestureElement<T, CustomEventMap>;
+      return element as GestureElement<T, GestureEventType<GestureName, Gestures>>;
     }
 
     // Handle single gesture name
     const gestureOptions = options?.[gestureNames];
     this._registerSingleGesture(gestureNames, element, gestureOptions);
-    return element as GestureElement<T, CustomEventMap>;
+    return element as GestureElement<T, GestureEventType<GestureName, Gestures>>;
+  }
+
+  public yolo(): GestureUnion {
+    return {} as GestureUnion;
+  }
+  public yolo2(): GestureEventType<GestureName, Gestures> {
+    return {} as GestureEventType<GestureName, Gestures>;
   }
 
   /**
@@ -361,17 +378,6 @@ export class GestureManager<CustomEventMap> {
   }
 
   /**
-   * Get a gesture template by name.
-   * Useful for checking gesture configuration or creating custom gesture instances.
-   *
-   * @param gestureName - The name of the gesture template to retrieve
-   * @returns The gesture template if found, undefined otherwise
-   */
-  public getGestureTemplate(gestureName: string): Gesture | undefined {
-    return this.gestureTemplates.get(gestureName);
-  }
-
-  /**
    * Clean up all gestures and event listeners.
    * Call this method when the GestureManager is no longer needed to prevent memory leaks.
    */
@@ -384,15 +390,5 @@ export class GestureManager<CustomEventMap> {
     // Clear all templates
     this.gestureTemplates.clear();
     this.elementGestureMap.clear();
-  }
-
-  /**
-   * Get the underlying PointerManager instance.
-   * This provides access to lower-level pointer event handling when needed.
-   *
-   * @returns The PointerManager singleton instance
-   */
-  public getPointerManager(): PointerManager {
-    return this.pointerManager;
   }
 }
