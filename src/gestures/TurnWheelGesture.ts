@@ -8,7 +8,7 @@
  * wheel gestures are always considered "ongoing" since they are discrete events.
  */
 
-import { Gesture, GestureEventData, GestureOptions } from '../Gesture';
+import { Gesture, GestureEventData, GestureOptions, GestureState } from '../Gesture';
 import { PointerData } from '../PointerManager';
 import { calculateCentroid, createEventName } from '../utils';
 
@@ -88,9 +88,9 @@ export type TurnWheelGestureEventData = GestureEventData & {
 export type TurnWheelEvent = CustomEvent<TurnWheelGestureEventData>;
 
 /**
- * State tracking for a specific emitter element
+ * State tracking for the TurnWheelGesture
  */
-export type TurnWheelGestureState = {
+export type TurnWheelGestureState = GestureState & {
   /** Bound event handler function for this element */
   wheelHandler: (e: WheelEvent) => void;
   /** Total accumulated horizontal delta since tracking began */
@@ -113,11 +113,13 @@ export class TurnWheelGesture extends Gesture {
    * Map of elements to their specific wheel gesture state
    * Stores the wheel event handler for each element
    */
-  private state: TurnWheelGestureState = {
+  protected state: TurnWheelGestureState = {
     wheelHandler: () => {},
     totalDeltaX: 0,
     totalDeltaY: 0,
     totalDeltaZ: 0,
+    active: false,
+    startPointers: new Map(),
   };
 
   /**
@@ -161,6 +163,10 @@ export class TurnWheelGesture extends Gesture {
     this.min = options.min ?? Number.MIN_SAFE_INTEGER;
     this.initialDelta = options.initialDelta ?? 0;
     this.invert = options.invert ?? false;
+
+    this.state.totalDeltaX = this.initialDelta;
+    this.state.totalDeltaY = this.initialDelta;
+    this.state.totalDeltaZ = this.initialDelta;
   }
 
   /**
@@ -180,12 +186,11 @@ export class TurnWheelGesture extends Gesture {
   }
 
   /**
-   * Override createEmitter to add wheel-specific state and element-specific event listeners
+   * Override setTargetElement to add wheel-specific event listeners
    * @param element The element to attach the wheel event listener to
-   * @returns The emitter for the element
    */
-  public createEmitter(element: HTMLElement) {
-    const emitter = super.createEmitter(element);
+  public setTargetElement(element: HTMLElement) {
+    const emitter = super.setTargetElement(element);
 
     // Create bound handler for this element
     const wheelHandler = this.handleWheelEvent.bind(this, element);
@@ -193,36 +198,33 @@ export class TurnWheelGesture extends Gesture {
     // Add event listener directly to the element
     element.addEventListener('wheel', wheelHandler);
 
-    // Add wheel-specific state
-    this.state = {
-      wheelHandler,
-      totalDeltaX: this.initialDelta,
-      totalDeltaY: this.initialDelta,
-      totalDeltaZ: this.initialDelta,
-    };
+    this.state.wheelHandler = wheelHandler;
 
     return emitter;
   }
 
   /**
-   * Override removeEmitter to clean up wheel-specific state and element event listeners
-   * @param element The element to remove the wheel event listener from
+   * Override destroy to clean up wheel-specific state and element event listeners
    */
-  protected removeEmitter(element: HTMLElement): void {
+  public destroy(): void {
     const wheelState = this.state;
 
     // Remove the element-specific event listener
-    element.removeEventListener('wheel', wheelState.wheelHandler);
+    this.element?.removeEventListener('wheel', wheelState.wheelHandler);
+  }
 
-    // Remove the wheel state
+  /**
+   * Override resetState to reset wheel-specific state
+   */
+  protected resetState(): void {
     this.state = {
       wheelHandler: () => {},
       totalDeltaX: 0,
       totalDeltaY: 0,
       totalDeltaZ: 0,
+      active: false,
+      startPointers: new Map(),
     };
-
-    super.removeEmitter(element);
   }
 
   /**

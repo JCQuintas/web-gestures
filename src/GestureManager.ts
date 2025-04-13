@@ -1,4 +1,4 @@
-import { Gesture, GestureEmitter } from './Gesture';
+import { Gesture } from './Gesture';
 import { PointerManager } from './PointerManager';
 import { MoveEvent } from './gestures/MoveGesture';
 import { PanEvent } from './gestures/PanGesture';
@@ -208,7 +208,7 @@ export class GestureManager<CustomEventMap = DefaultGestureEventMap> {
   private gestureTemplates: Map<string, Gesture> = new Map();
 
   /** Maps DOM elements to their active gesture instances */
-  private elementGestureMap: Map<HTMLElement, Map<string, GestureEmitter>> = new Map();
+  private elementGestureMap: Map<HTMLElement, Map<string, Gesture>> = new Map();
 
   /**
    * Create a new GestureManager instance to coordinate gesture recognition
@@ -329,10 +329,10 @@ export class GestureManager<CustomEventMap = DefaultGestureEventMap> {
     // Clone the gesture template and create an emitter for this element
     const gestureInstance = gestureTemplate.clone();
     gestureInstance.init();
-    const emitter = gestureInstance.createEmitter(element);
+    gestureInstance.setTargetElement(element);
 
     // Store the emitter in the element's gesture map
-    elementGestures.set(gestureName, emitter);
+    elementGestures.set(gestureName, gestureInstance);
 
     return true;
   }
@@ -352,8 +352,8 @@ export class GestureManager<CustomEventMap = DefaultGestureEventMap> {
     }
 
     // Call the emitter's unregister function
-    const emitter = elementGestures.get(gestureName)!;
-    emitter.unregister();
+    const gesture = elementGestures.get(gestureName)!;
+    gesture.destroy();
 
     // Remove from the map
     elementGestures.delete(gestureName);
@@ -375,9 +375,9 @@ export class GestureManager<CustomEventMap = DefaultGestureEventMap> {
   public unregisterAllGestures(element: HTMLElement): void {
     const elementGestures = this.elementGestureMap.get(element);
     if (elementGestures) {
-      // Unregister all emitters
-      for (const [_, emitter] of elementGestures) {
-        emitter.unregister();
+      // Unregister all gestures for this element
+      for (const [_, gesture] of elementGestures) {
+        gesture.destroy();
       }
 
       // Clear the map

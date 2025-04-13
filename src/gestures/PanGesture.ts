@@ -9,7 +9,7 @@
  * The gesture can be configured to recognize movement only in specific directions.
  */
 
-import { GestureEventData, GesturePhase } from '../Gesture';
+import { GestureEventData, GesturePhase, GestureState } from '../Gesture';
 import { PointerGesture, PointerGestureOptions } from '../PointerGesture';
 import { PointerData } from '../PointerManager';
 import { InternalEvent } from '../types';
@@ -60,11 +60,7 @@ export type PanEvent = CustomEvent<PanGestureEventData>;
 /**
  * State tracking for a specific emitter element
  */
-export type PanGestureState = {
-  /** Whether the pan gesture is currently active for this element */
-  active: boolean;
-  /** Map of pointer IDs to their initial state when the gesture began */
-  startPointers: Map<number, PointerData>;
+export type PanGestureState = GestureState & {
   /** The initial centroid position when the gesture began */
   startCentroid: { x: number; y: number } | null;
   /** The most recent centroid position during the gesture */
@@ -94,7 +90,7 @@ export class PanGesture extends PointerGesture {
    * Map of elements to their specific pan gesture state
    * Tracks pointers, centroids and threshold state for each element
    */
-  private state: PanGestureState = {
+  protected state: PanGestureState = {
     active: false,
     startPointers: new Map(),
     startCentroid: null,
@@ -128,29 +124,12 @@ export class PanGesture extends PointerGesture {
     });
   }
 
-  /**
-   * Override createEmitter to add pan-specific state
-   */
-  public createEmitter(element: HTMLElement) {
-    const emitter = super.createEmitter(element);
-
-    this.state = {
-      active: false,
-      startPointers: new Map(),
-      startCentroid: null,
-      lastCentroid: null,
-      movementThresholdReached: false,
-      totalDeltaX: 0,
-      totalDeltaY: 0,
-    };
-
-    return emitter;
+  public destroy(): void {
+    this.resetState();
+    super.destroy();
   }
 
-  /**
-   * Override removeEmitter to clean up pan-specific state
-   */
-  protected removeEmitter(element: HTMLElement): void {
+  protected resetState(): void {
     this.state = {
       active: false,
       startPointers: new Map(),
@@ -160,7 +139,6 @@ export class PanGesture extends PointerGesture {
       totalDeltaX: 0,
       totalDeltaY: 0,
     };
-    super.removeEmitter(element);
   }
 
   /**
@@ -168,23 +146,25 @@ export class PanGesture extends PointerGesture {
    */
   protected handlePointerEvent(pointers: Map<number, PointerData>, event: PointerEvent): void {
     // Check for our special forceReset flag to handle interrupted gestures (from contextmenu, blur)
-    if ((event as InternalEvent).forceReset) {
+    if ((event as InternalEvent).forceReset && this.element) {
       // Reset all active pan gestures when we get a force reset event
-      this.emitters.forEach((_, element) => {
-        // Cancel any active gesture with a proper cancel event
-        const panState = this.state;
-        const emitterState = this.getEmitterState(element);
+      // Cancel any active gesture with a proper cancel event
 
-        if (panState?.active || emitterState?.active) {
-          const relevantPointers = Array.from(pointers.values());
-          // Only emit if we have active state and necessary data
-          if (emitterState?.active && panState?.startCentroid && panState.lastCentroid) {
-            this.emitPanEvent(element, 'cancel', relevantPointers, event, panState.lastCentroid);
-          }
-          // Don't reset total delta values on force reset - just the active gesture state
-          this.resetActiveState(element);
+      if (this.state?.active) {
+        const relevantPointers = Array.from(pointers.values());
+        // Only emit if we have active state and necessary data
+        if (this.state?.startCentroid && this.state.lastCentroid) {
+          this.emitPanEvent(
+            this.element,
+            'cancel',
+            relevantPointers,
+            event,
+            this.state.lastCentroid
+          );
         }
-      });
+        // Don't reset total delta values on force reset - just the active gesture state
+        this.resetActiveState();
+      }
       return;
     }
 
@@ -194,12 +174,6 @@ export class PanGesture extends PointerGesture {
     const targetElement = this.getTargetElement(event);
     if (!targetElement) return;
 
-    // Get element-specific states
-    const emitterState = this.getEmitterState(targetElement);
-    const panState = this.state;
-
-    if (!emitterState) return;
-
     // Filter pointers to only include those targeting our element or its children
     const relevantPointers = pointersArray.filter(
       pointer => targetElement === pointer.target || targetElement.contains(pointer.target as Node)
@@ -207,7 +181,7 @@ export class PanGesture extends PointerGesture {
 
     // Check if we have enough pointers and not too many
     if (relevantPointers.length < this.minPointers || relevantPointers.length > this.maxPointers) {
-      if (emitterState.active) {
+      if (this.state.active) {
         // Cancel or end the gesture if it was active
         this.cancel(targetElement, relevantPointers, event);
       }
@@ -216,59 +190,59 @@ export class PanGesture extends PointerGesture {
 
     switch (event.type) {
       case 'pointerdown':
-        if (!emitterState.active && !panState.startCentroid) {
+        if (!this.state.active && !this.state.startCentroid) {
           // Store initial pointers
           relevantPointers.forEach(pointer => {
-            emitterState.startPointers.set(pointer.pointerId, pointer);
+            this.state.startPointers.set(pointer.pointerId, pointer);
           });
 
           // Calculate and store the starting centroid
-          panState.startCentroid = calculateCentroid(relevantPointers);
-          panState.lastCentroid = { ...panState.startCentroid };
+          this.state.startCentroid = calculateCentroid(relevantPointers);
+          this.state.lastCentroid = { ...this.state.startCentroid };
         }
         break;
 
       case 'pointermove':
-        if (panState.startCentroid && relevantPointers.length >= this.minPointers) {
+        if (this.state.startCentroid && relevantPointers.length >= this.minPointers) {
           // Calculate current centroid
           const currentCentroid = calculateCentroid(relevantPointers);
 
           // Calculate delta from start
-          const deltaX = currentCentroid.x - panState.startCentroid.x;
-          const deltaY = currentCentroid.y - panState.startCentroid.y;
+          const deltaX = currentCentroid.x - this.state.startCentroid.x;
+          const deltaY = currentCentroid.y - this.state.startCentroid.y;
 
           // Calculate movement distance
           const distance = Math.sqrt(deltaX * deltaX + deltaY * deltaY);
 
           // Determine movement direction
-          const moveDirection = getDirection(panState.startCentroid, currentCentroid);
+          const moveDirection = getDirection(this.state.startCentroid, currentCentroid);
 
           // Check if movement passes the threshold and is in an allowed direction
           if (
-            !panState.movementThresholdReached &&
+            !this.state.movementThresholdReached &&
             distance >= this.threshold &&
             isDirectionAllowed(moveDirection, this.direction)
           ) {
-            panState.movementThresholdReached = true;
-            emitterState.active = true;
+            this.state.movementThresholdReached = true;
+            this.state.active = true;
 
             // Emit start event
             this.emitPanEvent(targetElement, 'start', relevantPointers, event, currentCentroid);
           }
           // If we've already crossed the threshold, continue tracking
-          else if (panState.movementThresholdReached && emitterState.active) {
+          else if (this.state.movementThresholdReached && this.state.active) {
             // Calculate change in position since last move
-            const lastDeltaX = panState.lastCentroid
-              ? currentCentroid.x - panState.lastCentroid.x
+            const lastDeltaX = this.state.lastCentroid
+              ? currentCentroid.x - this.state.lastCentroid.x
               : 0;
-            const lastDeltaY = panState.lastCentroid
-              ? currentCentroid.y - panState.lastCentroid.y
+            const lastDeltaY = this.state.lastCentroid
+              ? currentCentroid.y - this.state.lastCentroid.y
               : 0;
 
             // Update total accumulated delta
-            if (panState.movementThresholdReached) {
-              panState.totalDeltaX += lastDeltaX;
-              panState.totalDeltaY += lastDeltaY;
+            if (this.state.movementThresholdReached) {
+              this.state.totalDeltaX += lastDeltaX;
+              this.state.totalDeltaY += lastDeltaY;
             }
 
             // Emit ongoing event
@@ -276,29 +250,29 @@ export class PanGesture extends PointerGesture {
           }
 
           // Update last centroid
-          panState.lastCentroid = currentCentroid;
+          this.state.lastCentroid = currentCentroid;
         }
         break;
 
       case 'pointerup':
       case 'pointercancel':
         // If the gesture was active (threshold was reached), emit end event
-        if (emitterState.active && panState.movementThresholdReached) {
+        if (this.state.active && this.state.movementThresholdReached) {
           // If all relevant pointers are gone, end the gesture
           if (
             relevantPointers.filter(p => p.type !== 'pointerup' && p.type !== 'pointercancel')
               .length === 0
           ) {
             // End the gesture
-            const currentCentroid = panState.lastCentroid || panState.startCentroid!;
+            const currentCentroid = this.state.lastCentroid || this.state.startCentroid!;
             this.emitPanEvent(targetElement, 'end', relevantPointers, event, currentCentroid);
 
             // Reset active state but keep total delta values
-            this.resetActiveState(targetElement);
+            this.resetActiveState();
           }
         } else {
           // If threshold wasn't reached (simple click), just reset active state
-          this.resetActiveState(targetElement);
+          this.resetActiveState();
         }
         break;
     }
@@ -314,20 +288,17 @@ export class PanGesture extends PointerGesture {
     event: PointerEvent,
     currentCentroid: { x: number; y: number }
   ): void {
-    const panState = this.state;
-    const emitterState = this.getEmitterState(element);
-
-    if (!panState.startCentroid || !emitterState) return;
+    if (!this.state.startCentroid) return;
 
     // Calculate deltas from start position
-    const deltaX = currentCentroid.x - panState.startCentroid.x;
-    const deltaY = currentCentroid.y - panState.startCentroid.y;
+    const deltaX = currentCentroid.x - this.state.startCentroid.x;
+    const deltaY = currentCentroid.y - this.state.startCentroid.y;
 
     // Get direction of movement
-    const direction = getDirection(panState.startCentroid, currentCentroid);
+    const direction = getDirection(this.state.startCentroid, currentCentroid);
 
     // Calculate velocity - time difference in seconds
-    const firstPointer = emitterState.startPointers.values().next().value;
+    const firstPointer = this.state.startPointers.values().next().value;
     const timeElapsed = firstPointer ? (event.timeStamp - firstPointer.timeStamp) / 1000 : 0;
     const velocityX = timeElapsed > 0 ? deltaX / timeElapsed : 0;
     const velocityY = timeElapsed > 0 ? deltaY / timeElapsed : 0;
@@ -347,8 +318,8 @@ export class PanGesture extends PointerGesture {
       velocityX,
       velocityY,
       velocity,
-      totalDeltaX: panState.totalDeltaX,
-      totalDeltaY: panState.totalDeltaY,
+      totalDeltaX: this.state.totalDeltaX,
+      totalDeltaY: this.state.totalDeltaY,
     };
 
     // Event names to trigger
@@ -368,48 +339,20 @@ export class PanGesture extends PointerGesture {
    * Cancel the current gesture
    */
   private cancel(element: HTMLElement, pointers: PointerData[], event: PointerEvent): void {
-    const emitterState = this.getEmitterState(element);
-    const panState = this.state;
-
-    if (emitterState?.active && panState.startCentroid && panState.lastCentroid) {
-      this.emitPanEvent(element, 'cancel', pointers, event, panState.lastCentroid);
+    if (this.state.active && this.state.startCentroid && this.state.lastCentroid) {
+      this.emitPanEvent(element, 'cancel', pointers, event, this.state.lastCentroid);
     }
-    this.reset(element);
-  }
-
-  /**
-   * Reset the gesture state for a specific element
-   */
-  private reset(element: HTMLElement): void {
-    const emitterState = this.getEmitterState(element);
-    const panState = this.state;
-
-    if (emitterState) {
-      emitterState.active = false;
-      emitterState.startPointers.clear();
-    }
-
-    panState.startCentroid = null;
-    panState.lastCentroid = null;
-    panState.movementThresholdReached = false;
-    panState.totalDeltaX = 0;
-    panState.totalDeltaY = 0;
+    this.resetState();
   }
 
   /**
    * Reset the active gesture state for a specific element, but keep total delta values
    */
-  private resetActiveState(element: HTMLElement): void {
-    const emitterState = this.getEmitterState(element);
-    const panState = this.state;
-
-    if (emitterState) {
-      emitterState.active = false;
-      emitterState.startPointers.clear();
-    }
-
-    panState.startCentroid = null;
-    panState.lastCentroid = null;
-    panState.movementThresholdReached = false;
+  private resetActiveState(): void {
+    this.state.active = false;
+    this.state.startPointers.clear();
+    this.state.startCentroid = null;
+    this.state.lastCentroid = null;
+    this.state.movementThresholdReached = false;
   }
 }

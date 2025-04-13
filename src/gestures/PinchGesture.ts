@@ -9,7 +9,7 @@
  * This gesture is commonly used to implement zoom functionality in touch interfaces.
  */
 
-import { GestureEventData, GesturePhase } from '../Gesture';
+import { GestureEventData, GesturePhase, GestureState } from '../Gesture';
 import { PointerGesture, PointerGestureOptions } from '../PointerGesture';
 import { PointerData } from '../PointerManager';
 import { calculateCentroid, createEventName, getDistance } from '../utils';
@@ -45,9 +45,7 @@ export type PinchEvent = CustomEvent<PinchGestureEventData>;
 /**
  * State tracking for a specific emitter element
  */
-export type PinchGestureState = {
-  /** Whether the pinch gesture is currently active for this element */
-  active: boolean;
+export type PinchGestureState = GestureState & {
   /** The initial distance between pointers when the gesture began */
   startDistance: number;
   /** The most recent distance between pointers during the gesture */
@@ -73,8 +71,9 @@ export class PinchGesture extends PointerGesture {
    * Map of elements to their specific pinch gesture state
    * Tracks distances, scale, and velocity for each element
    */
-  private state: PinchGestureState = {
+  protected state: PinchGestureState = {
     active: false,
+    startPointers: new Map(),
     startDistance: 0,
     lastDistance: 0,
     lastScale: 1,
@@ -105,33 +104,18 @@ export class PinchGesture extends PointerGesture {
     });
   }
 
-  /**
-   * Override createEmitter to add pinch-specific state
-   */
-  public createEmitter(
-    element: HTMLElement
-  ): ReturnType<typeof PointerGesture.prototype.createEmitter> {
-    const emitter = super.createEmitter(element);
-
-    this.state = {
-      active: false,
-      startDistance: 0,
-      lastDistance: 0,
-      lastScale: 1,
-      lastTime: 0,
-      velocity: 0,
-      totalScale: 1,
-    };
-
-    return emitter;
+  public destroy(): void {
+    this.resetState();
+    super.destroy();
   }
 
   /**
    * Override removeEmitter to clean up pinch-specific state
    */
-  protected removeEmitter(element: HTMLElement): void {
+  protected resetState(): void {
     this.state = {
       active: false,
+      startPointers: new Map(),
       startDistance: 0,
       lastDistance: 0,
       lastScale: 1,
@@ -139,7 +123,6 @@ export class PinchGesture extends PointerGesture {
       velocity: 0,
       totalScale: 1,
     };
-    super.removeEmitter(element);
   }
 
   /**
@@ -152,12 +135,6 @@ export class PinchGesture extends PointerGesture {
     const targetElement = this.getTargetElement(event);
     if (!targetElement) return;
 
-    // Get element-specific states
-    const emitterState = this.getEmitterState(targetElement);
-    const pinchState = this.state;
-
-    if (!emitterState) return;
-
     // Filter pointers to only include those targeting our element or its children
     const relevantPointers = pointersArray.filter(
       pointer => targetElement === pointer.target || targetElement.contains(pointer.target as Node)
@@ -165,31 +142,31 @@ export class PinchGesture extends PointerGesture {
 
     // Check if we have enough pointers for a pinch (at least 2)
     if (relevantPointers.length < this.minPointers) {
-      if (emitterState.active || pinchState.active) {
+      if (this.state.active || this.state.active) {
         // End the gesture if it was active
         this.emitPinchEvent(targetElement, 'end', relevantPointers, event);
-        this.reset(targetElement);
+        this.resetState();
       }
       return;
     }
 
     switch (event.type) {
       case 'pointerdown':
-        if (relevantPointers.length >= 2 && !emitterState.active) {
+        if (relevantPointers.length >= 2 && !this.state.active) {
           // Store initial pointers
           relevantPointers.forEach(pointer => {
-            emitterState.startPointers.set(pointer.pointerId, pointer);
+            this.state.startPointers.set(pointer.pointerId, pointer);
           });
 
           // Calculate and store the starting distance between pointers
           const initialDistance = this.calculateAverageDistance(relevantPointers);
-          pinchState.startDistance = initialDistance;
-          pinchState.lastDistance = initialDistance;
-          pinchState.lastTime = event.timeStamp;
+          this.state.startDistance = initialDistance;
+          this.state.lastDistance = initialDistance;
+          this.state.lastTime = event.timeStamp;
 
           // Mark gesture as active
-          emitterState.active = true;
-          pinchState.active = true;
+          this.state.active = true;
+          this.state.active = true;
 
           // Emit start event
           this.emitPinchEvent(targetElement, 'start', relevantPointers, event);
@@ -197,32 +174,32 @@ export class PinchGesture extends PointerGesture {
         break;
 
       case 'pointermove':
-        if (emitterState.active && pinchState.startDistance && relevantPointers.length >= 2) {
+        if (this.state.active && this.state.startDistance && relevantPointers.length >= 2) {
           // Calculate current distance between pointers
           const currentDistance = this.calculateAverageDistance(relevantPointers);
 
           // Calculate scale relative to starting distance
-          const scale = pinchState.startDistance ? currentDistance / pinchState.startDistance : 1;
+          const scale = this.state.startDistance ? currentDistance / this.state.startDistance : 1;
 
           // If this is the first move event after activation, don't modify totalScale
-          if (pinchState.lastScale !== 1) {
+          if (this.state.lastScale !== 1) {
             // Calculate the relative scale change since last event
-            const scaleChange = scale / pinchState.lastScale;
+            const scaleChange = scale / this.state.lastScale;
             // Apply this change to the total accumulated scale
-            pinchState.totalScale *= scaleChange;
+            this.state.totalScale *= scaleChange;
           }
 
           // Calculate velocity (change in scale over time)
-          const deltaTime = (event.timeStamp - pinchState.lastTime) / 1000; // convert to seconds
-          if (deltaTime > 0 && pinchState.lastDistance) {
-            const deltaDistance = currentDistance - pinchState.lastDistance;
-            pinchState.velocity = deltaDistance / deltaTime;
+          const deltaTime = (event.timeStamp - this.state.lastTime) / 1000; // convert to seconds
+          if (deltaTime > 0 && this.state.lastDistance) {
+            const deltaDistance = currentDistance - this.state.lastDistance;
+            this.state.velocity = deltaDistance / deltaTime;
           }
 
           // Update state
-          pinchState.lastDistance = currentDistance;
-          pinchState.lastScale = scale;
-          pinchState.lastTime = event.timeStamp;
+          this.state.lastDistance = currentDistance;
+          this.state.lastScale = scale;
+          this.state.lastTime = event.timeStamp;
 
           // Emit ongoing event
           this.emitPinchEvent(targetElement, 'ongoing', relevantPointers, event);
@@ -231,7 +208,7 @@ export class PinchGesture extends PointerGesture {
 
       case 'pointerup':
       case 'pointercancel':
-        if (emitterState.active) {
+        if (this.state.active) {
           const remainingPointers = relevantPointers.filter(
             p => p.type !== 'pointerup' && p.type !== 'pointercancel'
           );
@@ -246,12 +223,12 @@ export class PinchGesture extends PointerGesture {
             );
 
             // Reset state
-            this.reset(targetElement);
+            this.resetState();
           } else if (remainingPointers.length >= 2) {
             // If we still have enough pointers, update the start distance
             // to prevent jumping when a finger is lifted
             const newDistance = this.calculateAverageDistance(remainingPointers);
-            pinchState.startDistance = newDistance / pinchState.lastScale;
+            this.state.startDistance = newDistance / this.state.lastScale;
           }
         }
         break;
@@ -293,14 +270,12 @@ export class PinchGesture extends PointerGesture {
     pointers: PointerData[],
     event: PointerEvent
   ): void {
-    const pinchState = this.state;
-
     // Calculate current centroid
     const centroid = calculateCentroid(pointers);
 
     // Create custom event data
-    const distance = pinchState.lastDistance || 0;
-    const scale = pinchState.lastScale || 1;
+    const distance = this.state.lastDistance || 0;
+    const scale = this.state.lastScale || 1;
 
     const customEventData: PinchGestureEventData = {
       centroid,
@@ -310,9 +285,9 @@ export class PinchGesture extends PointerGesture {
       pointers,
       timeStamp: event.timeStamp,
       scale,
-      totalScale: pinchState.totalScale,
+      totalScale: this.state.totalScale,
       distance,
-      velocity: pinchState.velocity,
+      velocity: this.state.velocity,
     };
 
     // Handle default event behavior
@@ -335,25 +310,5 @@ export class PinchGesture extends PointerGesture {
     });
 
     element.dispatchEvent(domEvent);
-  }
-
-  /**
-   * Reset the gesture state for a specific element
-   */
-  private reset(element: HTMLElement): void {
-    const emitterState = this.getEmitterState(element);
-    const pinchState = this.state;
-
-    if (emitterState) {
-      emitterState.active = false;
-      emitterState.startPointers.clear();
-    }
-
-    pinchState.active = false;
-    pinchState.startDistance = 0;
-    pinchState.lastDistance = 0;
-    pinchState.lastScale = 1;
-    pinchState.velocity = 0;
-    // Don't reset totalScale as it should persist between gestures
   }
 }

@@ -134,6 +134,5 @@ export abstract class PointerGesture extends Gesture {
       this.unregisterHandler();
       this.unregisterHandler = null;
     }
-    super.destroy();
   }
 }

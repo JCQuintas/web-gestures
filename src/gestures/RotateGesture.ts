@@ -9,10 +9,10 @@
  * This gesture is commonly used for rotation controls in drawing or image manipulation interfaces.
  */
 
-import { GestureEventData, GesturePhase } from '../Gesture';
+import { GestureEventData, GesturePhase, GestureState } from '../Gesture';
 import { PointerGesture, PointerGestureOptions } from '../PointerGesture';
 import { PointerData } from '../PointerManager';
-import { calculateCentroid, createEventName, getAngle } from '../utils';
+import { calculateCentroid, calculateRotationAngle, createEventName } from '../utils';
 
 /**
  * Configuration options for the RotateGesture
@@ -45,9 +45,7 @@ export type RotateEvent = CustomEvent<RotateGestureEventData>;
 /**
  * State tracking for a specific emitter element
  */
-export type RotateGestureState = {
-  /** Whether the rotation gesture is currently active for this element */
-  active: boolean;
+export type RotateGestureState = GestureState & {
   /** The initial angle between pointers when the gesture began */
   startAngle: number;
   /** The most recent angle between pointers during the gesture */
@@ -73,8 +71,9 @@ export class RotateGesture extends PointerGesture {
    * Map of elements to their specific rotate gesture state
    * Tracks angles, rotation, and velocity for each element
    */
-  private state: RotateGestureState = {
+  protected state: RotateGestureState = {
     active: false,
+    startPointers: new Map(),
     startAngle: 0,
     lastAngle: 0,
     lastRotation: 0,
@@ -105,31 +104,15 @@ export class RotateGesture extends PointerGesture {
     });
   }
 
-  /**
-   * Override createEmitter to add rotate-specific state
-   */
-  public createEmitter(element: HTMLElement) {
-    const emitter = super.createEmitter(element);
-
-    this.state = {
-      active: false,
-      startAngle: 0,
-      lastAngle: 0,
-      lastRotation: 0,
-      lastTime: 0,
-      velocity: 0,
-      lastDelta: 0,
-    };
-
-    return emitter;
+  public destroy(): void {
+    this.resetState();
+    super.destroy();
   }
 
-  /**
-   * Override removeEmitter to clean up rotate-specific state
-   */
-  protected removeEmitter(element: HTMLElement): void {
+  protected resetState() {
     this.state = {
       active: false,
+      startPointers: new Map(),
       startAngle: 0,
       lastAngle: 0,
       lastRotation: 0,
@@ -137,7 +120,6 @@ export class RotateGesture extends PointerGesture {
       velocity: 0,
       lastDelta: 0,
     };
-    super.removeEmitter(element);
   }
 
   /**
@@ -150,12 +132,6 @@ export class RotateGesture extends PointerGesture {
     const targetElement = this.getTargetElement(event);
     if (!targetElement) return;
 
-    // Get element-specific states
-    const emitterState = this.getEmitterState(targetElement);
-    const rotateState = this.state;
-
-    if (!emitterState) return;
-
     // Filter pointers to only include those targeting our element or its children
     const relevantPointers = pointersArray.filter(
       pointer => targetElement === pointer.target || targetElement.contains(pointer.target as Node)
@@ -163,31 +139,31 @@ export class RotateGesture extends PointerGesture {
 
     // Check if we have enough pointers for a rotation (at least 2)
     if (relevantPointers.length < this.minPointers || relevantPointers.length > this.maxPointers) {
-      if (emitterState.active || rotateState.active) {
+      if (this.state.active || this.state.active) {
         // End the gesture if it was active
         this.emitRotateEvent(targetElement, 'end', relevantPointers, event);
-        this.reset(targetElement);
+        this.resetState();
       }
       return;
     }
 
     switch (event.type) {
       case 'pointerdown':
-        if (relevantPointers.length >= 2 && !emitterState.active) {
+        if (relevantPointers.length >= 2 && !this.state.active) {
           // Store initial pointers
           relevantPointers.forEach(pointer => {
-            emitterState.startPointers.set(pointer.pointerId, pointer);
+            this.state.startPointers.set(pointer.pointerId, pointer);
           });
 
           // Calculate and store the starting angle
-          const initialAngle = this.calculateRotationAngle(relevantPointers);
-          rotateState.startAngle = initialAngle;
-          rotateState.lastAngle = initialAngle;
-          rotateState.lastTime = event.timeStamp;
+          const initialAngle = calculateRotationAngle(relevantPointers);
+          this.state.startAngle = initialAngle;
+          this.state.lastAngle = initialAngle;
+          this.state.lastTime = event.timeStamp;
 
           // Mark gesture as active
-          emitterState.active = true;
-          rotateState.active = true;
+          this.state.active = true;
+          this.state.active = true;
 
           // Emit start event
           this.emitRotateEvent(targetElement, 'start', relevantPointers, event);
@@ -195,32 +171,32 @@ export class RotateGesture extends PointerGesture {
         break;
 
       case 'pointermove':
-        if (emitterState.active && rotateState.active && relevantPointers.length >= 2) {
+        if (this.state.active && this.state.active && relevantPointers.length >= 2) {
           // Calculate current rotation angle
-          const currentAngle = this.calculateRotationAngle(relevantPointers);
+          const currentAngle = calculateRotationAngle(relevantPointers);
 
           // Calculate rotation delta (change in angle)
-          let delta = currentAngle - rotateState.lastAngle;
+          let delta = currentAngle - this.state.lastAngle;
 
           // Adjust for angle wrapping (e.g., from 359° to 0°)
           if (delta > 180) delta -= 360;
           if (delta < -180) delta += 360;
 
           // Store the delta for use in emitRotateEvent
-          rotateState.lastDelta = delta;
+          this.state.lastDelta = delta;
 
           // Update rotation value (cumulative)
-          rotateState.lastRotation += delta;
+          this.state.lastRotation += delta;
 
           // Calculate angular velocity (degrees per second)
-          const deltaTime = (event.timeStamp - rotateState.lastTime) / 1000; // convert to seconds
+          const deltaTime = (event.timeStamp - this.state.lastTime) / 1000; // convert to seconds
           if (deltaTime > 0) {
-            rotateState.velocity = delta / deltaTime;
+            this.state.velocity = delta / deltaTime;
           }
 
           // Update state
-          rotateState.lastAngle = currentAngle;
-          rotateState.lastTime = event.timeStamp;
+          this.state.lastAngle = currentAngle;
+          this.state.lastTime = event.timeStamp;
 
           // Emit ongoing event if there's an actual rotation
           // We don't want to emit events for tiny movements that might be just noise
@@ -232,7 +208,7 @@ export class RotateGesture extends PointerGesture {
 
       case 'pointerup':
       case 'pointercancel':
-        if (emitterState.active) {
+        if (this.state.active) {
           const remainingPointers = relevantPointers.filter(
             p => p.type !== 'pointerup' && p.type !== 'pointercancel'
           );
@@ -247,32 +223,17 @@ export class RotateGesture extends PointerGesture {
             );
 
             // Reset state
-            this.reset(targetElement);
+            this.resetState();
           } else if (remainingPointers.length >= 2) {
             // If we still have enough pointers, update the start angle
             // to prevent jumping when a finger is lifted
-            const newAngle = this.calculateRotationAngle(remainingPointers);
-            rotateState.startAngle = newAngle - rotateState.lastRotation;
-            rotateState.lastAngle = newAngle;
+            const newAngle = calculateRotationAngle(remainingPointers);
+            this.state.startAngle = newAngle - this.state.lastRotation;
+            this.state.lastAngle = newAngle;
           }
         }
         break;
     }
-  }
-
-  /**
-   * Calculate the rotation angle between pointers
-   * This uses the angle between the first two pointers relative to the centroid
-   */
-  private calculateRotationAngle(pointers: PointerData[]): number {
-    if (pointers.length < 2) return 0;
-
-    // For rotation, we need exactly 2 pointers
-    // Use first two since they're most likely the primary pointers
-    const p1 = { x: pointers[0].clientX, y: pointers[0].clientY };
-    const p2 = { x: pointers[1].clientX, y: pointers[1].clientY };
-
-    return getAngle(p1, p2);
   }
 
   /**
@@ -284,13 +245,11 @@ export class RotateGesture extends PointerGesture {
     pointers: PointerData[],
     event: PointerEvent
   ): void {
-    const rotateState = this.state;
-
     // Calculate current centroid
     const centroid = calculateCentroid(pointers);
 
     // Create custom event data
-    const rotation = rotateState.lastRotation;
+    const rotation = this.state.lastRotation;
 
     // Use the stored lastDelta for move events
     let delta = 0;
@@ -300,7 +259,7 @@ export class RotateGesture extends PointerGesture {
       delta = rotation; // Total rotation for end event
     } else {
       // For move events, use the last calculated delta
-      delta = rotateState.lastDelta;
+      delta = this.state.lastDelta;
     }
 
     const customEventData: RotateGestureEventData = {
@@ -312,8 +271,8 @@ export class RotateGesture extends PointerGesture {
       timeStamp: event.timeStamp,
       rotation,
       delta,
-      totalRotation: rotateState.lastRotation,
-      velocity: rotateState.velocity,
+      totalRotation: this.state.lastRotation,
+      velocity: this.state.velocity,
     };
 
     // Handle default event behavior
@@ -336,26 +295,5 @@ export class RotateGesture extends PointerGesture {
     });
 
     element.dispatchEvent(domEvent);
-  }
-
-  /**
-   * Reset the gesture state for a specific element
-   */
-  private reset(element: HTMLElement): void {
-    const emitterState = this.getEmitterState(element);
-    const rotateState = this.state;
-
-    if (emitterState) {
-      emitterState.active = false;
-      emitterState.startPointers.clear();
-    }
-
-    rotateState.active = false;
-    rotateState.startAngle = 0;
-    rotateState.lastAngle = 0;
-    rotateState.velocity = 0;
-    rotateState.lastDelta = 0;
-    // lastRotation is always set to the accumulated rotation
-    // so we don't reset it here
   }
 }

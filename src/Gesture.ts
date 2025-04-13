@@ -54,13 +54,11 @@ export type GestureEventCallback = (
 ) => void;
 
 /**
- * An object representing a connected gesture event emitter.
+ * Type for the state of a gesture recognizer.
  */
-export type GestureEmitter = {
-  /** The DOM element this gesture is attached to */
-  element: HTMLElement;
-  /** Function to unregister this gesture from the element */
-  unregister: () => void;
+export type GestureState = {
+  active: boolean;
+  startPointers: Map<number, PointerData>;
 };
 
 /**
@@ -106,17 +104,16 @@ export abstract class Gesture {
   /** Reference to the singleton PointerManager instance */
   protected pointerManager: PointerManager | null = null;
 
+  /** The DOM element this gesture is attached to */
+  protected element: HTMLElement | null = null;
+
   /**
-   * Map of elements to their active gesture state
-   * Tracks which elements have this gesture attached and their current state
+   * Stores the active gesture state
    */
-  protected emitters = new Map<
-    HTMLElement,
-    {
-      active: boolean;
-      startPointers: Map<number, PointerData>;
-    }
-  >();
+  protected state: GestureState = {
+    active: false,
+    startPointers: new Map(),
+  };
 
   /**
    * Create a new gesture instance with the specified options
@@ -147,32 +144,10 @@ export abstract class Gesture {
   public abstract clone(): Gesture;
 
   /**
-   * Create a new emitter for this gesture on the given DOM element
-   *
-   * @param element - The DOM element to attach this gesture to
-   * @returns A gesture emitter object containing the element and an unregister method
+   * Register this gesture with the pointer manager
    */
-  public createEmitter(element: HTMLElement): GestureEmitter {
-    // Initialize the emitter state
-    this.emitters.set(element, {
-      active: false,
-      startPointers: new Map(),
-    });
-
-    // Return the emitter object
-    return {
-      element,
-      unregister: () => this.removeEmitter(element),
-    };
-  }
-
-  /**
-   * Remove an emitter and clean up its resources
-   *
-   * @param element - The DOM element whose emitter should be removed
-   */
-  protected removeEmitter(element: HTMLElement): void {
-    this.emitters.delete(element);
+  public setTargetElement(element: HTMLElement): void {
+    this.element = element;
   }
 
   /**
@@ -182,29 +157,23 @@ export abstract class Gesture {
    * @returns The matching element or null if no match is found
    */
   protected getTargetElement(event: Event): HTMLElement | null {
-    for (const [element] of this.emitters) {
-      if (element === event.target || element.contains(event.target as Node)) {
-        return element;
-      }
+    if (
+      this.element &&
+      (this.element === event.target || this.element.contains(event.target as Node))
+    ) {
+      return this.element;
     }
     return null;
   }
 
   /**
-   * Get the emitter state for a specific element
-   *
-   * @param element - The DOM element whose state to retrieve
-   * @returns The emitter state or undefined if not found
-   */
-  protected getEmitterState(element: HTMLElement) {
-    return this.emitters.get(element);
-  }
-
-  /**
-   * Clean up the gesture, unregistering any listeners and clearing state
+   * Clean up the gesture and unregister any listeners
    * Call this method when the gesture is no longer needed to prevent memory leaks
    */
-  public destroy(): void {
-    this.emitters.clear();
-  }
+  public abstract destroy(): void;
+
+  /**
+   * Reset the gesture state to its initial values
+   */
+  protected abstract resetState(): void;
 }

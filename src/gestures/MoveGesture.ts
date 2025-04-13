@@ -10,7 +10,7 @@
  * the move gesture fires automatically when pointers interact with the target element.
  */
 
-import { GestureEventData, GesturePhase } from '../Gesture';
+import { GestureEventData, GesturePhase, GestureState } from '../Gesture';
 import { PointerGesture, PointerGestureOptions } from '../PointerGesture';
 import { PointerData } from '../PointerManager';
 import { calculateCentroid, createEventName } from '../utils';
@@ -38,9 +38,7 @@ export type MoveEvent = CustomEvent<MoveGestureEventData>;
 /**
  * State tracking for a specific emitter element
  */
-export type MoveGestureState = {
-  /** Whether the move gesture is currently active for this element */
-  active: boolean;
+export type MoveGestureState = GestureState & {
   /** The last recorded pointer position for this element */
   lastPosition: { x: number; y: number } | null;
 };
@@ -56,9 +54,10 @@ export class MoveGesture extends PointerGesture {
    * Map of elements to their specific move gesture state
    * Tracks active status and last known pointer position for each element
    */
-  private state: MoveGestureState = {
+  protected state: MoveGestureState = {
     active: false,
     lastPosition: null,
+    startPointers: new Map(),
   };
 
   /**
@@ -89,13 +88,8 @@ export class MoveGesture extends PointerGesture {
    * @param element The DOM element to attach the gesture to
    * @returns The emitter object created by the parent class
    */
-  public createEmitter(element: HTMLElement) {
-    const emitter = super.createEmitter(element);
-
-    this.state = {
-      active: false,
-      lastPosition: null,
-    };
+  public setTargetElement(element: HTMLElement) {
+    const emitter = super.setTargetElement(element);
 
     // Add event listeners for entering and leaving elements
     // These are different from pointer events handled by PointerManager
@@ -106,17 +100,30 @@ export class MoveGesture extends PointerGesture {
   }
 
   /**
-   * Override removeEmitter to clean up move-specific state and element event listeners
-   * @param element The DOM element to remove the gesture from
+   * Override destroy to clean up move-specific state and element event listeners
    */
-  protected removeEmitter(element: HTMLElement): void {
-    element.removeEventListener('pointerenter', this.handleElementEnter.bind(this, element));
-    element.removeEventListener('pointerleave', this.handleElementLeave.bind(this, element));
+  public destroy(): void {
+    this.element?.removeEventListener(
+      'pointerenter',
+      this.handleElementEnter.bind(this, this.element)
+    );
+    this.element?.removeEventListener(
+      'pointerleave',
+      this.handleElementLeave.bind(this, this.element)
+    );
+    this.resetState();
+    super.destroy();
+  }
+
+  /**
+   * Override resetState to clear move-specific state
+   */
+  protected resetState(): void {
     this.state = {
       active: false,
       lastPosition: null,
+      startPointers: new Map(),
     };
-    super.removeEmitter(element);
   }
 
   /**
@@ -157,7 +164,7 @@ export class MoveGesture extends PointerGesture {
 
     // Emit end event and reset state
     this.emitMoveEvent(element, 'end', pointersArray, event);
-    this.reset(element);
+    this.resetState();
   }
 
   /**
@@ -230,22 +237,5 @@ export class MoveGesture extends PointerGesture {
     });
 
     element.dispatchEvent(domEvent);
-  }
-
-  /**
-   * Reset the gesture state for a specific element
-   * @param element The DOM element to reset the gesture state for
-   */
-  private reset(element: HTMLElement): void {
-    const emitterState = this.getEmitterState(element);
-    const moveState = this.state;
-
-    if (emitterState) {
-      emitterState.active = false;
-      emitterState.startPointers.clear();
-    }
-
-    moveState.active = false;
-    moveState.lastPosition = null;
   }
 }

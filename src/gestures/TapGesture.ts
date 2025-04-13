@@ -6,7 +6,7 @@
  * - The tap is canceled (e.g., moved too far or held too long)
  */
 
-import { GestureEventData } from '../Gesture';
+import { GestureEventData, GestureState } from '../Gesture';
 import { PointerGesture, PointerGestureOptions } from '../PointerGesture';
 import { PointerData } from '../PointerManager';
 import { calculateCentroid, createEventName } from '../utils';
@@ -52,11 +52,7 @@ export type TapEvent = CustomEvent<TapGestureEventData>;
 /**
  * State tracking for a specific emitter element
  */
-export type TapGestureState = {
-  /** Whether the tap gesture is currently active for this element */
-  active: boolean;
-  /** Map of pointer IDs to their initial state when the gesture began */
-  startPointers: Map<number, PointerData>;
+export type TapGestureState = GestureState & {
   /** The initial centroid position when the gesture began */
   startCentroid: { x: number; y: number } | null;
   /** Current count of consecutive taps */
@@ -87,7 +83,7 @@ export class TapGesture extends PointerGesture {
   /**
    * Map of elements to their specific tap gesture state
    */
-  private state: TapGestureState = {
+  protected state: TapGestureState = {
     active: false,
     startPointers: new Map(),
     startCentroid: null,
@@ -122,28 +118,12 @@ export class TapGesture extends PointerGesture {
     });
   }
 
-  /**
-   * Override createEmitter to add tap-specific state
-   */
-  public createEmitter(element: HTMLElement) {
-    const emitter = super.createEmitter(element);
-
-    this.state = {
-      active: false,
-      startPointers: new Map(),
-      startCentroid: null,
-      currentTapCount: 0,
-      lastTapTime: 0,
-      lastPosition: null,
-    };
-
-    return emitter;
+  public destroy(): void {
+    this.resetState();
+    super.destroy();
   }
 
-  /**
-   * Override removeEmitter to clean up tap-specific state
-   */
-  protected removeEmitter(element: HTMLElement): void {
+  protected resetState(): void {
     this.state = {
       active: false,
       startPointers: new Map(),
@@ -152,7 +132,6 @@ export class TapGesture extends PointerGesture {
       lastTapTime: 0,
       lastPosition: null,
     };
-    super.removeEmitter(element);
   }
 
   /**
@@ -165,12 +144,6 @@ export class TapGesture extends PointerGesture {
     const targetElement = this.getTargetElement(event);
     if (!targetElement) return;
 
-    // Get element-specific states
-    const emitterState = this.getEmitterState(targetElement);
-    const tapState = this.state;
-
-    if (!emitterState) return;
-
     // Filter pointers to only include those targeting our element or its children
     const relevantPointers = pointersArray.filter(
       pointer => targetElement === pointer.target || targetElement.contains(pointer.target as Node)
@@ -178,7 +151,7 @@ export class TapGesture extends PointerGesture {
 
     // Check if we have enough pointers and not too many
     if (relevantPointers.length < this.minPointers || relevantPointers.length > this.maxPointers) {
-      if (emitterState.active) {
+      if (this.state.active) {
         // Cancel the gesture if it was active
         this.cancelTap(targetElement, relevantPointers, event);
       }
@@ -187,28 +160,28 @@ export class TapGesture extends PointerGesture {
 
     switch (event.type) {
       case 'pointerdown':
-        if (!emitterState.active) {
+        if (!this.state.active) {
           // Store initial pointers
           relevantPointers.forEach(pointer => {
-            emitterState.startPointers.set(pointer.pointerId, pointer);
+            this.state.startPointers.set(pointer.pointerId, pointer);
           });
 
           // Calculate and store the starting centroid
-          tapState.startCentroid = calculateCentroid(relevantPointers);
-          tapState.lastPosition = { ...tapState.startCentroid };
-          emitterState.active = true;
+          this.state.startCentroid = calculateCentroid(relevantPointers);
+          this.state.lastPosition = { ...this.state.startCentroid };
+          this.state.active = true;
         }
         break;
 
       case 'pointermove':
-        if (emitterState.active && tapState.startCentroid) {
+        if (this.state.active && this.state.startCentroid) {
           // Calculate current position
           const currentPosition = calculateCentroid(relevantPointers);
-          tapState.lastPosition = currentPosition;
+          this.state.lastPosition = currentPosition;
 
           // Calculate distance from start position
-          const deltaX = currentPosition.x - tapState.startCentroid.x;
-          const deltaY = currentPosition.y - tapState.startCentroid.y;
+          const deltaX = currentPosition.x - this.state.startCentroid.x;
+          const deltaY = currentPosition.y - this.state.startCentroid.y;
           const distance = Math.sqrt(deltaX * deltaX + deltaY * deltaY);
 
           // If moved too far, cancel the tap gesture
@@ -219,44 +192,44 @@ export class TapGesture extends PointerGesture {
         break;
 
       case 'pointerup':
-        if (emitterState.active) {
+        if (this.state.active) {
           // For valid tap: increment tap count
-          tapState.currentTapCount++;
+          this.state.currentTapCount++;
 
           // Make sure we have a valid position before firing the tap event
-          const position = tapState.lastPosition || tapState.startCentroid;
+          const position = this.state.lastPosition || this.state.startCentroid;
           if (!position) {
             this.cancelTap(targetElement, relevantPointers, event);
             return;
           }
 
           // Check if we've reached the desired number of taps
-          if (tapState.currentTapCount >= this.taps) {
+          if (this.state.currentTapCount >= this.taps) {
             // The complete tap sequence has been detected - fire the tap event
             this.fireTapEvent(targetElement, relevantPointers, event, position);
 
             // Reset state after successful tap
-            this.resetTapState(targetElement);
+            this.resetState();
           } else {
             // Store the time of this tap for multi-tap detection
-            tapState.lastTapTime = event.timeStamp;
+            this.state.lastTapTime = event.timeStamp;
 
             // Reset active state but keep the tap count for multi-tap detection
-            emitterState.active = false;
-            emitterState.startPointers.clear();
+            this.state.active = false;
+            this.state.startPointers.clear();
 
             // For multi-tap detection: keep track of the last tap position
             // but clear the start centroid to prepare for next tap
-            tapState.startCentroid = null;
+            this.state.startCentroid = null;
 
             // Start a timeout to reset the tap count if the next tap doesn't come soon enough
             setTimeout(() => {
               if (
-                tapState &&
-                tapState.currentTapCount > 0 &&
-                tapState.currentTapCount < this.taps
+                this.state &&
+                this.state.currentTapCount > 0 &&
+                this.state.currentTapCount < this.taps
               ) {
-                tapState.currentTapCount = 0;
+                this.state.currentTapCount = 0;
               }
             }, 300); // 300ms is a typical double-tap detection window
           }
@@ -279,8 +252,6 @@ export class TapGesture extends PointerGesture {
     event: PointerEvent,
     position: { x: number; y: number }
   ): void {
-    const tapState = this.state;
-
     // Create custom event data for the tap event
     const customEventData: TapGestureEventData = {
       centroid: position,
@@ -291,7 +262,7 @@ export class TapGesture extends PointerGesture {
       timeStamp: event.timeStamp,
       x: position.x,
       y: position.y,
-      tapCount: tapState.currentTapCount,
+      tapCount: this.state.currentTapCount,
     };
 
     // Dispatch a single 'tap' event (not 'tapStart', 'tapEnd', etc.)
@@ -317,10 +288,8 @@ export class TapGesture extends PointerGesture {
    * Cancel the current tap gesture
    */
   private cancelTap(element: HTMLElement, pointers: PointerData[], event: PointerEvent): void {
-    const tapState = this.state;
-
-    if (tapState.startCentroid || tapState.lastPosition) {
-      const position = tapState.lastPosition || tapState.startCentroid;
+    if (this.state.startCentroid || this.state.lastPosition) {
+      const position = this.state.lastPosition || this.state.startCentroid;
 
       // Create custom event data for the cancel event
       const customEventData: TapGestureEventData = {
@@ -332,7 +301,7 @@ export class TapGesture extends PointerGesture {
         timeStamp: event.timeStamp,
         x: position!.x,
         y: position!.y,
-        tapCount: tapState.currentTapCount,
+        tapCount: this.state.currentTapCount,
       };
 
       // Dispatch a 'tapCancel' event
@@ -346,24 +315,6 @@ export class TapGesture extends PointerGesture {
       element.dispatchEvent(domEvent);
     }
 
-    this.resetTapState(element);
-  }
-
-  /**
-   * Reset the gesture state for a specific element
-   */
-  private resetTapState(element: HTMLElement): void {
-    const emitterState = this.getEmitterState(element);
-    const tapState = this.state;
-
-    if (emitterState) {
-      emitterState.active = false;
-      emitterState.startPointers.clear();
-    }
-
-    tapState.startCentroid = null;
-    tapState.lastPosition = null;
-    tapState.currentTapCount = 0;
-    tapState.lastTapTime = 0;
+    this.resetState();
   }
 }
