@@ -56,7 +56,7 @@ export type PointerManagerOptions = {
    * Root element to attach pointer event listeners to.
    * Events within this element's bounds will be tracked.
    */
-  root: HTMLElement;
+  root?: HTMLElement;
 
   /**
    * CSS touch-action property to apply to the root element.
@@ -116,7 +116,7 @@ export class PointerManager {
    * Use PointerManager.getInstance() instead.
    */
   private constructor(options: PointerManagerOptions) {
-    this.root = options.root;
+    this.root = options.root ?? document.documentElement;
     this.touchAction = options.touchAction || 'auto';
     this.passive = options.passive !== false;
 

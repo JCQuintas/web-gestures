@@ -19,7 +19,7 @@ export type GestureManagerOptions<
    * The root DOM element to which the PointerManager will attach its event listeners.
    * All gesture detection will be limited to events within this element.
    */
-  root: HTMLElement;
+  root?: HTMLElement;
 
   /**
    * CSS touch-action property to apply to the root element.
@@ -199,7 +199,7 @@ export class GestureManager<
    *
    * @param options - Configuration options for the gesture manager
    */
-  constructor(options: GestureManagerOptions<GestureName, Gestures>) {
+  constructor(options: GestureManagerOptions<GestureName, Gestures> = {}) {
     // Initialize the PointerManager
     PointerManager.getInstance({
       root: options.root,
