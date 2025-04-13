@@ -280,7 +280,7 @@ export class TurnWheelGesture extends Gesture {
       centroid,
       target: event.target,
       srcEvent: event,
-      state: 'ongoing', // Wheel events are always in "ongoing" state
+      phase: 'ongoing', // Wheel events are always in "ongoing" state
       pointers,
       timeStamp: event.timeStamp,
       deltaX: event.deltaX * this.scale * (this.invert ? 1 : -1),

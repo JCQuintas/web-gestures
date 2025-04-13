@@ -9,7 +9,7 @@
  * The gesture can be configured to recognize movement only in specific directions.
  */
 
-import { GestureEventData, GestureState } from '../Gesture';
+import { GestureEventData, GesturePhase } from '../Gesture';
 import { PointerGesture, PointerGestureOptions } from '../PointerGesture';
 import { PointerData } from '../PointerManager';
 import { InternalEvent } from '../types';
@@ -309,7 +309,7 @@ export class PanGesture extends PointerGesture {
    */
   private emitPanEvent(
     element: HTMLElement,
-    state: GestureState,
+    phase: GesturePhase,
     pointers: PointerData[],
     event: PointerEvent,
     currentCentroid: { x: number; y: number }
@@ -338,7 +338,7 @@ export class PanGesture extends PointerGesture {
       centroid: currentCentroid,
       target: event.target,
       srcEvent: event,
-      state,
+      phase: phase,
       pointers,
       timeStamp: event.timeStamp,
       deltaX,
@@ -352,7 +352,7 @@ export class PanGesture extends PointerGesture {
     };
 
     // Event names to trigger
-    const eventName = createEventName(this.name, state);
+    const eventName = createEventName(this.name, phase);
 
     // Dispatch custom events on the element
     const domEvent = new CustomEvent(eventName, {

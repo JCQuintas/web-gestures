@@ -286,7 +286,7 @@ export class TapGesture extends PointerGesture {
       centroid: position,
       target: event.target,
       srcEvent: event,
-      state: 'end', // The tap is complete, so we use 'end' state for the event data
+      phase: 'end', // The tap is complete, so we use 'end' state for the event data
       pointers,
       timeStamp: event.timeStamp,
       x: position.x,
@@ -327,7 +327,7 @@ export class TapGesture extends PointerGesture {
         centroid: position!,
         target: event.target,
         srcEvent: event,
-        state: 'cancel',
+        phase: 'cancel',
         pointers,
         timeStamp: event.timeStamp,
         x: position!.x,

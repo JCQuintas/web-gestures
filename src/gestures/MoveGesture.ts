@@ -10,7 +10,7 @@
  * the move gesture fires automatically when pointers interact with the target element.
  */
 
-import { GestureEventData, GestureState } from '../Gesture';
+import { GestureEventData, GesturePhase } from '../Gesture';
 import { PointerGesture, PointerGestureOptions } from '../PointerGesture';
 import { PointerData } from '../PointerManager';
 import { calculateCentroid, createEventName } from '../utils';
@@ -195,13 +195,13 @@ export class MoveGesture extends PointerGesture {
   /**
    * Emit move-specific events
    * @param element The DOM element the event is related to
-   * @param state The current state of the gesture (start, ongoing, end)
+   * @param phase The current phase of the gesture (start, ongoing, end)
    * @param pointers Array of active pointers
    * @param event The original pointer event
    */
   private emitMoveEvent(
     element: HTMLElement,
-    state: GestureState,
+    phase: GesturePhase,
     pointers: PointerData[],
     event: PointerEvent
   ): void {
@@ -214,13 +214,13 @@ export class MoveGesture extends PointerGesture {
       centroid: currentPosition,
       target: event.target,
       srcEvent: event,
-      state,
+      phase: phase,
       pointers,
       timeStamp: event.timeStamp,
     };
 
     // Event names to trigger
-    const eventName = createEventName(this.name, state);
+    const eventName = createEventName(this.name, phase);
 
     // Dispatch custom events on the element
     const domEvent = new CustomEvent(eventName, {

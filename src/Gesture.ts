@@ -5,14 +5,14 @@
 import { PointerData, PointerManager } from './PointerManager';
 
 /**
- * The possible states of a gesture during its lifecycle.
+ * The possible phases of a gesture during its lifecycle.
  *
  * - 'start': The gesture has been recognized and is beginning
  * - 'ongoing': The gesture is in progress (e.g., a finger is moving)
  * - 'end': The gesture has completed successfully
  * - 'cancel': The gesture was interrupted or terminated abnormally
  */
-export type GestureState = 'start' | 'ongoing' | 'end' | 'cancel';
+export type GesturePhase = 'start' | 'ongoing' | 'end' | 'cancel';
 
 /**
  * Core data structure passed to gesture event handlers.
@@ -25,8 +25,8 @@ export type GestureEventData = {
   target: EventTarget | null;
   /** The original event that triggered this gesture */
   srcEvent: Event;
-  /** The current state of the gesture */
-  state: GestureState;
+  /** The current phase of the gesture */
+  phase: GesturePhase;
   /** Array of all active pointers involved in the gesture */
   pointers: PointerData[];
   /** The time at which the gesture event occurred */

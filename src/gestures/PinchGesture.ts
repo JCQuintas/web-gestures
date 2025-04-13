@@ -9,7 +9,7 @@
  * This gesture is commonly used to implement zoom functionality in touch interfaces.
  */
 
-import { GestureEventData, GestureState } from '../Gesture';
+import { GestureEventData, GesturePhase } from '../Gesture';
 import { PointerGesture, PointerGestureOptions } from '../PointerGesture';
 import { PointerData } from '../PointerManager';
 import { calculateCentroid, createEventName, getDistance } from '../utils';
@@ -289,7 +289,7 @@ export class PinchGesture extends PointerGesture {
    */
   private emitPinchEvent(
     element: HTMLElement,
-    state: GestureState,
+    phase: GesturePhase,
     pointers: PointerData[],
     event: PointerEvent
   ): void {
@@ -306,7 +306,7 @@ export class PinchGesture extends PointerGesture {
       centroid,
       target: event.target,
       srcEvent: event,
-      state,
+      phase: phase,
       pointers,
       timeStamp: event.timeStamp,
       scale,
@@ -325,7 +325,7 @@ export class PinchGesture extends PointerGesture {
     }
 
     // Event names to trigger
-    const eventName = createEventName(this.name, state);
+    const eventName = createEventName(this.name, phase);
 
     // Dispatch custom events on the element
     const domEvent = new CustomEvent(eventName, {

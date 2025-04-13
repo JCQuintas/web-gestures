@@ -22,7 +22,7 @@ export type {
   GestureEventCallback,
   GestureEventData,
   GestureOptions,
-  GestureState,
+  GesturePhase,
 } from './Gesture';
 
 export type { PointerData, PointerManagerOptions } from './PointerManager';

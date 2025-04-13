@@ -2,7 +2,7 @@
  * Utility functions for gesture calculations
  */
 
-import { GestureState } from './Gesture';
+import { GesturePhase } from './Gesture';
 import { PointerData } from './PointerManager';
 
 /**
@@ -97,8 +97,8 @@ export function getVelocity(
 }
 
 /**
- * Creates the event name for a specific gesture and state
+ * Creates the event name for a specific gesture and phase
  */
-export function createEventName(gesture: string, state: GestureState): string {
-  return `${gesture}${state === 'ongoing' ? '' : state.charAt(0).toUpperCase() + state.slice(1)}`;
+export function createEventName(gesture: string, phase: GesturePhase): string {
+  return `${gesture}${phase === 'ongoing' ? '' : phase.charAt(0).toUpperCase() + phase.slice(1)}`;
 }

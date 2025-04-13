@@ -9,7 +9,7 @@
  * This gesture is commonly used for rotation controls in drawing or image manipulation interfaces.
  */
 
-import { GestureEventData, GestureState } from '../Gesture';
+import { GestureEventData, GesturePhase } from '../Gesture';
 import { PointerGesture, PointerGestureOptions } from '../PointerGesture';
 import { PointerData } from '../PointerManager';
 import { calculateCentroid, createEventName, getAngle } from '../utils';
@@ -280,7 +280,7 @@ export class RotateGesture extends PointerGesture {
    */
   private emitRotateEvent(
     element: HTMLElement,
-    state: GestureState,
+    phase: GesturePhase,
     pointers: PointerData[],
     event: PointerEvent
   ): void {
@@ -294,9 +294,9 @@ export class RotateGesture extends PointerGesture {
 
     // Use the stored lastDelta for move events
     let delta = 0;
-    if (state === 'start') {
+    if (phase === 'start') {
       delta = 0;
-    } else if (state === 'end') {
+    } else if (phase === 'end') {
       delta = rotation; // Total rotation for end event
     } else {
       // For move events, use the last calculated delta
@@ -307,7 +307,7 @@ export class RotateGesture extends PointerGesture {
       centroid,
       target: event.target,
       srcEvent: event,
-      state,
+      phase: phase,
       pointers,
       timeStamp: event.timeStamp,
       rotation,
@@ -326,7 +326,7 @@ export class RotateGesture extends PointerGesture {
     }
 
     // Event names to trigger
-    const eventName = createEventName(this.name, state);
+    const eventName = createEventName(this.name, phase);
 
     // Dispatch custom events on the element
     const domEvent = new CustomEvent(eventName, {
