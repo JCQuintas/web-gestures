@@ -91,8 +91,6 @@ export type TurnWheelEvent = CustomEvent<TurnWheelGestureEventData>;
  * State tracking for the TurnWheelGesture
  */
 export type TurnWheelGestureState = GestureState & {
-  /** Bound event handler function for this element */
-  wheelHandler: (e: WheelEvent) => void;
   /** Total accumulated horizontal delta since tracking began */
   totalDeltaX: number;
   /** Total accumulated vertical delta since tracking began */
@@ -114,12 +112,11 @@ export class TurnWheelGesture extends Gesture {
    * Stores the wheel event handler for each element
    */
   protected state: TurnWheelGestureState = {
-    wheelHandler: () => {},
+    active: false,
+    startPointers: new Map(),
     totalDeltaX: 0,
     totalDeltaY: 0,
     totalDeltaZ: 0,
-    active: false,
-    startPointers: new Map(),
   };
 
   /**
@@ -192,13 +189,8 @@ export class TurnWheelGesture extends Gesture {
   public setTargetElement(element: HTMLElement) {
     const emitter = super.setTargetElement(element);
 
-    // Create bound handler for this element
-    const wheelHandler = this.handleWheelEvent.bind(this, element);
-
     // Add event listener directly to the element
-    element.addEventListener('wheel', wheelHandler);
-
-    this.state.wheelHandler = wheelHandler;
+    element.addEventListener('wheel', this.handleWheelEvent.bind(this, element));
 
     return emitter;
   }
@@ -207,10 +199,9 @@ export class TurnWheelGesture extends Gesture {
    * Override destroy to clean up wheel-specific state and element event listeners
    */
   public destroy(): void {
-    const wheelState = this.state;
-
     // Remove the element-specific event listener
-    this.element?.removeEventListener('wheel', wheelState.wheelHandler);
+    this.element?.removeEventListener('wheel', this.handleWheelEvent.bind(this, this.element));
+    this.resetState();
   }
 
   /**
@@ -218,12 +209,11 @@ export class TurnWheelGesture extends Gesture {
    */
   protected resetState(): void {
     this.state = {
-      wheelHandler: () => {},
+      active: false,
+      startPointers: new Map(),
       totalDeltaX: 0,
       totalDeltaY: 0,
       totalDeltaZ: 0,
-      active: false,
-      startPointers: new Map(),
     };
   }
 
