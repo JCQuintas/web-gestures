@@ -1,12 +1,5 @@
 import { Gesture } from './Gesture';
 import { PointerManager } from './PointerManager';
-import { MoveEvent } from './gestures/MoveGesture';
-import { PanEvent } from './gestures/PanGesture';
-import { PinchEvent } from './gestures/PinchGesture';
-import { RotateEvent } from './gestures/RotateGesture';
-import { TapEvent } from './gestures/TapGesture';
-import { TurnWheelEvent } from './gestures/TurnWheelGesture';
-import { StatefulEventMap } from './types';
 
 /**
  * Configuration options for initializing the GestureManager
@@ -48,43 +41,6 @@ export type GestureManagerOptions = {
 };
 
 /**
- * Default event map including all built-in gestures with their stateful variants.
- *
- * Each gesture type (except turnWheel) has four event variants:
- * - [gesture]Start: Triggered when the gesture is first recognized
- * - [gesture]: Triggered continuously while the gesture is active
- * - [gesture]End: Triggered when the gesture completes normally
- * - [gesture]Cancel: Triggered if the gesture is interrupted or canceled
- */
-type DefaultGestureEventMap = StatefulEventMap<{
-  pan: PanEvent;
-  pinch: PinchEvent;
-  move: MoveEvent;
-  rotate: RotateEvent;
-}> & {
-  tap: TapEvent;
-  turnWheel: TurnWheelEvent;
-};
-
-/**
- * Utility type that merges a custom event map with the default event map.
- * This allows users to extend or override the default gestures with their own.
- *
- * The resulting type will contain:
- * 1. All events from the custom map T
- * 2. Default events that don't conflict with any events in T
- *
- * @template T - The custom event map to merge with the defaults
- */
-type MergeEventMap<T> = T & {
-  [K in keyof DefaultGestureEventMap as K extends keyof T
-    ? never
-    : DefaultGestureEventMap[K] extends T[keyof T]
-      ? never
-      : K]: DefaultGestureEventMap[K];
-};
-
-/**
  * Enhanced HTML element type with strongly-typed gesture event handlers.
  *
  * This type extends the standard HTMLElement with correctly typed addEventListener
@@ -118,13 +74,12 @@ type MergeEventMap<T> = T & {
  */
 export type GestureElement<
   T extends HTMLElement = HTMLElement,
-  EventMap = DefaultGestureEventMap,
-  MergedEventMap = MergeEventMap<EventMap>,
+  EventMap = Record<string, unknown>,
 > = Omit<T, 'addEventListener' | 'removeEventListener'> & {
-  addEventListener<K extends keyof MergedEventMap>(
+  addEventListener<K extends keyof EventMap>(
     type: K,
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    listener: (this: HTMLElement, ev: MergedEventMap[K]) => any,
+    listener: (this: HTMLElement, ev: EventMap[K]) => any,
     options?: boolean | AddEventListenerOptions
   ): void;
   addEventListener<K extends keyof HTMLElementEventMap>(
@@ -138,10 +93,10 @@ export type GestureElement<
     listener: EventListenerOrEventListenerObject,
     options?: boolean | AddEventListenerOptions
   ): void;
-  removeEventListener<K extends keyof MergedEventMap>(
+  removeEventListener<K extends keyof EventMap>(
     type: K,
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    listener: (this: HTMLElement, ev: MergedEventMap[K]) => any,
+    listener: (this: HTMLElement, ev: EventMap[K]) => any,
     options?: boolean | EventListenerOptions
   ): void;
   removeEventListener<K extends keyof HTMLElementEventMap>(
@@ -200,7 +155,7 @@ export type GestureElement<
  * });
  * ```
  */
-export class GestureManager<CustomEventMap = DefaultGestureEventMap> {
+export class GestureManager<CustomEventMap> {
   /** The singleton PointerManager instance used for coordinating pointer events */
   private pointerManager: PointerManager;
 

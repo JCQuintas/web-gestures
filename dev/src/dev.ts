@@ -4,18 +4,12 @@ import {
   PanGesture,
   PinchGesture,
   RotateGesture,
-  TapEvent,
   TapGesture,
-  TurnWheelEvent,
   TurnWheelGesture,
 } from '../../src';
 
 // Initialize gesture manager with templates
-const gestureManager = new GestureManager<{
-  roll: TurnWheelEvent;
-  tap: TapEvent;
-  doubleTap: TapEvent;
-}>({
+const gestureManager = new GestureManager({
   root: document.body,
   touchAction: 'none',
   gestures: [
