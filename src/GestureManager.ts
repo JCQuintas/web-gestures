@@ -69,7 +69,6 @@ type GestureEventType<T> =
               ? Record<GN, TurnWheelEvent>
               : never;
 
-
 /**
  * Enhanced HTML element type with strongly-typed gesture event handlers.
  *
@@ -265,7 +264,7 @@ export class GestureManager<
   public registerElement<T extends HTMLElement>(
     gestureNames: GestureNameUnion | GestureNameUnion[],
     element: T,
-    options?: Record<string, Record<string, unknown>>
+    options?: Partial<Record<GestureNameUnion, Record<string, unknown>>>
   ): GestureElement<T, GestureEventType<GestureUnion>> {
     // Handle array of gesture names
     if (Array.isArray(gestureNames)) {
