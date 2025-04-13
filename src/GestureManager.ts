@@ -326,12 +326,13 @@ export class GestureManager<CustomEventMap = DefaultGestureEventMap> {
       this.unregisterElement(gestureName, element);
     }
 
-    // Clone the gesture template and create an emitter for this element
+    // Clone the gesture template and create a new instance
+    // This allows each element to have its own state and event listeners
     const gestureInstance = gestureTemplate.clone();
     gestureInstance.init();
     gestureInstance.setTargetElement(element);
 
-    // Store the emitter in the element's gesture map
+    // Store the gesture in the element's gesture map
     elementGestures.set(gestureName, gestureInstance);
 
     return true;
@@ -351,7 +352,7 @@ export class GestureManager<CustomEventMap = DefaultGestureEventMap> {
       return false;
     }
 
-    // Call the emitter's unregister function
+    // Destroy the gesture instance
     const gesture = elementGestures.get(gestureName)!;
     gesture.destroy();
 

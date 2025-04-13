@@ -98,10 +98,6 @@ export abstract class PointerGesture extends Gesture {
     this.threshold = options.threshold ?? 0;
   }
 
-  /**
-   * Initialize the gesture by registering with the PointerManager singleton
-   * Must be called before the gesture can be used
-   */
   public init(): void {
     super.init();
 
@@ -123,12 +119,6 @@ export abstract class PointerGesture extends Gesture {
     event: PointerEvent
   ): void;
 
-  /**
-   * Clean up the gesture, unregistering from the PointerManager and
-   * releasing all event handlers and resources.
-   *
-   * Call this method when the gesture is no longer needed to prevent memory leaks.
-   */
   public destroy(): void {
     if (this.unregisterHandler) {
       this.unregisterHandler();

@@ -56,6 +56,32 @@ export function getDistance(
 }
 
 /**
+ * Calculate the average distance between all pairs of pointers
+ */
+export function calculateAverageDistance(pointers: PointerData[]): number {
+  if (pointers.length < 2) {
+    return 0;
+  }
+
+  let totalDistance = 0;
+  let pairCount = 0;
+
+  // Calculate distance between each pair of pointers
+  for (let i = 0; i < pointers.length; i++) {
+    for (let j = i + 1; j < pointers.length; j++) {
+      totalDistance += getDistance(
+        { x: pointers[i].clientX, y: pointers[i].clientY },
+        { x: pointers[j].clientX, y: pointers[j].clientY }
+      );
+      pairCount++;
+    }
+  }
+
+  // Return average distance
+  return pairCount > 0 ? totalDistance / pairCount : 0;
+}
+
+/**
  * Calculate the angle between two points in degrees
  */
 export function getAngle(p1: { x: number; y: number }, p2: { x: number; y: number }): number {

@@ -12,7 +12,7 @@
 import { GestureEventData, GesturePhase, GestureState } from '../Gesture';
 import { PointerGesture, PointerGestureOptions } from '../PointerGesture';
 import { PointerData } from '../PointerManager';
-import { calculateCentroid, createEventName, getDistance } from '../utils';
+import { calculateAverageDistance, calculateCentroid, createEventName } from '../utils';
 
 /**
  * Configuration options for the PinchGesture
@@ -43,7 +43,7 @@ export type PinchGestureEventData = GestureEventData & {
 export type PinchEvent = CustomEvent<PinchGestureEventData>;
 
 /**
- * State tracking for a specific emitter element
+ * State tracking for the PinchGesture
  */
 export type PinchGestureState = GestureState & {
   /** The initial distance between pointers when the gesture began */
@@ -67,10 +67,6 @@ export type PinchGestureState = GestureState & {
  * and dispatches scale-related events with distance and velocity information.
  */
 export class PinchGesture extends PointerGesture {
-  /**
-   * Map of elements to their specific pinch gesture state
-   * Tracks distances, scale, and velocity for each element
-   */
   protected state: PinchGestureState = {
     active: false,
     startPointers: new Map(),
@@ -82,17 +78,10 @@ export class PinchGesture extends PointerGesture {
     totalScale: 1,
   };
 
-  /**
-   * Creates a new PinchGesture instance
-   * @param options Configuration options for the gesture
-   */
   constructor(options: PinchGestureOptions) {
     super(options);
   }
 
-  /**
-   * Clone this gesture with the same options
-   */
   public clone(): PinchGesture {
     return new PinchGesture({
       name: this.name,
@@ -109,9 +98,6 @@ export class PinchGesture extends PointerGesture {
     super.destroy();
   }
 
-  /**
-   * Override removeEmitter to clean up pinch-specific state
-   */
   protected resetState(): void {
     this.state = {
       active: false,
@@ -159,7 +145,7 @@ export class PinchGesture extends PointerGesture {
           });
 
           // Calculate and store the starting distance between pointers
-          const initialDistance = this.calculateAverageDistance(relevantPointers);
+          const initialDistance = calculateAverageDistance(relevantPointers);
           this.state.startDistance = initialDistance;
           this.state.lastDistance = initialDistance;
           this.state.lastTime = event.timeStamp;
@@ -176,7 +162,7 @@ export class PinchGesture extends PointerGesture {
       case 'pointermove':
         if (this.state.active && this.state.startDistance && relevantPointers.length >= 2) {
           // Calculate current distance between pointers
-          const currentDistance = this.calculateAverageDistance(relevantPointers);
+          const currentDistance = calculateAverageDistance(relevantPointers);
 
           // Calculate scale relative to starting distance
           const scale = this.state.startDistance ? currentDistance / this.state.startDistance : 1;
@@ -227,38 +213,12 @@ export class PinchGesture extends PointerGesture {
           } else if (remainingPointers.length >= 2) {
             // If we still have enough pointers, update the start distance
             // to prevent jumping when a finger is lifted
-            const newDistance = this.calculateAverageDistance(remainingPointers);
+            const newDistance = calculateAverageDistance(remainingPointers);
             this.state.startDistance = newDistance / this.state.lastScale;
           }
         }
         break;
     }
-  }
-
-  /**
-   * Calculate the average distance between all pairs of pointers
-   */
-  private calculateAverageDistance(pointers: PointerData[]): number {
-    if (pointers.length < 2) {
-      return 0;
-    }
-
-    let totalDistance = 0;
-    let pairCount = 0;
-
-    // Calculate distance between each pair of pointers
-    for (let i = 0; i < pointers.length; i++) {
-      for (let j = i + 1; j < pointers.length; j++) {
-        totalDistance += getDistance(
-          { x: pointers[i].clientX, y: pointers[i].clientY },
-          { x: pointers[j].clientX, y: pointers[j].clientY }
-        );
-        pairCount++;
-      }
-    }
-
-    // Return average distance
-    return pairCount > 0 ? totalDistance / pairCount : 0;
   }
 
   /**

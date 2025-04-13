@@ -58,7 +58,7 @@ export type PanGestureEventData = GestureEventData & {
 export type PanEvent = CustomEvent<PanGestureEventData>;
 
 /**
- * State tracking for a specific emitter element
+ * State tracking for the PanGesture
  */
 export type PanGestureState = GestureState & {
   /** The initial centroid position when the gesture began */
@@ -80,16 +80,6 @@ export type PanGestureState = GestureState & {
  * and dispatches directional movement events with delta and velocity information.
  */
 export class PanGesture extends PointerGesture {
-  /**
-   * Allowed directions for the pan gesture
-   * Default allows all directions
-   */
-  private direction: Array<'up' | 'down' | 'left' | 'right'>;
-
-  /**
-   * Map of elements to their specific pan gesture state
-   * Tracks pointers, centroids and threshold state for each element
-   */
   protected state: PanGestureState = {
     active: false,
     startPointers: new Map(),
@@ -101,17 +91,16 @@ export class PanGesture extends PointerGesture {
   };
 
   /**
-   * Creates a new PanGesture instance
-   * @param options Configuration options for the gesture, including direction constraints
+   * Allowed directions for the pan gesture
+   * Default allows all directions
    */
+  private direction: Array<'up' | 'down' | 'left' | 'right'>;
+
   constructor(options: PanGestureOptions) {
     super(options);
     this.direction = options.direction || ['up', 'down', 'left', 'right'];
   }
 
-  /**
-   * Clone this gesture with the same options
-   */
   public clone(): PanGesture {
     return new PanGesture({
       name: this.name,

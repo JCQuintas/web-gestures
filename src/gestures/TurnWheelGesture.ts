@@ -107,10 +107,6 @@ export type TurnWheelGestureState = GestureState & {
  * Unlike most gestures, it extends directly from Gesture rather than PointerGesture.
  */
 export class TurnWheelGesture extends Gesture {
-  /**
-   * Map of elements to their specific wheel gesture state
-   * Stores the wheel event handler for each element
-   */
   protected state: TurnWheelGestureState = {
     active: false,
     startPointers: new Map(),
@@ -149,10 +145,6 @@ export class TurnWheelGesture extends Gesture {
    */
   private invert: boolean;
 
-  /**
-   * Creates a new TurnWheelGesture instance
-   * @param options Configuration options for the gesture
-   */
   constructor(options: TurnWheelGestureOptions) {
     super(options);
     this.scale = options.sensitivity ?? 1;
@@ -166,9 +158,6 @@ export class TurnWheelGesture extends Gesture {
     this.state.totalDeltaZ = this.initialDelta;
   }
 
-  /**
-   * Clone this gesture with the same options
-   */
   public clone(): TurnWheelGesture {
     return new TurnWheelGesture({
       name: this.name,
@@ -182,31 +171,19 @@ export class TurnWheelGesture extends Gesture {
     });
   }
 
-  /**
-   * Override setTargetElement to add wheel-specific event listeners
-   * @param element The element to attach the wheel event listener to
-   */
   public setTargetElement(element: HTMLElement) {
-    const emitter = super.setTargetElement(element);
+    super.setTargetElement(element);
 
     // Add event listener directly to the element
     element.addEventListener('wheel', this.handleWheelEvent.bind(this, element));
-
-    return emitter;
   }
 
-  /**
-   * Override destroy to clean up wheel-specific state and element event listeners
-   */
   public destroy(): void {
     // Remove the element-specific event listener
     this.element?.removeEventListener('wheel', this.handleWheelEvent.bind(this, this.element));
     this.resetState();
   }
 
-  /**
-   * Override resetState to reset wheel-specific state
-   */
   protected resetState(): void {
     this.state = {
       active: false,

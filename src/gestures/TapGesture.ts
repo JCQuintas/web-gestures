@@ -50,7 +50,7 @@ export type TapGestureEventData = GestureEventData & {
 export type TapEvent = CustomEvent<TapGestureEventData>;
 
 /**
- * State tracking for a specific emitter element
+ * State tracking for the TapGesture
  */
 export type TapGestureState = GestureState & {
   /** The initial centroid position when the gesture began */
@@ -70,19 +70,6 @@ export type TapGestureState = GestureState & {
  * and can recognize single taps, double taps, or other multi-tap sequences.
  */
 export class TapGesture extends PointerGesture {
-  /**
-   * Maximum distance a pointer can move for a gesture to still be considered a tap
-   */
-  private maxDistance: number;
-
-  /**
-   * Number of consecutive taps to detect
-   */
-  private taps: number;
-
-  /**
-   * Map of elements to their specific tap gesture state
-   */
   protected state: TapGestureState = {
     active: false,
     startPointers: new Map(),
@@ -93,18 +80,21 @@ export class TapGesture extends PointerGesture {
   };
 
   /**
-   * Creates a new TapGesture instance
-   * @param options Configuration options for the gesture
+   * Maximum distance a pointer can move for a gesture to still be considered a tap
    */
+  private maxDistance: number;
+
+  /**
+   * Number of consecutive taps to detect
+   */
+  private taps: number;
+
   constructor(options: TapGestureOptions) {
     super(options);
     this.maxDistance = options.maxDistance ?? 10;
     this.taps = options.taps ?? 1;
   }
 
-  /**
-   * Clone this gesture with the same options
-   */
   public clone(): TapGesture {
     return new TapGesture({
       name: this.name,

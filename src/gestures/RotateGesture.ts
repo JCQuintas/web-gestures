@@ -43,7 +43,7 @@ export type RotateGestureEventData = GestureEventData & {
 export type RotateEvent = CustomEvent<RotateGestureEventData>;
 
 /**
- * State tracking for a specific emitter element
+ * State tracking for the RotateGesture
  */
 export type RotateGestureState = GestureState & {
   /** The initial angle between pointers when the gesture began */
@@ -67,10 +67,6 @@ export type RotateGestureState = GestureState & {
  * and dispatches rotation-related events with angle and angular velocity information.
  */
 export class RotateGesture extends PointerGesture {
-  /**
-   * Map of elements to their specific rotate gesture state
-   * Tracks angles, rotation, and velocity for each element
-   */
   protected state: RotateGestureState = {
     active: false,
     startPointers: new Map(),
@@ -82,17 +78,10 @@ export class RotateGesture extends PointerGesture {
     lastDelta: 0,
   };
 
-  /**
-   * Creates a new RotateGesture instance
-   * @param options Configuration options for the gesture
-   */
   constructor(options: RotateGestureOptions) {
     super(options);
   }
 
-  /**
-   * Clone this gesture with the same options
-   */
   public clone(): RotateGesture {
     return new RotateGesture({
       name: this.name,
