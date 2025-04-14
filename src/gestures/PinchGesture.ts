@@ -78,6 +78,10 @@ export class PinchGesture<Name extends string> extends PointerGesture<Name> {
     totalScale: 1,
   };
 
+  protected readonly isSinglePhase = false as const;
+  protected readonly eventType: PinchEvent = {} as PinchEvent;
+  protected readonly optionsType: PinchGestureOptions<Name> = {} as PinchGestureOptions<Name>;
+
   constructor(options: PinchGestureOptions<Name>) {
     super(options);
   }

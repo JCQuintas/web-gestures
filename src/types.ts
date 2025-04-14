@@ -8,7 +8,7 @@
  *
  * @template T - The base event name as a string literal type
  */
-type StatefulKeys<T extends string> = `${T}Start` | T | `${T}End` | `${T}Cancel`;
+export type StatefulKeys<T extends string> = `${T}Start` | T | `${T}End` | `${T}Cancel`;
 
 /**
  * StatefulEventMap transforms an object type by expanding each of its keys into
@@ -48,6 +48,34 @@ export type StatefulKeyToEventMap<Key extends string, Event> = {
   [K in StatefulKeys<Key>]: Event;
 };
 
+/**
+ * Used to create an internal event to trigger force reset on the pointer manager.
+ */
 export type InternalEvent = PointerEvent & {
   forceReset: boolean;
 };
+
+/**
+ * MergeUnions is a utility type that merges all union types into a single type.
+ * It ensures that all properties from the union types are included in the resulting type.
+ * This is useful for creating a comprehensive type that captures all possible
+ * variations of a given type.
+ *
+ * @template T - The union type to be merged
+ *
+ * @example
+ * ```typescript
+ * type UnionType = { a: number } | { b: string };
+ * type MergedType = MergeUnions<UnionType>;
+ * // Results in:
+ * // {
+ * //   a: number;
+ * //   b: string;
+ * // }
+ * ```
+ */
+export type MergeUnions<T> = { [K in keyof AddMissingProps<T>]: AddMissingProps<T>[K] };
+type AllKeys<T> = T extends unknown ? keyof T : never;
+type AddMissingProps<T, K extends PropertyKey = AllKeys<T>> = T extends unknown
+  ? T & Record<Exclude<K, keyof T>, never>
+  : never;

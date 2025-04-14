@@ -90,6 +90,10 @@ export class PanGesture<Name extends string> extends PointerGesture<Name> {
     totalDeltaY: 0,
   };
 
+  protected readonly isSinglePhase = false as const;
+  protected readonly eventType: PanEvent = {} as PanEvent;
+  protected readonly optionsType: PanGestureOptions<Name> = {} as PanGestureOptions<Name>;
+
   /**
    * Allowed directions for the pan gesture
    * Default allows all directions

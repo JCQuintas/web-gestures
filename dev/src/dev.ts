@@ -56,13 +56,6 @@ const gestureManager = new GestureManager({
   ],
 });
 
-const _a = gestureManager.yolo();
-const _b = gestureManager.yolo2();
-const _c = gestureManager.yolo3();
-console.log(_b.yolo);
-console.log(_a.name === 'yolo');
-console.log(_c === 'yolo');
-
 // DOM Elements
 const gestureTarget = document.getElementById('gesture-target') as HTMLDivElement;
 const gestureTarget2 = document.getElementById('gesture-target2') as HTMLDivElement;
@@ -73,7 +66,7 @@ const resetPositionButton = document.getElementById('reset-position') as HTMLBut
 // Register multiple gestures at once for the element
 // This will return the element with properly typed event listeners
 const target = gestureManager.registerElement(
-  ['pan', 'move', 'pinch', 'rotate', 'roll', 'tap', 'doubleTap', 'yolo'],
+  ['pan', 'move', 'pinch', 'rotate', 'roll', 'tap', 'doubleTap'],
   gestureTarget
 );
 

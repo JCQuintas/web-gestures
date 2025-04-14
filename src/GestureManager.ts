@@ -1,12 +1,6 @@
-import { MoveEvent, MoveGesture } from 'src/gestures/MoveGesture';
-import { PanEvent, PanGesture } from 'src/gestures/PanGesture';
-import { PinchEvent, PinchGesture } from 'src/gestures/PinchGesture';
-import { RotateEvent, RotateGesture } from 'src/gestures/RotateGesture';
-import { TapEvent, TapGesture } from 'src/gestures/TapGesture';
-import { TurnWheelEvent, TurnWheelGesture } from 'src/gestures/TurnWheelGesture';
-import { StatefulKeyToEventMap } from 'src/types';
 import { Gesture } from './Gesture';
 import { PointerManager } from './PointerManager';
+import { MergeUnions } from './types';
 
 /**
  * Configuration options for initializing the GestureManager
@@ -47,38 +41,8 @@ export type GestureManagerOptions<
    * Array of gesture templates to register with the manager.
    * These serve as prototypes that can be cloned for individual elements.
    */
-  gestures?: Gestures[];
+  gestures: Gestures[];
 };
-
-/**
- * Maps a gesture class to its event data type
- * Uses pattern matching on imported gesture types
- */
-type GestureEventType<T, GNU> = MergeUnions<
-  T extends Gesture<infer GN>
-    ? GN extends GNU
-      ? T extends PanGesture<infer GN>
-        ? StatefulKeyToEventMap<GN, PanEvent>
-        : T extends PinchGesture<infer GN>
-          ? StatefulKeyToEventMap<GN, PinchEvent>
-          : T extends RotateGesture<infer GN>
-            ? StatefulKeyToEventMap<GN, RotateEvent>
-            : T extends TapGesture<infer GN>
-              ? Record<GN, TapEvent>
-              : T extends MoveGesture<infer GN>
-                ? StatefulKeyToEventMap<GN, MoveEvent>
-                : T extends TurnWheelGesture<infer GN>
-                  ? Record<GN, TurnWheelEvent>
-                  : never
-      : never
-    : never
->;
-
-type AllKeys<T> = T extends unknown ? keyof T : never;
-type AddMissingProps<T, K extends PropertyKey = AllKeys<T>> = T extends unknown
-  ? T & Record<Exclude<K, keyof T>, never>
-  : never;
-type MergeUnions<T> = { [K in keyof AddMissingProps<T>]: AddMissingProps<T>[K] };
 
 /**
  * Enhanced HTML element type with strongly-typed gesture event handlers.
@@ -111,14 +75,19 @@ type MergeUnions<T> = { [K in keyof AddMissingProps<T>]: AddMissingProps<T>[K] }
  * ```
  */
 export type GestureElement<
-  T extends HTMLElement = HTMLElement,
-  GNU extends string = string,
-  GesturesUnion = Gesture<string>,
-> = Omit<T, 'addEventListener' | 'removeEventListener'> & {
-  addEventListener<K extends GNU>(
+  Element extends HTMLElement = HTMLElement,
+  GestureEventName extends string = string,
+  GestureNameToEvent = unknown,
+> = Omit<Element, 'addEventListener' | 'removeEventListener'> & {
+  addEventListener<
+    K extends GestureEventName,
+    GestureEvent = GestureNameToEvent extends Record<GestureEventName, Event>
+      ? GestureNameToEvent[K]
+      : never,
+  >(
     type: K,
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    listener: (this: HTMLElement, ev: GestureEventType<GesturesUnion, GNU>[K]) => any,
+    listener: (this: HTMLElement, ev: GestureEvent) => any,
     options?: boolean | AddEventListenerOptions
   ): void;
   addEventListener<K extends keyof HTMLElementEventMap>(
@@ -132,10 +101,15 @@ export type GestureElement<
     listener: EventListenerOrEventListenerObject,
     options?: boolean | AddEventListenerOptions
   ): void;
-  removeEventListener<K extends GNU>(
+  removeEventListener<
+    K extends GestureEventName,
+    GestureEvent = GestureNameToEvent extends Record<GestureEventName, Event>
+      ? GestureNameToEvent[K]
+      : never,
+  >(
     type: K,
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    listener: (this: HTMLElement, ev: GestureEventType<GesturesUnion, GNU>[K]) => any,
+    listener: (this: HTMLElement, ev: GestureEvent) => any,
     options?: boolean | EventListenerOptions
   ): void;
   removeEventListener<K extends keyof HTMLElementEventMap>(
@@ -199,6 +173,53 @@ export class GestureManager<
   Gestures extends Gesture<GestureName>,
   GestureUnion extends Gesture<GestureName> = Gestures[][number],
   GestureNameUnion extends string = GestureUnion extends Gesture<infer N> ? N : never,
+  GestureNameUnionComplete extends string = GestureUnion extends Gesture<string>
+    ? // @ts-expect-error, this makes the types work.
+      GestureUnion['isSinglePhase'] extends true
+      ? GestureUnion extends Gesture<infer N>
+        ? N
+        : never
+      : // @ts-expect-error, this makes the types work.
+        GestureUnion['isSinglePhase'] extends false
+        ? GestureUnion extends Gesture<infer N>
+          ? `${N}Start` | N | `${N}End` | `${N}Cancel`
+          : never
+        : never
+    : never,
+  GestureNameToGestureMap extends Record<string, GestureUnion> = MergeUnions<
+    | {
+        [K in GestureNameUnion]: GestureUnion extends Gesture<string>
+          ? // @ts-expect-error, this makes the types work.
+            GestureUnion['isSinglePhase'] extends true
+            ? GestureUnion extends Gesture<K>
+              ? GestureUnion
+              : never
+            : never
+          : never;
+      }
+    | {
+        [K in GestureNameUnionComplete]: GestureUnion extends Gesture<string>
+          ? // @ts-expect-error, this makes the types work.
+            GestureUnion['isSinglePhase'] extends false
+            ? K extends `${infer N}${'Start' | 'End' | 'Cancel'}`
+              ? GestureUnion extends Gesture<N>
+                ? GestureUnion
+                : never
+              : GestureUnion extends Gesture<K>
+                ? GestureUnion
+                : never
+            : never
+          : never;
+      }
+  >,
+  GestureNameToEventMap = {
+    // @ts-expect-error, this makes the types work.
+    [K in keyof GestureNameToGestureMap]: GestureNameToGestureMap[K]['eventType'];
+  },
+  GestureNameToOptionsMap = {
+    // @ts-expect-error, this makes the types work.
+    [K in keyof GestureNameToGestureMap]: GestureNameToGestureMap[K]['optionsType'];
+  },
 > {
   /** Repository of gesture templates that can be cloned for specific elements */
   private gestureTemplates: Map<string, Gesture<string>> = new Map();
@@ -211,7 +232,7 @@ export class GestureManager<
    *
    * @param options - Configuration options for the gesture manager
    */
-  constructor(options: GestureManagerOptions<GestureName, Gestures> = {}) {
+  constructor(options: GestureManagerOptions<GestureName, Gestures>) {
     // Initialize the PointerManager
     PointerManager.getInstance({
       root: options.root,
@@ -277,32 +298,52 @@ export class GestureManager<
     gestureNames: GNU | GNU[],
     element: T,
     options?: Partial<Record<GNU, Record<string, unknown>>>
-  ): GestureElement<T, GNU, GestureEventType<GestureUnion, GNU>> {
+  ): GestureElement<T, GestureNameUnionComplete, GestureNameToEventMap> {
     // Handle array of gesture names
     if (Array.isArray(gestureNames)) {
       gestureNames.forEach(name => {
         const gestureOptions = options?.[name];
         this._registerSingleGesture(name, element, gestureOptions);
       });
-      return element as GestureElement<T, GNU, GestureEventType<GestureUnion, GNU>>;
+      return element as GestureElement<T, GestureNameUnionComplete, GestureNameToEventMap>;
     }
 
     // Handle single gesture name
     const gestureOptions = options?.[gestureNames];
     this._registerSingleGesture(gestureNames, element, gestureOptions);
-    return element as GestureElement<T, GNU, GestureEventType<GestureUnion, GNU>>;
+    return element as GestureElement<T, GestureNameUnionComplete, GestureNameToEventMap>;
   }
 
-  public yolo(): GestureUnion {
+  public gestureUnion(): GestureUnion {
     return {} as GestureUnion;
   }
 
-  public yolo2(): GestureEventType<GestureUnion, GestureNameUnion> {
-    return {} as GestureEventType<GestureUnion, GestureNameUnion>;
+  public gestureNameUnion(): GestureNameUnion {
+    return {} as GestureNameUnion;
   }
 
-  public yolo3(): GestureNameUnion {
-    return {} as GestureNameUnion;
+  public gestureNameComplete(): GestureNameUnionComplete {
+    return {} as GestureNameUnionComplete;
+  }
+
+  public gestureName(): GestureName {
+    return {} as GestureName;
+  }
+
+  public gesture(): Gesture<GestureName> {
+    return {} as Gesture<GestureName>;
+  }
+
+  public gestureNameToGestureMap(): GestureNameToGestureMap {
+    return {} as GestureNameToGestureMap;
+  }
+
+  public gestureNameToEventMap(): GestureNameToEventMap {
+    return {} as GestureNameToEventMap;
+  }
+
+  public gestureNameToOptionsMap(): GestureNameToOptionsMap {
+    return {} as GestureNameToOptionsMap;
   }
 
   /**

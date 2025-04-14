@@ -115,6 +115,11 @@ export class TurnWheelGesture<Name extends string> extends Gesture<Name> {
     totalDeltaZ: 0,
   };
 
+  protected readonly isSinglePhase = true as const;
+  protected readonly eventType: TurnWheelEvent = {} as TurnWheelEvent;
+  protected readonly optionsType: TurnWheelGestureOptions<Name> =
+    {} as TurnWheelGestureOptions<Name>;
+
   /**
    * Scaling factor for delta values
    * Values > 1 increase sensitivity, values < 1 decrease sensitivity

@@ -46,14 +46,6 @@ export type GestureOptions<Name extends string> = {
 };
 
 /**
- * Callback type for gesture event handlers.
- */
-export type GestureEventCallback = (
-  /** The event data containing information about the gesture */
-  eventData: GestureEventData
-) => void;
-
-/**
  * Type for the state of a gesture recognizer.
  */
 export type GestureState = {
@@ -108,13 +100,19 @@ export abstract class Gesture<Name extends string> {
   /** The DOM element this gesture is attached to */
   protected element: HTMLElement | null = null;
 
+  /** @internal For types. If false enables phases (xStart, x, xEnd) */
+  protected abstract readonly isSinglePhase: boolean;
+
+  /** @internal For types. The event type this gesture is associated with */
+  protected abstract readonly eventType: Event;
+
+  /** @internal For types. The options type for this gesture */
+  protected abstract readonly optionsType: GestureOptions<Name>;
+
   /**
    * Stores the active gesture state
    */
-  protected state: GestureState = {
-    active: false,
-    startPointers: new Map(),
-  };
+  protected abstract state: GestureState;
 
   /**
    * Create a new gesture instance with the specified options

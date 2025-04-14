@@ -18,12 +18,7 @@ export { TapGesture } from './gestures/TapGesture';
 export { TurnWheelGesture } from './gestures/TurnWheelGesture';
 
 // Export types
-export type {
-  GestureEventCallback,
-  GestureEventData,
-  GestureOptions,
-  GesturePhase,
-} from './Gesture';
+export type { GestureEventData, GestureOptions, GesturePhase } from './Gesture';
 
 export type { PointerData, PointerManagerOptions } from './PointerManager';
 

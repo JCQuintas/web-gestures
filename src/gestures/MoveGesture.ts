@@ -56,6 +56,10 @@ export class MoveGesture<Name extends string> extends PointerGesture<Name> {
     startPointers: new Map(),
   };
 
+  protected readonly isSinglePhase = false as const;
+  protected readonly eventType: MoveEvent = {} as MoveEvent;
+  protected readonly optionsType: MoveGestureOptions<Name> = {} as MoveGestureOptions<Name>;
+
   constructor(options: MoveGestureOptions<Name>) {
     super(options);
   }
