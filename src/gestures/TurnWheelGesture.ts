@@ -122,7 +122,7 @@ export class TurnWheelGesture<GestureName extends string> extends Gesture<Gestur
    * Scaling factor for delta values
    * Values > 1 increase sensitivity, values < 1 decrease sensitivity
    */
-  private scale: number;
+  private sensitivity: number;
 
   /**
    * Maximum value for totalDelta values
@@ -150,7 +150,7 @@ export class TurnWheelGesture<GestureName extends string> extends Gesture<Gestur
 
   constructor(options: TurnWheelGestureOptions<GestureName>) {
     super(options);
-    this.scale = options.sensitivity ?? 1;
+    this.sensitivity = options.sensitivity ?? 1;
     this.max = options.max ?? Number.MAX_SAFE_INTEGER;
     this.min = options.min ?? Number.MIN_SAFE_INTEGER;
     this.initialDelta = options.initialDelta ?? 0;
@@ -166,7 +166,7 @@ export class TurnWheelGesture<GestureName extends string> extends Gesture<Gestur
       name: this.name,
       preventDefault: this.preventDefault,
       stopPropagation: this.stopPropagation,
-      sensitivity: this.scale,
+      sensitivity: this.sensitivity,
       max: this.max,
       min: this.min,
       initialDelta: this.initialDelta,
@@ -203,7 +203,7 @@ export class TurnWheelGesture<GestureName extends string> extends Gesture<Gestur
   protected updateOptions(options: typeof this.mutableOptionsType): void {
     super.updateOptions(options);
 
-    this.scale = options.sensitivity ?? this.scale;
+    this.sensitivity = options.sensitivity ?? this.sensitivity;
     this.max = options.max ?? this.max;
     this.min = options.min ?? this.min;
     this.initialDelta = options.initialDelta ?? this.initialDelta;
@@ -226,9 +226,9 @@ export class TurnWheelGesture<GestureName extends string> extends Gesture<Gestur
     const pointersArray = Array.from(pointers.values());
 
     // Update total deltas with scaled values
-    this.state.totalDeltaX += event.deltaX * this.scale * (this.invert ? 1 : -1);
-    this.state.totalDeltaY += event.deltaY * this.scale * (this.invert ? 1 : -1);
-    this.state.totalDeltaZ += event.deltaZ * this.scale * (this.invert ? 1 : -1);
+    this.state.totalDeltaX += event.deltaX * this.sensitivity * (this.invert ? 1 : -1);
+    this.state.totalDeltaY += event.deltaY * this.sensitivity * (this.invert ? 1 : -1);
+    this.state.totalDeltaZ += event.deltaZ * this.sensitivity * (this.invert ? 1 : -1);
 
     // Apply proper min/max clamping for each axis
     // Ensure values stay between min and max bounds
@@ -270,9 +270,9 @@ export class TurnWheelGesture<GestureName extends string> extends Gesture<Gestur
       phase: 'ongoing', // Wheel events are always in "ongoing" state
       pointers,
       timeStamp: event.timeStamp,
-      deltaX: event.deltaX * this.scale * (this.invert ? 1 : -1),
-      deltaY: event.deltaY * this.scale * (this.invert ? 1 : -1),
-      deltaZ: event.deltaZ * this.scale * (this.invert ? 1 : -1),
+      deltaX: event.deltaX * this.sensitivity * (this.invert ? 1 : -1),
+      deltaY: event.deltaY * this.sensitivity * (this.invert ? 1 : -1),
+      deltaZ: event.deltaZ * this.sensitivity * (this.invert ? 1 : -1),
       deltaMode: event.deltaMode,
       totalDeltaX: this.state.totalDeltaX,
       totalDeltaY: this.state.totalDeltaY,
