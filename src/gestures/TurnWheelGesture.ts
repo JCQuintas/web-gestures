@@ -60,32 +60,35 @@ export type TurnWheelGestureOptions<GestureName extends string> = GestureOptions
  * Event data specific to wheel gesture events
  * Contains information about scroll delta amounts and mode
  */
-export type TurnWheelGestureEventData = GestureEventData & {
-  /** Horizontal scroll amount */
-  deltaX: number;
-  /** Vertical scroll amount */
-  deltaY: number;
-  /** Z-axis scroll amount (depth) */
-  deltaZ: number;
-  /** Total accumulated horizontal delta since tracking began */
-  totalDeltaX: number;
-  /** Total accumulated vertical delta since tracking began */
-  totalDeltaY: number;
-  /** Total accumulated Z-axis delta since tracking began */
-  totalDeltaZ: number;
-  /**
-   * The unit of measurement for the delta values
-   * 0: Pixels, 1: Lines, 2: Pages
-   */
-  deltaMode: number;
-  /** The original DOM wheel event that triggered this gesture event */
-  srcEvent: WheelEvent;
-};
+export type TurnWheelGestureEventData<GestureName extends string> =
+  GestureEventData<GestureName> & {
+    /** Horizontal scroll amount */
+    deltaX: number;
+    /** Vertical scroll amount */
+    deltaY: number;
+    /** Z-axis scroll amount (depth) */
+    deltaZ: number;
+    /** Total accumulated horizontal delta since tracking began */
+    totalDeltaX: number;
+    /** Total accumulated vertical delta since tracking began */
+    totalDeltaY: number;
+    /** Total accumulated Z-axis delta since tracking began */
+    totalDeltaZ: number;
+    /**
+     * The unit of measurement for the delta values
+     * 0: Pixels, 1: Lines, 2: Pages
+     */
+    deltaMode: number;
+    /** The original DOM wheel event that triggered this gesture event */
+    srcEvent: WheelEvent;
+  };
 
 /**
  * Type definition for the CustomEvent created by TurnWheelGesture
  */
-export type TurnWheelEvent = CustomEvent<TurnWheelGestureEventData>;
+export type TurnWheelEvent<GestureName extends string> = CustomEvent<
+  TurnWheelGestureEventData<GestureName>
+>;
 
 /**
  * State tracking for the TurnWheelGesture
@@ -114,7 +117,7 @@ export class TurnWheelGesture<GestureName extends string> extends Gesture<Gestur
   };
 
   protected readonly isSinglePhase = true as const;
-  protected readonly eventType: TurnWheelEvent = {} as TurnWheelEvent;
+  protected readonly eventType: TurnWheelEvent<GestureName> = {} as TurnWheelEvent<GestureName>;
   protected readonly optionsType: TurnWheelGestureOptions<GestureName> =
     {} as TurnWheelGestureOptions<GestureName>;
 
@@ -246,7 +249,7 @@ export class TurnWheelGesture<GestureName extends string> extends Gesture<Gestur
     const activeGestures = this.gesturesRegistry.getActiveGestures(element);
 
     // Create custom event data
-    const customEventData: TurnWheelGestureEventData = {
+    const customEventData: TurnWheelGestureEventData<GestureName> = {
       centroid,
       target: event.target,
       srcEvent: event,

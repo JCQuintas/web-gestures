@@ -33,7 +33,7 @@ export type TapGestureOptions<GestureName extends string> = PointerGestureOption
  * Event data specific to tap gesture events
  * Contains information about the tap location and counts
  */
-export type TapGestureEventData = GestureEventData & {
+export type TapGestureEventData<GestureName extends string> = GestureEventData<GestureName> & {
   /** X coordinate of the tap */
   x: number;
   /** Y coordinate of the tap */
@@ -42,14 +42,12 @@ export type TapGestureEventData = GestureEventData & {
   tapCount: number;
   /** The original DOM pointer event that triggered this gesture event */
   srcEvent: PointerEvent;
-  /** List of active gestures */
-  activeGestures: string[];
 };
 
 /**
  * Type definition for the CustomEvent created by TapGesture
  */
-export type TapEvent = CustomEvent<TapGestureEventData>;
+export type TapEvent<GestureName extends string> = CustomEvent<TapGestureEventData<GestureName>>;
 
 /**
  * State tracking for the TapGesture
@@ -80,7 +78,7 @@ export class TapGesture<GestureName extends string> extends PointerGesture<Gestu
   };
 
   protected readonly isSinglePhase = true as const;
-  protected readonly eventType: TapEvent = {} as TapEvent;
+  protected readonly eventType: TapEvent<GestureName> = {} as TapEvent<GestureName>;
   protected readonly optionsType: TapGestureOptions<GestureName> =
     {} as TapGestureOptions<GestureName>;
 
@@ -246,7 +244,7 @@ export class TapGesture<GestureName extends string> extends PointerGesture<Gestu
     const activeGestures = this.gesturesRegistry.getActiveGestures(element);
 
     // Create custom event data for the tap event
-    const customEventData: TapGestureEventData = {
+    const customEventData: TapGestureEventData<GestureName> = {
       centroid: position,
       target: event.target,
       srcEvent: event,
@@ -289,7 +287,7 @@ export class TapGesture<GestureName extends string> extends PointerGesture<Gestu
       const activeGestures = this.gesturesRegistry.getActiveGestures(element);
 
       // Create custom event data for the cancel event
-      const customEventData: TapGestureEventData = {
+      const customEventData: TapGestureEventData<GestureName> = {
         centroid: position!,
         target: event.target,
         srcEvent: event,

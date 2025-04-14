@@ -25,17 +25,15 @@ export type MoveGestureOptions<GestureName extends string> = PointerGestureOptio
  * Event data specific to move gesture events
  * Includes the source pointer event and standard gesture data
  */
-export type MoveGestureEventData = GestureEventData & {
+export type MoveGestureEventData<GestureName extends string> = GestureEventData<GestureName> & {
   /** The original DOM pointer event that triggered this gesture event */
   srcEvent: PointerEvent;
-  /** List of active gestures */
-  activeGestures: string[];
 };
 
 /**
  * Type definition for the CustomEvent created by MoveGesture
  */
-export type MoveEvent = CustomEvent<MoveGestureEventData>;
+export type MoveEvent<GestureName extends string> = CustomEvent<MoveGestureEventData<GestureName>>;
 
 /**
  * State tracking for the MoveGesture
@@ -57,7 +55,7 @@ export class MoveGesture<GestureName extends string> extends PointerGesture<Gest
   };
 
   protected readonly isSinglePhase = false as const;
-  protected readonly eventType: MoveEvent = {} as MoveEvent;
+  protected readonly eventType: MoveEvent<GestureName> = {} as MoveEvent<GestureName>;
   protected readonly optionsType: MoveGestureOptions<GestureName> =
     {} as MoveGestureOptions<GestureName>;
 
@@ -193,7 +191,7 @@ export class MoveGesture<GestureName extends string> extends PointerGesture<Gest
     const activeGestures = this.gesturesRegistry.getActiveGestures(element);
 
     // Create custom event data
-    const customEventData: MoveGestureEventData = {
+    const customEventData: MoveGestureEventData<GestureName> = {
       centroid: currentPosition,
       target: event.target,
       srcEvent: event,
