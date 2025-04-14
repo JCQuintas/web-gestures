@@ -81,7 +81,6 @@ export type PanGestureState = GestureState & {
  */
 export class PanGesture<GestureName extends string> extends PointerGesture<GestureName> {
   protected state: PanGestureState = {
-    active: false,
     startPointers: new Map(),
     startCentroid: null,
     lastCentroid: null,
@@ -126,8 +125,8 @@ export class PanGesture<GestureName extends string> extends PointerGesture<Gestu
   }
 
   protected resetState(): void {
+    this.isActive = false;
     this.state = {
-      active: false,
       startPointers: new Map(),
       startCentroid: null,
       lastCentroid: null,
@@ -142,11 +141,11 @@ export class PanGesture<GestureName extends string> extends PointerGesture<Gestu
    */
   protected handlePointerEvent(pointers: Map<number, PointerData>, event: PointerEvent): void {
     // Check for our special forceReset flag to handle interrupted gestures (from contextmenu, blur)
-    if ((event as InternalEvent).forceReset && this.element) {
+    if ((event as InternalEvent).forceReset) {
       // Reset all active pan gestures when we get a force reset event
       // Cancel any active gesture with a proper cancel event
 
-      if (this.state?.active) {
+      if (this.isActive) {
         const relevantPointers = Array.from(pointers.values());
         // Only emit if we have active state and necessary data
         if (this.state?.startCentroid && this.state.lastCentroid) {
@@ -177,7 +176,7 @@ export class PanGesture<GestureName extends string> extends PointerGesture<Gestu
 
     // Check if we have enough pointers and not too many
     if (relevantPointers.length < this.minPointers || relevantPointers.length > this.maxPointers) {
-      if (this.state.active) {
+      if (this.isActive) {
         // Cancel or end the gesture if it was active
         this.cancel(targetElement, relevantPointers, event);
       }
@@ -186,7 +185,7 @@ export class PanGesture<GestureName extends string> extends PointerGesture<Gestu
 
     switch (event.type) {
       case 'pointerdown':
-        if (!this.state.active && !this.state.startCentroid) {
+        if (!this.isActive && !this.state.startCentroid) {
           // Store initial pointers
           relevantPointers.forEach(pointer => {
             this.state.startPointers.set(pointer.pointerId, pointer);
@@ -220,18 +219,13 @@ export class PanGesture<GestureName extends string> extends PointerGesture<Gestu
             isDirectionAllowed(moveDirection, this.direction)
           ) {
             this.state.movementThresholdReached = true;
-            this.state.active = true;
-
-            // Register this gesture as active in the registry
-            if (targetElement) {
-              this.updateActiveState(targetElement, true);
-            }
+            this.isActive = true;
 
             // Emit start event
             this.emitPanEvent(targetElement, 'start', relevantPointers, event, currentCentroid);
           }
           // If we've already crossed the threshold, continue tracking
-          else if (this.state.movementThresholdReached && this.state.active) {
+          else if (this.state.movementThresholdReached && this.isActive) {
             // Calculate change in position since last move
             const lastDeltaX = this.state.lastCentroid
               ? currentCentroid.x - this.state.lastCentroid.x
@@ -258,7 +252,7 @@ export class PanGesture<GestureName extends string> extends PointerGesture<Gestu
       case 'pointerup':
       case 'pointercancel':
         // If the gesture was active (threshold was reached), emit end event
-        if (this.state.active && this.state.movementThresholdReached) {
+        if (this.isActive && this.state.movementThresholdReached) {
           // If all relevant pointers are gone, end the gesture
           if (
             relevantPointers.filter(p => p.type !== 'pointerup' && p.type !== 'pointercancel')
@@ -270,20 +264,10 @@ export class PanGesture<GestureName extends string> extends PointerGesture<Gestu
 
             // Reset active state but keep total delta values
             this.resetActiveState();
-
-            // Unregister from the active gestures registry
-            if (targetElement) {
-              this.updateActiveState(targetElement, false);
-            }
           }
         } else {
           // If threshold wasn't reached (simple click), just reset active state
           this.resetActiveState();
-
-          // Ensure we're not in the active registry
-          if (targetElement) {
-            this.updateActiveState(targetElement, false);
-          }
         }
         break;
     }
@@ -350,11 +334,8 @@ export class PanGesture<GestureName extends string> extends PointerGesture<Gestu
    * Cancel the current gesture
    */
   private cancel(element: HTMLElement, pointers: PointerData[], event: PointerEvent): void {
-    if (this.state.active && this.state.startCentroid && this.state.lastCentroid) {
+    if (this.isActive && this.state.startCentroid && this.state.lastCentroid) {
       this.emitPanEvent(element, 'cancel', pointers, event, this.state.lastCentroid);
-
-      // Update the active registry
-      this.updateActiveState(element, false);
     }
     this.resetState();
   }
@@ -363,12 +344,7 @@ export class PanGesture<GestureName extends string> extends PointerGesture<Gestu
    * Reset the active gesture state for a specific element, but keep total delta values
    */
   private resetActiveState(): void {
-    // If we had an element and the state was active, make sure we unregister from the registry
-    if (this.state.active && this.element) {
-      this.updateActiveState(this.element, false);
-    }
-
-    this.state.active = false;
+    this.isActive = false;
     this.state.startPointers.clear();
     this.state.startCentroid = null;
     this.state.lastCentroid = null;

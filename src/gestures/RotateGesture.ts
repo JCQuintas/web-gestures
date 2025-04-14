@@ -68,7 +68,6 @@ export type RotateGestureState = GestureState & {
  */
 export class RotateGesture<GestureName extends string> extends PointerGesture<GestureName> {
   protected state: RotateGestureState = {
-    active: false,
     startPointers: new Map(),
     startAngle: 0,
     lastAngle: 0,
@@ -106,8 +105,8 @@ export class RotateGesture<GestureName extends string> extends PointerGesture<Ge
   }
 
   protected resetState() {
+    this.isActive = false;
     this.state = {
-      active: false,
       startPointers: new Map(),
       startAngle: 0,
       lastAngle: 0,
@@ -135,7 +134,7 @@ export class RotateGesture<GestureName extends string> extends PointerGesture<Ge
 
     // Check if we have enough pointers for a rotation (at least 2)
     if (relevantPointers.length < this.minPointers || relevantPointers.length > this.maxPointers) {
-      if (this.state.active || this.state.active) {
+      if (this.isActive) {
         // End the gesture if it was active
         this.emitRotateEvent(targetElement, 'end', relevantPointers, event);
         this.resetState();
@@ -145,7 +144,7 @@ export class RotateGesture<GestureName extends string> extends PointerGesture<Ge
 
     switch (event.type) {
       case 'pointerdown':
-        if (relevantPointers.length >= 2 && !this.state.active) {
+        if (relevantPointers.length >= 2 && !this.isActive) {
           // Store initial pointers
           relevantPointers.forEach(pointer => {
             this.state.startPointers.set(pointer.pointerId, pointer);
@@ -158,8 +157,7 @@ export class RotateGesture<GestureName extends string> extends PointerGesture<Ge
           this.state.lastTime = event.timeStamp;
 
           // Mark gesture as active
-          this.state.active = true;
-          this.state.active = true;
+          this.isActive = true;
 
           // Emit start event
           this.emitRotateEvent(targetElement, 'start', relevantPointers, event);
@@ -167,7 +165,7 @@ export class RotateGesture<GestureName extends string> extends PointerGesture<Ge
         break;
 
       case 'pointermove':
-        if (this.state.active && this.state.active && relevantPointers.length >= 2) {
+        if (this.isActive && relevantPointers.length >= 2) {
           // Calculate current rotation angle
           const currentAngle = calculateRotationAngle(relevantPointers);
 
@@ -204,7 +202,7 @@ export class RotateGesture<GestureName extends string> extends PointerGesture<Ge
 
       case 'pointerup':
       case 'pointercancel':
-        if (this.state.active) {
+        if (this.isActive) {
           const remainingPointers = relevantPointers.filter(
             p => p.type !== 'pointerup' && p.type !== 'pointercancel'
           );

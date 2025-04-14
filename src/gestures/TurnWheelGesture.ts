@@ -108,7 +108,6 @@ export type TurnWheelGestureState = GestureState & {
  */
 export class TurnWheelGesture<GestureName extends string> extends Gesture<GestureName> {
   protected state: TurnWheelGestureState = {
-    active: false,
     startPointers: new Map(),
     totalDeltaX: 0,
     totalDeltaY: 0,
@@ -178,8 +177,8 @@ export class TurnWheelGesture<GestureName extends string> extends Gesture<Gestur
     });
   }
 
-  public setTargetElement(element: HTMLElement) {
-    super.setTargetElement(element);
+  public init(element: HTMLElement) {
+    super.init(element);
 
     // Add event listener directly to the element
     element.addEventListener('wheel', this.handleWheelEvent.bind(this, element));
@@ -187,13 +186,13 @@ export class TurnWheelGesture<GestureName extends string> extends Gesture<Gestur
 
   public destroy(): void {
     // Remove the element-specific event listener
-    this.element?.removeEventListener('wheel', this.handleWheelEvent.bind(this, this.element));
+    this.element.removeEventListener('wheel', this.handleWheelEvent.bind(this, this.element));
     this.resetState();
   }
 
   protected resetState(): void {
+    this.isActive = false;
     this.state = {
-      active: false,
       startPointers: new Map(),
       totalDeltaX: 0,
       totalDeltaY: 0,

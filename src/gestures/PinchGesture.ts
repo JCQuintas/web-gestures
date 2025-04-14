@@ -68,7 +68,6 @@ export type PinchGestureState = GestureState & {
  */
 export class PinchGesture<GestureName extends string> extends PointerGesture<GestureName> {
   protected state: PinchGestureState = {
-    active: false,
     startPointers: new Map(),
     startDistance: 0,
     lastDistance: 0,
@@ -106,8 +105,8 @@ export class PinchGesture<GestureName extends string> extends PointerGesture<Ges
   }
 
   protected resetState(): void {
+    this.isActive = false;
     this.state = {
-      active: false,
       startPointers: new Map(),
       startDistance: 0,
       lastDistance: 0,
@@ -135,7 +134,7 @@ export class PinchGesture<GestureName extends string> extends PointerGesture<Ges
 
     // Check if we have enough pointers for a pinch (at least 2)
     if (relevantPointers.length < this.minPointers) {
-      if (this.state.active || this.state.active) {
+      if (this.isActive) {
         // End the gesture if it was active
         this.emitPinchEvent(targetElement, 'end', relevantPointers, event);
         this.resetState();
@@ -145,7 +144,7 @@ export class PinchGesture<GestureName extends string> extends PointerGesture<Ges
 
     switch (event.type) {
       case 'pointerdown':
-        if (relevantPointers.length >= 2 && !this.state.active) {
+        if (relevantPointers.length >= 2 && !this.isActive) {
           // Store initial pointers
           relevantPointers.forEach(pointer => {
             this.state.startPointers.set(pointer.pointerId, pointer);
@@ -158,8 +157,7 @@ export class PinchGesture<GestureName extends string> extends PointerGesture<Ges
           this.state.lastTime = event.timeStamp;
 
           // Mark gesture as active
-          this.state.active = true;
-          this.state.active = true;
+          this.isActive = true;
 
           // Emit start event
           this.emitPinchEvent(targetElement, 'start', relevantPointers, event);
@@ -167,7 +165,7 @@ export class PinchGesture<GestureName extends string> extends PointerGesture<Ges
         break;
 
       case 'pointermove':
-        if (this.state.active && this.state.startDistance && relevantPointers.length >= 2) {
+        if (this.isActive && this.state.startDistance && relevantPointers.length >= 2) {
           // Calculate current distance between pointers
           const currentDistance = calculateAverageDistance(relevantPointers);
 
@@ -201,7 +199,7 @@ export class PinchGesture<GestureName extends string> extends PointerGesture<Ges
 
       case 'pointerup':
       case 'pointercancel':
-        if (this.state.active) {
+        if (this.isActive) {
           const remainingPointers = relevantPointers.filter(
             p => p.type !== 'pointerup' && p.type !== 'pointercancel'
           );

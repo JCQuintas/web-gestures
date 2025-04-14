@@ -101,6 +101,19 @@ export class ActiveGesturesRegistry<GestureName extends string> {
   }
 
   /**
+   * Check if a specific gesture is active on an element
+   *
+   * @param element - The DOM element to check
+   * @param gesture - The gesture instance to check
+   * @returns True if the gesture is active on the element, false otherwise
+   */
+  public isGestureActive(element: HTMLElement, gesture: Gesture<GestureName>): boolean {
+    const elementGestures = this.activeGestures.get(element);
+    if (!elementGestures) return false;
+    return Array.from(elementGestures).some(entry => entry.gesture === gesture);
+  }
+
+  /**
    * Clear all active gestures from the registry
    */
   public destroy(): void {

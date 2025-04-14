@@ -100,8 +100,8 @@ export abstract class PointerGesture<GestureName extends string> extends Gesture
     this.threshold = options.threshold ?? 0;
   }
 
-  public init(): void {
-    super.init();
+  public init(element: HTMLElement): void {
+    super.init(element);
 
     this.unregisterHandler = this.pointerManager!.registerGestureHandler((pointers, event) =>
       this.handlePointerEvent(pointers, event)

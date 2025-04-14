@@ -71,7 +71,6 @@ export type TapGestureState = GestureState & {
  */
 export class TapGesture<GestureName extends string> extends PointerGesture<GestureName> {
   protected state: TapGestureState = {
-    active: false,
     startPointers: new Map(),
     startCentroid: null,
     currentTapCount: 0,
@@ -121,8 +120,8 @@ export class TapGesture<GestureName extends string> extends PointerGesture<Gestu
   }
 
   protected resetState(): void {
+    this.isActive = false;
     this.state = {
-      active: false,
       startPointers: new Map(),
       startCentroid: null,
       currentTapCount: 0,
@@ -148,7 +147,7 @@ export class TapGesture<GestureName extends string> extends PointerGesture<Gestu
 
     // Check if we have enough pointers and not too many
     if (relevantPointers.length < this.minPointers || relevantPointers.length > this.maxPointers) {
-      if (this.state.active) {
+      if (this.isActive) {
         // Cancel the gesture if it was active
         this.cancelTap(targetElement, relevantPointers, event);
       }
@@ -157,7 +156,7 @@ export class TapGesture<GestureName extends string> extends PointerGesture<Gestu
 
     switch (event.type) {
       case 'pointerdown':
-        if (!this.state.active) {
+        if (!this.isActive) {
           // Store initial pointers
           relevantPointers.forEach(pointer => {
             this.state.startPointers.set(pointer.pointerId, pointer);
@@ -166,12 +165,12 @@ export class TapGesture<GestureName extends string> extends PointerGesture<Gestu
           // Calculate and store the starting centroid
           this.state.startCentroid = calculateCentroid(relevantPointers);
           this.state.lastPosition = { ...this.state.startCentroid };
-          this.state.active = true;
+          this.isActive = true;
         }
         break;
 
       case 'pointermove':
-        if (this.state.active && this.state.startCentroid) {
+        if (this.isActive && this.state.startCentroid) {
           // Calculate current position
           const currentPosition = calculateCentroid(relevantPointers);
           this.state.lastPosition = currentPosition;
@@ -189,7 +188,7 @@ export class TapGesture<GestureName extends string> extends PointerGesture<Gestu
         break;
 
       case 'pointerup':
-        if (this.state.active) {
+        if (this.isActive) {
           // For valid tap: increment tap count
           this.state.currentTapCount++;
 
@@ -212,7 +211,7 @@ export class TapGesture<GestureName extends string> extends PointerGesture<Gestu
             this.state.lastTapTime = event.timeStamp;
 
             // Reset active state but keep the tap count for multi-tap detection
-            this.state.active = false;
+            this.isActive = false;
             this.state.startPointers.clear();
 
             // For multi-tap detection: keep track of the last tap position

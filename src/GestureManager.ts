@@ -358,8 +358,7 @@ export class GestureManager<
     // Clone the gesture template and create a new instance with optional overrides
     // This allows each element to have its own state, event listeners, and configuration
     const gestureInstance = gestureTemplate.clone(options);
-    gestureInstance.init();
-    gestureInstance.setTargetElement(element);
+    gestureInstance.init(element);
 
     // Store the gesture in the element's gesture map
     elementGestures.set(gestureName, gestureInstance);

@@ -51,7 +51,6 @@ export type MoveGestureState = GestureState & {
  */
 export class MoveGesture<GestureName extends string> extends PointerGesture<GestureName> {
   protected state: MoveGestureState = {
-    active: false,
     lastPosition: null,
     startPointers: new Map(),
   };
@@ -78,8 +77,8 @@ export class MoveGesture<GestureName extends string> extends PointerGesture<Gest
     });
   }
 
-  public setTargetElement(element: HTMLElement) {
-    super.setTargetElement(element);
+  public init(element: HTMLElement) {
+    super.init(element);
 
     // Add event listeners for entering and leaving elements
     // These are different from pointer events handled by PointerManager
@@ -88,11 +87,11 @@ export class MoveGesture<GestureName extends string> extends PointerGesture<Gest
   }
 
   public destroy(): void {
-    this.element?.removeEventListener(
+    this.element.removeEventListener(
       'pointerenter',
       this.handleElementEnter.bind(this, this.element)
     );
-    this.element?.removeEventListener(
+    this.element.removeEventListener(
       'pointerleave',
       this.handleElementLeave.bind(this, this.element)
     );
@@ -101,8 +100,8 @@ export class MoveGesture<GestureName extends string> extends PointerGesture<Gest
   }
 
   protected resetState(): void {
+    this.isActive = false;
     this.state = {
-      active: false,
       lastPosition: null,
       startPointers: new Map(),
     };
@@ -114,17 +113,15 @@ export class MoveGesture<GestureName extends string> extends PointerGesture<Gest
    * @param event The original pointer event
    */
   private handleElementEnter(element: HTMLElement, event: PointerEvent): void {
-    const moveState = this.state;
-
     // Get pointers from the PointerManager
     const pointers = this.pointerManager?.getPointers() || new Map();
     const pointersArray = Array.from(pointers.values());
 
     // Only activate if we're within pointer count constraints
     if (pointersArray.length >= this.minPointers && pointersArray.length <= this.maxPointers) {
-      moveState.active = true;
+      this.isActive = true;
       const currentPosition = { x: event.clientX, y: event.clientY };
-      moveState.lastPosition = currentPosition;
+      this.state.lastPosition = currentPosition;
 
       // Emit start event
       this.emitMoveEvent(element, 'start', pointersArray, event);
@@ -137,8 +134,7 @@ export class MoveGesture<GestureName extends string> extends PointerGesture<Gest
    * @param event The original pointer event
    */
   private handleElementLeave(element: HTMLElement, event: PointerEvent): void {
-    const moveState = this.state;
-    if (!moveState.active) return;
+    if (!this.isActive) return;
 
     // Get pointers from the PointerManager
     const pointers = this.pointerManager?.getPointers() || new Map();
@@ -163,10 +159,7 @@ export class MoveGesture<GestureName extends string> extends PointerGesture<Gest
     const targetElement = this.getTargetElement(event);
     if (!targetElement) return;
 
-    // Get element-specific state
-    const moveState = this.state;
-
-    if (!moveState.active) return;
+    if (!this.isActive) return;
 
     // Make sure we're still within pointer count constraints
     if (pointersArray.length < this.minPointers || pointersArray.length > this.maxPointers) {
@@ -175,7 +168,7 @@ export class MoveGesture<GestureName extends string> extends PointerGesture<Gest
 
     // Update position
     const currentPosition = { x: event.clientX, y: event.clientY };
-    moveState.lastPosition = currentPosition;
+    this.state.lastPosition = currentPosition;
 
     // Emit ongoing event
     this.emitMoveEvent(targetElement, 'ongoing', pointersArray, event);
@@ -194,9 +187,7 @@ export class MoveGesture<GestureName extends string> extends PointerGesture<Gest
     pointers: PointerData[],
     event: PointerEvent
   ): void {
-    const moveState = this.state;
-
-    const currentPosition = moveState.lastPosition || calculateCentroid(pointers);
+    const currentPosition = this.state.lastPosition || calculateCentroid(pointers);
 
     // Create custom event data
     const customEventData: MoveGestureEventData = {

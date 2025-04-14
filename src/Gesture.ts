@@ -50,7 +50,6 @@ export type GestureOptions<GestureName extends string> = {
  * Type for the state of a gesture recognizer.
  */
 export type GestureState = {
-  active: boolean;
   startPointers: Map<number, PointerData>;
 };
 
@@ -102,7 +101,10 @@ export abstract class Gesture<GestureName extends string> {
   protected gesturesRegistry: ActiveGesturesRegistry<GestureName> | null = null;
 
   /** The DOM element this gesture is attached to */
-  protected element: HTMLElement | null = null;
+  protected element!: HTMLElement;
+
+  /** Stores the active gesture state */
+  protected abstract state: GestureState;
 
   /** @internal For types. If false enables phases (xStart, x, xEnd) */
   protected abstract readonly isSinglePhase: boolean;
@@ -112,11 +114,6 @@ export abstract class Gesture<GestureName extends string> {
 
   /** @internal For types. The options type for this gesture */
   protected abstract readonly optionsType: GestureOptions<GestureName>;
-
-  /**
-   * Stores the active gesture state
-   */
-  protected abstract state: GestureState;
 
   /**
    * Create a new gesture instance with the specified options
@@ -133,7 +130,9 @@ export abstract class Gesture<GestureName extends string> {
    * Initialize the gesture by acquiring the pointer manager singleton
    * Must be called before the gesture can be used
    */
-  public init(): void {
+  public init(element: HTMLElement): void {
+    this.element = element;
+
     if (!this.pointerManager) {
       this.pointerManager = PointerManager.getInstance();
     }
@@ -153,41 +152,30 @@ export abstract class Gesture<GestureName extends string> {
   public abstract clone(overrides?: Record<string, unknown>): Gesture<GestureName>;
 
   /**
-   * Register this gesture with the pointer manager
-   */
-  public setTargetElement(element: HTMLElement): void {
-    this.element = element;
-  }
-
-  /**
    * Check if the event's target is or is contained within any of our registered elements
    *
    * @param event - The browser event to check
    * @returns The matching element or null if no match is found
    */
   protected getTargetElement(event: Event): HTMLElement | null {
-    if (
-      this.element &&
-      (this.element === event.target || this.element.contains(event.target as Node))
-    ) {
+    if (this.element === event.target || this.element.contains(event.target as Node)) {
       return this.element;
     }
     return null;
   }
 
-  /**
-   * Update the gesture's active status in the registry
-   * This should be called when the gesture becomes active or inactive
-   *
-   * @param element - The element on which the gesture is active
-   * @param isActive - Whether the gesture is becoming active or inactive
-   */
-  protected updateActiveState(element: HTMLElement, isActive: boolean): void {
+  /** Whether the gesture is currently active */
+  set isActive(isActive: boolean) {
     if (isActive) {
-      this.gesturesRegistry?.registerActiveGesture(element, this);
+      this.gesturesRegistry?.registerActiveGesture(this.element, this);
     } else {
-      this.gesturesRegistry?.unregisterActiveGesture(element, this);
+      this.gesturesRegistry?.unregisterActiveGesture(this.element, this);
     }
+  }
+
+  /** Whether the gesture is currently active */
+  get isActive(): boolean {
+    return this.gesturesRegistry?.isGestureActive(this.element, this) ?? false;
   }
 
   /**
