@@ -162,9 +162,6 @@ export class GestureManager<
   /** Maps DOM elements to their active gesture instances */
   private elementGestureMap: Map<HTMLElement, Map<string, Gesture<string>>> = new Map();
 
-  public gestureNameToOptionsMap!: GestureNameToOptionsMap;
-  public gestureNameToMutableStateMap!: GestureNameToStateMap;
-
   /**
    * Create a new GestureManager instance to coordinate gesture recognition
    *
@@ -203,6 +200,89 @@ export class GestureManager<
   }
 
   /**
+   * Updates the options for a specific gesture on a given element and emits a change event.
+   *
+   * @param gestureName - Name of the gesture whose options should be updated
+   * @param element - The DOM element where the gesture is attached
+   * @param options - New options to apply to the gesture
+   * @returns True if the options were successfully updated, false if the gesture wasn't found
+   *
+   * @example
+   * ```typescript
+   * // Update pan gesture sensitivity on the fly
+   * manager.setGestureOptions('pan', element, { threshold: 5 });
+   * ```
+   */
+  //   public registerElement<
+  //   T extends HTMLElement,
+  //   GNU extends GestureNameUnion,
+  //   GNS extends keyof GestureNameToOptionsMap = GNU extends keyof GestureNameToOptionsMap
+  //     ? GNU
+  //     : never,
+  // >(
+  //   gestureNames: GNS | GNS[],
+  //   element: T,
+  //   options?: Partial<Pick<GestureNameToOptionsMap, GNS>>
+  // ): GestureElement<T, GestureNameUnionComplete, GestureNameToEventMap> {
+  public setGestureOptions<
+    T extends HTMLElement,
+    GNU extends GestureNameUnion,
+    GN extends keyof GestureNameToOptionsMap & string = GNU extends keyof GestureNameToOptionsMap
+      ? GNU
+      : never,
+  >(gestureName: GN, element: T, options: GestureNameToOptionsMap[GN]): void {
+    const elementGestures = this.elementGestureMap.get(element);
+    if (!elementGestures || !elementGestures.has(gestureName)) {
+      console.error(`Gesture "${gestureName}" not found on the provided element.`);
+      return;
+    }
+
+    const event = new CustomEvent<GestureNameToOptionsMap[GN]>(`${gestureName}ChangeOptions`, {
+      detail: options,
+      bubbles: false,
+      cancelable: false,
+    });
+
+    element.dispatchEvent(event);
+  }
+
+  /**
+   * Updates the state for a specific gesture on a given element and emits a change event.
+   *
+   * @param gestureName - Name of the gesture whose state should be updated
+   * @param element - The DOM element where the gesture is attached
+   * @param state - New state to apply to the gesture
+   * @returns True if the state was successfully updated, false if the gesture wasn't found
+   *
+   * @example
+   * ```typescript
+   * // Update total delta for a turnWheel gesture
+   * manager.setGestureState('turnWheel', element, { totalDeltaX: 10 });
+   * ```
+   */
+  public setGestureState<
+    T extends HTMLElement,
+    GNU extends GestureNameUnion,
+    GN extends keyof GestureNameToStateMap & string = GNU extends keyof GestureNameToStateMap
+      ? GNU
+      : never,
+  >(gestureName: GN, element: T, state: GestureNameToStateMap[GN]): void {
+    const elementGestures = this.elementGestureMap.get(element);
+    if (!elementGestures || !elementGestures.has(gestureName)) {
+      console.error(`Gesture "${gestureName}" not found on the provided element.`);
+      return;
+    }
+
+    const event = new CustomEvent<GestureNameToStateMap[GN]>(`${gestureName}ChangeState`, {
+      detail: state,
+      bubbles: false,
+      cancelable: false,
+    });
+
+    element.dispatchEvent(event);
+  }
+
+  /**
    * Register an element to recognize one or more gestures.
    *
    * This method clones the specified gesture template(s) and creates
@@ -236,26 +316,26 @@ export class GestureManager<
   public registerElement<
     T extends HTMLElement,
     GNU extends GestureNameUnion,
-    GNS extends keyof GestureNameToOptionsMap = GNU extends keyof GestureNameToOptionsMap
+    GN extends keyof GestureNameToOptionsMap & string = GNU extends keyof GestureNameToOptionsMap
       ? GNU
       : never,
   >(
-    gestureNames: GNS | GNS[],
+    gestureNames: GN | GN[],
     element: T,
-    options?: Partial<Pick<GestureNameToOptionsMap, GNS>>
+    options?: Partial<Pick<GestureNameToOptionsMap, GN>>
   ): GestureElement<T, GestureNameUnionComplete, GestureNameToEventMap> {
     // Handle array of gesture names
     if (Array.isArray(gestureNames)) {
       gestureNames.forEach(name => {
-        const gestureOptions = options?.[name as unknown as GNS];
-        this._registerSingleGesture(name as string, element, gestureOptions!);
+        const gestureOptions = options?.[name];
+        this._registerSingleGesture(name, element, gestureOptions!);
       });
       return element as GestureElement<T, GestureNameUnionComplete, GestureNameToEventMap>;
     }
 
     // Handle single gesture name
-    const gestureOptions = options?.[gestureNames as unknown as GNS];
-    this._registerSingleGesture(gestureNames as string, element, gestureOptions!);
+    const gestureOptions = options?.[gestureNames];
+    this._registerSingleGesture(gestureNames, element, gestureOptions!);
     return element as GestureElement<T, GestureNameUnionComplete, GestureNameToEventMap>;
   }
 

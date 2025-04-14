@@ -294,23 +294,15 @@ resetPositionButton.addEventListener('click', () => {
 });
 
 rollMaxButton.addEventListener('click', () => {
-  target.dispatchEvent(
-    new CustomEvent<{ max: number }>('rollChangeOptions', {
-      detail: { max: 5 },
-      bubbles: false,
-      cancelable: false,
-    })
-  );
+  gestureManager.setGestureOptions('roll', target, {
+    max: 5,
+  });
 });
 
 changeRotationButton.addEventListener('click', () => {
-  target.dispatchEvent(
-    new CustomEvent<{ totalRotation: number }>('rotateChangeOptions', {
-      detail: { totalRotation: 0 },
-      bubbles: false,
-      cancelable: false,
-    })
-  );
+  gestureManager.setGestureState('rotate', target, {
+    totalRotation: 0,
+  });
 });
 
 // Initial log message
