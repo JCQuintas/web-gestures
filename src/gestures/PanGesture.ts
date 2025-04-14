@@ -31,7 +31,7 @@ export type PanGestureOptions<GestureName extends string> = PointerGestureOption
  * Event data specific to pan gesture events
  * Contains information about movement distance, direction, and velocity
  */
-export type PanGestureEventData<GestureName extends string> = GestureEventData<GestureName> & {
+export type PanGestureEventData = GestureEventData & {
   /** Horizontal distance moved in pixels from the start of the current gesture */
   deltaX: number;
   /** Vertical distance moved in pixels from the start of the current gesture */
@@ -50,12 +50,14 @@ export type PanGestureEventData<GestureName extends string> = GestureEventData<G
   velocity: number;
   /** The original DOM pointer event that triggered this gesture event */
   srcEvent: PointerEvent;
+  /** List of active gestures */
+  activeGestures: string[];
 };
 
 /**
  * Type definition for the CustomEvent created by PanGesture
  */
-export type PanEvent<GestureName extends string> = CustomEvent<PanGestureEventData<GestureName>>;
+export type PanEvent = CustomEvent<PanGestureEventData>;
 
 /**
  * State tracking for the PanGesture
@@ -92,7 +94,7 @@ export class PanGesture<GestureName extends string> extends PointerGesture<Gestu
   };
 
   protected readonly isSinglePhase!: false;
-  protected readonly eventType!: PanEvent<GestureName>;
+  protected readonly eventType!: PanEvent;
   protected readonly optionsType!: PanGestureOptions<GestureName>;
 
   /**
@@ -304,7 +306,7 @@ export class PanGesture<GestureName extends string> extends PointerGesture<Gestu
     const activeGestures = this.gesturesRegistry.getActiveGestures(element);
 
     // Create custom event data
-    const customEventData: PanGestureEventData<GestureName> = {
+    const customEventData: PanGestureEventData = {
       centroid: currentCentroid,
       target: event.target,
       srcEvent: event,

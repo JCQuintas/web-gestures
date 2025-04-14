@@ -24,7 +24,7 @@ export type RotateGestureOptions<GestureName extends string> = PointerGestureOpt
  * Event data specific to rotate gesture events
  * Contains information about rotation angle, delta, and velocity
  */
-export type RotateGestureEventData<GestureName extends string> = GestureEventData<GestureName> & {
+export type RotateGestureEventData = GestureEventData & {
   /** Current absolute rotation in degrees (0-359) */
   rotation: number;
   /** Change in rotation since the last event in degrees */
@@ -40,9 +40,7 @@ export type RotateGestureEventData<GestureName extends string> = GestureEventDat
 /**
  * Type definition for the CustomEvent created by RotateGesture
  */
-export type RotateEvent<GestureName extends string> = CustomEvent<
-  RotateGestureEventData<GestureName>
->;
+export type RotateEvent = CustomEvent<RotateGestureEventData>;
 
 /**
  * State tracking for the RotateGesture
@@ -79,7 +77,7 @@ export class RotateGesture<GestureName extends string> extends PointerGesture<Ge
   };
 
   protected readonly isSinglePhase!: false;
-  protected readonly eventType!: RotateEvent<GestureName>;
+  protected readonly eventType!: RotateEvent;
   protected readonly optionsType!: RotateGestureOptions<GestureName>;
 
   constructor(options: RotateGestureOptions<GestureName>) {
@@ -253,7 +251,7 @@ export class RotateGesture<GestureName extends string> extends PointerGesture<Ge
     // Get list of active gestures
     const activeGestures = this.gesturesRegistry.getActiveGestures(element);
 
-    const customEventData: RotateGestureEventData<GestureName> = {
+    const customEventData: RotateGestureEventData = {
       centroid,
       target: event.target,
       srcEvent: event,

@@ -19,7 +19,7 @@ export type GesturePhase = 'start' | 'ongoing' | 'end' | 'cancel';
  * Core data structure passed to gesture event handlers.
  * Contains all relevant information about a gesture event.
  */
-export type GestureEventData<GestureName extends string> = {
+export type GestureEventData = {
   /** The centroid of all active pointers involved in the gesture */
   centroid: { x: number; y: number };
   /** The target element of the original event */
@@ -32,8 +32,8 @@ export type GestureEventData<GestureName extends string> = {
   pointers: PointerData[];
   /** The time at which the gesture event occurred */
   timeStamp: number;
-  /** A map of all currently active gestures */
-  activeGestures: Record<GestureName, boolean>;
+  /** List of all currently active gestures */
+  activeGestures: string[];
 };
 
 /**

@@ -24,7 +24,7 @@ export type PinchGestureOptions<GestureName extends string> = PointerGestureOpti
  * Event data specific to pinch gesture events
  * Contains information about scale, distance, and velocity
  */
-export type PinchGestureEventData<GestureName extends string> = GestureEventData<GestureName> & {
+export type PinchGestureEventData = GestureEventData & {
   /** Relative scale factor comparing current distance to initial distance (1.0 = no change) */
   scale: number;
   /** Total accumulated scale factor across all pinch operations */
@@ -35,14 +35,14 @@ export type PinchGestureEventData<GestureName extends string> = GestureEventData
   velocity: number;
   /** The original DOM pointer event that triggered this gesture event */
   srcEvent: PointerEvent;
+  /** List of active gestures */
+  activeGestures: string[];
 };
 
 /**
  * Type definition for the CustomEvent created by PinchGesture
  */
-export type PinchEvent<GestureName extends string> = CustomEvent<
-  PinchGestureEventData<GestureName>
->;
+export type PinchEvent = CustomEvent<PinchGestureEventData>;
 
 /**
  * State tracking for the PinchGesture
@@ -79,7 +79,7 @@ export class PinchGesture<GestureName extends string> extends PointerGesture<Ges
   };
 
   protected readonly isSinglePhase!: false;
-  protected readonly eventType!: PinchEvent<GestureName>;
+  protected readonly eventType!: PinchEvent;
   protected readonly optionsType!: PinchGestureOptions<GestureName>;
 
   constructor(options: PinchGestureOptions<GestureName>) {
@@ -239,7 +239,7 @@ export class PinchGesture<GestureName extends string> extends PointerGesture<Ges
     // Get list of active gestures
     const activeGestures = this.gesturesRegistry.getActiveGestures(element);
 
-    const customEventData: PinchGestureEventData<GestureName> = {
+    const customEventData: PinchGestureEventData = {
       centroid,
       target: event.target,
       srcEvent: event,
