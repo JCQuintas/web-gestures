@@ -117,6 +117,7 @@ export class TurnWheelGesture<GestureName extends string> extends Gesture<Gestur
   protected readonly eventType!: TurnWheelEvent;
   protected readonly optionsType!: TurnWheelGestureOptions<GestureName>;
   protected readonly mutableOptionsType!: Omit<typeof this.optionsType, 'name'>;
+  protected readonly mutableStateType!: Partial<typeof this.state>;
 
   /**
    * Scaling factor for delta values

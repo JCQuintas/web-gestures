@@ -81,6 +81,7 @@ export class TapGesture<GestureName extends string> extends PointerGesture<Gestu
   protected readonly eventType!: TapEvent;
   protected readonly optionsType!: TapGestureOptions<GestureName>;
   protected readonly mutableOptionsType!: Omit<typeof this.optionsType, 'name'>;
+  protected readonly mutableStateType!: never;
 
   /**
    * Maximum distance a pointer can move for a gesture to still be considered a tap

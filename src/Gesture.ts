@@ -140,6 +140,9 @@ export abstract class Gesture<GestureName extends string> {
   /** @internal For types. The options that can be changed at runtime */
   protected abstract readonly mutableOptionsType: Omit<typeof this.optionsType, 'name'>;
 
+  /** @internal For types. The state that can be changed at runtime */
+  protected abstract readonly mutableStateType: Partial<typeof this.state>;
+
   /**
    * Create a new gesture instance with the specified options
    *
@@ -173,6 +176,12 @@ export abstract class Gesture<GestureName extends string> {
       changeOptionsEventName,
       this.handleOptionsChange.bind(this)
     );
+
+    const changeStateEventName = `${this.name}ChangeState`;
+    (this.element as CustomEventListener).addEventListener(
+      changeStateEventName,
+      this.handleStateChange.bind(this)
+    );
   }
 
   /**
@@ -194,6 +203,26 @@ export abstract class Gesture<GestureName extends string> {
     this.preventDefault = options.preventDefault ?? this.preventDefault;
     this.stopPropagation = options.stopPropagation ?? this.stopPropagation;
     this.preventIf = options.preventIf ?? this.preventIf;
+  }
+
+  /**
+   * Handle state change events
+   * @param event Custom event with new state values in the detail property
+   */
+  protected handleStateChange(event: CustomEvent<typeof this.mutableStateType>): void {
+    if (event && event.detail) {
+      this.updateState(event.detail);
+    }
+  }
+
+  /**
+   * Update the gesture state with new values
+   * @param stateChanges Object containing state properties to update
+   */
+  protected updateState(stateChanges: typeof this.mutableStateType): void {
+    // This is a base implementation - concrete gesture classes should override
+    // to handle specific state updates based on their state structure
+    Object.assign(this.state, stateChanges);
   }
 
   /**
@@ -257,6 +286,12 @@ export abstract class Gesture<GestureName extends string> {
     (this.element as CustomEventListener).removeEventListener(
       changeOptionsEventName,
       this.handleOptionsChange.bind(this)
+    );
+
+    const changeStateEventName = `${this.name}ChangeState`;
+    (this.element as CustomEventListener).removeEventListener(
+      changeStateEventName,
+      this.handleStateChange.bind(this)
     );
   }
 

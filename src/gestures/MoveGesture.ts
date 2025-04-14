@@ -58,6 +58,7 @@ export class MoveGesture<GestureName extends string> extends PointerGesture<Gest
   protected readonly eventType!: MoveEvent;
   protected readonly optionsType!: MoveGestureOptions<GestureName>;
   protected readonly mutableOptionsType!: Omit<typeof this.optionsType, 'name'>;
+  protected readonly mutableStateType!: never;
 
   constructor(options: MoveGestureOptions<GestureName>) {
     super(options);

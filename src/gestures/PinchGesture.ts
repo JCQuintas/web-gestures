@@ -80,6 +80,10 @@ export class PinchGesture<GestureName extends string> extends PointerGesture<Ges
   protected readonly eventType!: PinchEvent;
   protected readonly optionsType!: PinchGestureOptions<GestureName>;
   protected readonly mutableOptionsType!: Omit<typeof this.optionsType, 'name'>;
+  protected readonly mutableStateType!: Omit<
+    Partial<typeof this.state>,
+    'startDistance' | 'lastDistance' | 'lastScale' | 'lastTime' | 'velocity'
+  >;
 
   constructor(options: PinchGestureOptions<GestureName>) {
     super(options);

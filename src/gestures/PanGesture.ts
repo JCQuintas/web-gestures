@@ -95,6 +95,10 @@ export class PanGesture<GestureName extends string> extends PointerGesture<Gestu
   protected readonly eventType!: PanEvent;
   protected readonly optionsType!: PanGestureOptions<GestureName>;
   protected readonly mutableOptionsType!: Omit<typeof this.optionsType, 'name'>;
+  protected readonly mutableStateType!: Omit<
+    Partial<typeof this.state>,
+    'startPointers' | 'startCentroid' | 'lastCentroid' | 'movementThresholdReached'
+  >;
 
   /**
    * Allowed directions for the pan gesture

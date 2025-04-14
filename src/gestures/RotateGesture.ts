@@ -51,7 +51,7 @@ export type RotateGestureState = GestureState & {
   /** The most recent angle between pointers during the gesture */
   lastAngle: number;
   /** Accumulated rotation in degrees (can exceed 360° for multiple rotations) */
-  lastRotation: number;
+  totalRotation: number;
   /** Timestamp of the last rotate event, used for velocity calculation */
   lastTime: number;
   /** Current angular velocity in degrees per second */
@@ -70,7 +70,7 @@ export class RotateGesture<GestureName extends string> extends PointerGesture<Ge
   protected state: RotateGestureState = {
     startAngle: 0,
     lastAngle: 0,
-    lastRotation: 0,
+    totalRotation: 0,
     lastTime: 0,
     velocity: 0,
     lastDelta: 0,
@@ -80,6 +80,10 @@ export class RotateGesture<GestureName extends string> extends PointerGesture<Ge
   protected readonly eventType!: RotateEvent;
   protected readonly optionsType!: RotateGestureOptions<GestureName>;
   protected readonly mutableOptionsType!: Omit<typeof this.optionsType, 'name'>;
+  protected readonly mutableStateType!: Omit<
+    Partial<typeof this.state>,
+    'startAngle' | 'lastAngle' | 'lastTime' | 'velocity' | 'lastDelta'
+  >;
 
   constructor(options: RotateGestureOptions<GestureName>) {
     super(options);
@@ -113,7 +117,7 @@ export class RotateGesture<GestureName extends string> extends PointerGesture<Ge
     this.state = {
       startAngle: 0,
       lastAngle: 0,
-      lastRotation: 0,
+      totalRotation: 0,
       lastTime: 0,
       velocity: 0,
       lastDelta: 0,
@@ -188,7 +192,7 @@ export class RotateGesture<GestureName extends string> extends PointerGesture<Ge
           this.state.lastDelta = delta;
 
           // Update rotation value (cumulative)
-          this.state.lastRotation += delta;
+          this.state.totalRotation += delta;
 
           // Calculate angular velocity (degrees per second)
           const deltaTime = (event.timeStamp - this.state.lastTime) / 1000; // convert to seconds
@@ -230,7 +234,7 @@ export class RotateGesture<GestureName extends string> extends PointerGesture<Ge
             // If we still have enough pointers, update the start angle
             // to prevent jumping when a finger is lifted
             const newAngle = calculateRotationAngle(remainingPointers);
-            this.state.startAngle = newAngle - this.state.lastRotation;
+            this.state.startAngle = newAngle - this.state.totalRotation;
             this.state.lastAngle = newAngle;
           }
         }
@@ -251,7 +255,7 @@ export class RotateGesture<GestureName extends string> extends PointerGesture<Ge
     const centroid = calculateCentroid(pointers);
 
     // Create custom event data
-    const rotation = this.state.lastRotation;
+    const rotation = this.state.totalRotation;
 
     // Use the stored lastDelta for move events
     let delta = 0;
@@ -276,7 +280,7 @@ export class RotateGesture<GestureName extends string> extends PointerGesture<Ge
       timeStamp: event.timeStamp,
       rotation,
       delta,
-      totalRotation: this.state.lastRotation,
+      totalRotation: this.state.totalRotation,
       velocity: this.state.velocity,
       activeGestures,
     };
