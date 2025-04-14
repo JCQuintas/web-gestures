@@ -1,3 +1,4 @@
+import { ActiveGesturesRegistry } from './ActiveGesturesRegistry';
 import { Gesture } from './Gesture';
 import { PointerManager } from './PointerManager';
 import { MergeUnions } from './types/MergeUnions';
@@ -239,6 +240,7 @@ export class GestureManager<
       touchAction: options.touchAction,
       passive: options.passive,
     });
+    ActiveGesturesRegistry.getInstance();
 
     // Add initial gestures as templates if provided
     if (options.gestures && options.gestures.length > 0) {
@@ -320,38 +322,6 @@ export class GestureManager<
     return element as GestureElement<T, GestureNameUnionComplete, GestureNameToEventMap>;
   }
 
-  public gestureUnion(): GestureUnion {
-    return {} as GestureUnion;
-  }
-
-  public gestureNameUnion(): GestureNameUnion {
-    return {} as GestureNameUnion;
-  }
-
-  public gestureNameComplete(): GestureNameUnionComplete {
-    return {} as GestureNameUnionComplete;
-  }
-
-  public gestureName(): GestureName {
-    return {} as GestureName;
-  }
-
-  public gesture(): Gesture<GestureName> {
-    return {} as Gesture<GestureName>;
-  }
-
-  public gestureNameToGestureMap(): GestureNameToGestureMap {
-    return {} as GestureNameToGestureMap;
-  }
-
-  public gestureNameToEventMap(): GestureNameToEventMap {
-    return {} as GestureNameToEventMap;
-  }
-
-  public gestureNameToOptionsMap(): GestureNameToOptionsMap {
-    return {} as GestureNameToOptionsMap;
-  }
-
   /**
    * Internal method to register a single gesture on an element.
    *
@@ -417,6 +387,7 @@ export class GestureManager<
 
     // Remove from the map
     elementGestures.delete(gestureName);
+    ActiveGesturesRegistry.getInstance().unregisterElement(element);
 
     // Remove the element from the map if it no longer has any gestures
     if (elementGestures.size === 0) {
@@ -438,6 +409,7 @@ export class GestureManager<
       // Unregister all gestures for this element
       for (const [_, gesture] of elementGestures) {
         gesture.destroy();
+        ActiveGesturesRegistry.getInstance().unregisterElement(element);
       }
 
       // Clear the map
@@ -458,5 +430,6 @@ export class GestureManager<
     // Clear all templates
     this.gestureTemplates.clear();
     this.elementGestureMap.clear();
+    ActiveGesturesRegistry.getInstance().destroy();
   }
 }

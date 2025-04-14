@@ -2,6 +2,7 @@
  * Base Gesture module that provides common functionality for all gesture implementations
  */
 
+import { ActiveGesturesRegistry } from './ActiveGesturesRegistry';
 import { PointerData, PointerManager } from './PointerManager';
 
 /**
@@ -36,9 +37,9 @@ export type GestureEventData = {
 /**
  * Configuration options for creating a gesture instance.
  */
-export type GestureOptions<Name extends string> = {
+export type GestureOptions<GestureName extends string> = {
   /** Unique name identifying this gesture type */
-  name: Name;
+  name: GestureName;
   /** Whether to prevent default browser action for gesture events */
   preventDefault?: boolean;
   /** Whether to stop propagation of gesture events */
@@ -84,9 +85,9 @@ export type GestureState = {
  * }
  * ```
  */
-export abstract class Gesture<Name extends string> {
+export abstract class Gesture<GestureName extends string> {
   /** Unique name identifying this gesture type */
-  public readonly name: Name;
+  public readonly name: GestureName;
 
   /** Whether to prevent default browser action for gesture events */
   protected preventDefault: boolean;
@@ -96,6 +97,9 @@ export abstract class Gesture<Name extends string> {
 
   /** Reference to the singleton PointerManager instance */
   protected pointerManager: PointerManager | null = null;
+
+  /** Reference to the singleton ActiveGesturesRegistry instance */
+  protected gesturesRegistry: ActiveGesturesRegistry<GestureName> | null = null;
 
   /** The DOM element this gesture is attached to */
   protected element: HTMLElement | null = null;
@@ -107,7 +111,7 @@ export abstract class Gesture<Name extends string> {
   protected abstract readonly eventType: Event;
 
   /** @internal For types. The options type for this gesture */
-  protected abstract readonly optionsType: GestureOptions<Name>;
+  protected abstract readonly optionsType: GestureOptions<GestureName>;
 
   /**
    * Stores the active gesture state
@@ -119,7 +123,7 @@ export abstract class Gesture<Name extends string> {
    *
    * @param options - Configuration options for this gesture
    */
-  constructor(options: GestureOptions<Name>) {
+  constructor(options: GestureOptions<GestureName>) {
     this.name = options.name;
     this.preventDefault = options.preventDefault ?? false;
     this.stopPropagation = options.stopPropagation ?? false;
@@ -133,6 +137,11 @@ export abstract class Gesture<Name extends string> {
     if (!this.pointerManager) {
       this.pointerManager = PointerManager.getInstance();
     }
+
+    if (!this.gesturesRegistry) {
+      this.gesturesRegistry =
+        ActiveGesturesRegistry.getInstance() as ActiveGesturesRegistry<GestureName>;
+    }
   }
 
   /**
@@ -141,7 +150,7 @@ export abstract class Gesture<Name extends string> {
    * @param overrides - Optional configuration options that override the defaults
    * @returns A new instance of this gesture with the same configuration and any overrides applied
    */
-  public abstract clone(overrides?: Record<string, unknown>): Gesture<Name>;
+  public abstract clone(overrides?: Record<string, unknown>): Gesture<GestureName>;
 
   /**
    * Register this gesture with the pointer manager
@@ -164,6 +173,21 @@ export abstract class Gesture<Name extends string> {
       return this.element;
     }
     return null;
+  }
+
+  /**
+   * Update the gesture's active status in the registry
+   * This should be called when the gesture becomes active or inactive
+   *
+   * @param element - The element on which the gesture is active
+   * @param isActive - Whether the gesture is becoming active or inactive
+   */
+  protected updateActiveState(element: HTMLElement, isActive: boolean): void {
+    if (isActive) {
+      this.gesturesRegistry?.registerActiveGesture(element, this);
+    } else {
+      this.gesturesRegistry?.unregisterActiveGesture(element, this);
+    }
   }
 
   /**

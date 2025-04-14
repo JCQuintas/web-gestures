@@ -19,7 +19,7 @@ import { calculateCentroid, createEventName, getDirection, isDirectionAllowed } 
  * Configuration options for PanGesture
  * Extends PointerGestureOptions with direction constraints
  */
-export type PanGestureOptions<Name extends string> = PointerGestureOptions<Name> & {
+export type PanGestureOptions<GestureName extends string> = PointerGestureOptions<GestureName> & {
   /**
    * Optional array of allowed directions for the pan gesture
    * If not specified, all directions are allowed
@@ -79,7 +79,7 @@ export type PanGestureState = GestureState & {
  * This gesture detects when users drag across elements with one or more pointers,
  * and dispatches directional movement events with delta and velocity information.
  */
-export class PanGesture<Name extends string> extends PointerGesture<Name> {
+export class PanGesture<GestureName extends string> extends PointerGesture<GestureName> {
   protected state: PanGestureState = {
     active: false,
     startPointers: new Map(),
@@ -92,7 +92,8 @@ export class PanGesture<Name extends string> extends PointerGesture<Name> {
 
   protected readonly isSinglePhase = false as const;
   protected readonly eventType: PanEvent = {} as PanEvent;
-  protected readonly optionsType: PanGestureOptions<Name> = {} as PanGestureOptions<Name>;
+  protected readonly optionsType: PanGestureOptions<GestureName> =
+    {} as PanGestureOptions<GestureName>;
 
   /**
    * Allowed directions for the pan gesture
@@ -100,12 +101,12 @@ export class PanGesture<Name extends string> extends PointerGesture<Name> {
    */
   private direction: Array<'up' | 'down' | 'left' | 'right'>;
 
-  constructor(options: PanGestureOptions<Name>) {
+  constructor(options: PanGestureOptions<GestureName>) {
     super(options);
     this.direction = options.direction || ['up', 'down', 'left', 'right'];
   }
 
-  public clone(overrides?: Record<string, unknown>): PanGesture<Name> {
+  public clone(overrides?: Record<string, unknown>): PanGesture<GestureName> {
     return new PanGesture({
       name: this.name,
       preventDefault: this.preventDefault,
@@ -221,6 +222,11 @@ export class PanGesture<Name extends string> extends PointerGesture<Name> {
             this.state.movementThresholdReached = true;
             this.state.active = true;
 
+            // Register this gesture as active in the registry
+            if (targetElement) {
+              this.updateActiveState(targetElement, true);
+            }
+
             // Emit start event
             this.emitPanEvent(targetElement, 'start', relevantPointers, event, currentCentroid);
           }
@@ -264,10 +270,20 @@ export class PanGesture<Name extends string> extends PointerGesture<Name> {
 
             // Reset active state but keep total delta values
             this.resetActiveState();
+
+            // Unregister from the active gestures registry
+            if (targetElement) {
+              this.updateActiveState(targetElement, false);
+            }
           }
         } else {
           // If threshold wasn't reached (simple click), just reset active state
           this.resetActiveState();
+
+          // Ensure we're not in the active registry
+          if (targetElement) {
+            this.updateActiveState(targetElement, false);
+          }
         }
         break;
     }
@@ -336,6 +352,9 @@ export class PanGesture<Name extends string> extends PointerGesture<Name> {
   private cancel(element: HTMLElement, pointers: PointerData[], event: PointerEvent): void {
     if (this.state.active && this.state.startCentroid && this.state.lastCentroid) {
       this.emitPanEvent(element, 'cancel', pointers, event, this.state.lastCentroid);
+
+      // Update the active registry
+      this.updateActiveState(element, false);
     }
     this.resetState();
   }
@@ -344,6 +363,11 @@ export class PanGesture<Name extends string> extends PointerGesture<Name> {
    * Reset the active gesture state for a specific element, but keep total delta values
    */
   private resetActiveState(): void {
+    // If we had an element and the state was active, make sure we unregister from the registry
+    if (this.state.active && this.element) {
+      this.updateActiveState(this.element, false);
+    }
+
     this.state.active = false;
     this.state.startPointers.clear();
     this.state.startCentroid = null;

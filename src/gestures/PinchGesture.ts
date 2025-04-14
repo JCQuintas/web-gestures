@@ -18,7 +18,7 @@ import { calculateAverageDistance, calculateCentroid, createEventName } from '..
  * Configuration options for the PinchGesture
  * Uses the same options as the base PointerGesture
  */
-export type PinchGestureOptions<Name extends string> = PointerGestureOptions<Name>;
+export type PinchGestureOptions<GestureName extends string> = PointerGestureOptions<GestureName>;
 
 /**
  * Event data specific to pinch gesture events
@@ -66,7 +66,7 @@ export type PinchGestureState = GestureState & {
  * This gesture detects when users move multiple pointers toward or away from each other,
  * and dispatches scale-related events with distance and velocity information.
  */
-export class PinchGesture<Name extends string> extends PointerGesture<Name> {
+export class PinchGesture<GestureName extends string> extends PointerGesture<GestureName> {
   protected state: PinchGestureState = {
     active: false,
     startPointers: new Map(),
@@ -80,13 +80,14 @@ export class PinchGesture<Name extends string> extends PointerGesture<Name> {
 
   protected readonly isSinglePhase = false as const;
   protected readonly eventType: PinchEvent = {} as PinchEvent;
-  protected readonly optionsType: PinchGestureOptions<Name> = {} as PinchGestureOptions<Name>;
+  protected readonly optionsType: PinchGestureOptions<GestureName> =
+    {} as PinchGestureOptions<GestureName>;
 
-  constructor(options: PinchGestureOptions<Name>) {
+  constructor(options: PinchGestureOptions<GestureName>) {
     super(options);
   }
 
-  public clone(overrides?: Record<string, unknown>): PinchGesture<Name> {
+  public clone(overrides?: Record<string, unknown>): PinchGesture<GestureName> {
     return new PinchGesture({
       name: this.name,
       preventDefault: this.preventDefault,

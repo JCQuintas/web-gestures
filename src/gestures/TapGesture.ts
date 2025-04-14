@@ -15,7 +15,7 @@ import { calculateCentroid, createEventName } from '../utils';
  * Configuration options for TapGesture
  * Extends PointerGestureOptions with tap-specific settings
  */
-export type TapGestureOptions<Name extends string> = PointerGestureOptions<Name> & {
+export type TapGestureOptions<GestureName extends string> = PointerGestureOptions<GestureName> & {
   /**
    * Maximum distance in pixels a pointer can move for the gesture to still be considered a tap
    * @default 10
@@ -69,7 +69,7 @@ export type TapGestureState = GestureState & {
  * This gesture detects when users tap on elements without significant movement,
  * and can recognize single taps, double taps, or other multi-tap sequences.
  */
-export class TapGesture<Name extends string> extends PointerGesture<Name> {
+export class TapGesture<GestureName extends string> extends PointerGesture<GestureName> {
   protected state: TapGestureState = {
     active: false,
     startPointers: new Map(),
@@ -81,7 +81,8 @@ export class TapGesture<Name extends string> extends PointerGesture<Name> {
 
   protected readonly isSinglePhase = true as const;
   protected readonly eventType: TapEvent = {} as TapEvent;
-  protected readonly optionsType: TapGestureOptions<Name> = {} as TapGestureOptions<Name>;
+  protected readonly optionsType: TapGestureOptions<GestureName> =
+    {} as TapGestureOptions<GestureName>;
 
   /**
    * Maximum distance a pointer can move for a gesture to still be considered a tap
@@ -93,13 +94,13 @@ export class TapGesture<Name extends string> extends PointerGesture<Name> {
    */
   private taps: number;
 
-  constructor(options: TapGestureOptions<Name>) {
+  constructor(options: TapGestureOptions<GestureName>) {
     super(options);
     this.maxDistance = options.maxDistance ?? 10;
     this.taps = options.taps ?? 1;
   }
 
-  public clone(overrides?: Record<string, unknown>): TapGesture<Name> {
+  public clone(overrides?: Record<string, unknown>): TapGesture<GestureName> {
     return new TapGesture({
       name: this.name,
       preventDefault: this.preventDefault,

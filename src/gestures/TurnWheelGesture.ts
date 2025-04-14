@@ -16,7 +16,7 @@ import { calculateCentroid, createEventName } from '../utils';
  * Configuration options for the TurnWheelGesture
  * Uses the base gesture options with additional wheel-specific options
  */
-export type TurnWheelGestureOptions<Name extends string> = GestureOptions<Name> & {
+export type TurnWheelGestureOptions<GestureName extends string> = GestureOptions<GestureName> & {
   /**
    * Sensitivity of the wheel gesture
    * Values > 1 increase sensitivity, values < 1 decrease sensitivity
@@ -106,7 +106,7 @@ export type TurnWheelGestureState = GestureState & {
  * and dispatches corresponding scroll events with delta information.
  * Unlike most gestures, it extends directly from Gesture rather than PointerGesture.
  */
-export class TurnWheelGesture<Name extends string> extends Gesture<Name> {
+export class TurnWheelGesture<GestureName extends string> extends Gesture<GestureName> {
   protected state: TurnWheelGestureState = {
     active: false,
     startPointers: new Map(),
@@ -117,8 +117,8 @@ export class TurnWheelGesture<Name extends string> extends Gesture<Name> {
 
   protected readonly isSinglePhase = true as const;
   protected readonly eventType: TurnWheelEvent = {} as TurnWheelEvent;
-  protected readonly optionsType: TurnWheelGestureOptions<Name> =
-    {} as TurnWheelGestureOptions<Name>;
+  protected readonly optionsType: TurnWheelGestureOptions<GestureName> =
+    {} as TurnWheelGestureOptions<GestureName>;
 
   /**
    * Scaling factor for delta values
@@ -150,7 +150,7 @@ export class TurnWheelGesture<Name extends string> extends Gesture<Name> {
    */
   private invert: boolean;
 
-  constructor(options: TurnWheelGestureOptions<Name>) {
+  constructor(options: TurnWheelGestureOptions<GestureName>) {
     super(options);
     this.scale = options.sensitivity ?? 1;
     this.max = options.max ?? Number.MAX_SAFE_INTEGER;
@@ -163,7 +163,7 @@ export class TurnWheelGesture<Name extends string> extends Gesture<Name> {
     this.state.totalDeltaZ = this.initialDelta;
   }
 
-  public clone(overrides?: Record<string, unknown>): TurnWheelGesture<Name> {
+  public clone(overrides?: Record<string, unknown>): TurnWheelGesture<GestureName> {
     return new TurnWheelGesture({
       name: this.name,
       preventDefault: this.preventDefault,
