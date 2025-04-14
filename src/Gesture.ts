@@ -33,7 +33,7 @@ export type GestureEventData = {
   /** The time at which the gesture event occurred */
   timeStamp: number;
   /** List of all currently active gestures */
-  activeGestures: string[];
+  activeGestures: Record<string, boolean>;
 };
 
 /**
@@ -114,7 +114,7 @@ export abstract class Gesture<GestureName extends string> {
   protected abstract readonly isSinglePhase: boolean;
 
   /** @internal For types. The event type this gesture is associated with */
-  protected abstract readonly eventType: Event;
+  protected abstract readonly eventType: CustomEvent;
 
   /** @internal For types. The options type for this gesture */
   protected abstract readonly optionsType: GestureOptions<GestureName>;

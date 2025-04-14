@@ -132,8 +132,16 @@ export class GestureManager<
       }
   >,
   GestureNameToEventMap = {
-    // @ts-expect-error, this makes the types work.
-    [K in keyof GestureNameToGestureMap]: GestureNameToGestureMap[K]['eventType'];
+    [K in keyof GestureNameToGestureMap]: Omit<
+      // @ts-expect-error, this makes the types work.
+      GestureNameToGestureMap[K]['eventType'],
+      'detail'
+    > & {
+      // @ts-expect-error, this makes the types work.
+      detail: Omit<GestureNameToGestureMap[K]['eventType']['detail'], 'activeGestures'> & {
+        activeGestures: Record<GestureNameUnion, boolean>;
+      };
+    };
   },
   GestureNameToOptionsMap = {
     // @ts-expect-error, this makes the types work.

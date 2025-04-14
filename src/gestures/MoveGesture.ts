@@ -28,8 +28,6 @@ export type MoveGestureOptions<GestureName extends string> = PointerGestureOptio
 export type MoveGestureEventData = GestureEventData & {
   /** The original DOM pointer event that triggered this gesture event */
   srcEvent: PointerEvent;
-  /** List of active gestures */
-  activeGestures: string[];
 };
 
 /**

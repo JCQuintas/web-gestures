@@ -35,8 +35,6 @@ export type PinchGestureEventData = GestureEventData & {
   velocity: number;
   /** The original DOM pointer event that triggered this gesture event */
   srcEvent: PointerEvent;
-  /** List of active gestures */
-  activeGestures: string[];
 };
 
 /**
