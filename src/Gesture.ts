@@ -46,11 +46,13 @@ export type GestureOptions<GestureName extends string> = {
   stopPropagation?: boolean;
 };
 
+declare const _privateKey: unique symbol;
+
 /**
  * Type for the state of a gesture recognizer.
  */
 export type GestureState = {
-  startPointers: Map<number, PointerData>;
+  [_privateKey]?: undefined;
 };
 
 /**

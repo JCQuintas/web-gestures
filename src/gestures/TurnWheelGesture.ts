@@ -108,7 +108,6 @@ export type TurnWheelGestureState = GestureState & {
  */
 export class TurnWheelGesture<GestureName extends string> extends Gesture<GestureName> {
   protected state: TurnWheelGestureState = {
-    startPointers: new Map(),
     totalDeltaX: 0,
     totalDeltaY: 0,
     totalDeltaZ: 0,
@@ -193,7 +192,6 @@ export class TurnWheelGesture<GestureName extends string> extends Gesture<Gestur
   protected resetState(): void {
     this.isActive = false;
     this.state = {
-      startPointers: new Map(),
       totalDeltaX: 0,
       totalDeltaY: 0,
       totalDeltaZ: 0,

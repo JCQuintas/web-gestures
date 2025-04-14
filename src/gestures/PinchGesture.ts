@@ -68,7 +68,6 @@ export type PinchGestureState = GestureState & {
  */
 export class PinchGesture<GestureName extends string> extends PointerGesture<GestureName> {
   protected state: PinchGestureState = {
-    startPointers: new Map(),
     startDistance: 0,
     lastDistance: 0,
     lastScale: 1,
@@ -107,7 +106,6 @@ export class PinchGesture<GestureName extends string> extends PointerGesture<Ges
   protected resetState(): void {
     this.isActive = false;
     this.state = {
-      startPointers: new Map(),
       startDistance: 0,
       lastDistance: 0,
       lastScale: 1,
@@ -145,11 +143,6 @@ export class PinchGesture<GestureName extends string> extends PointerGesture<Ges
     switch (event.type) {
       case 'pointerdown':
         if (relevantPointers.length >= 2 && !this.isActive) {
-          // Store initial pointers
-          relevantPointers.forEach(pointer => {
-            this.state.startPointers.set(pointer.pointerId, pointer);
-          });
-
           // Calculate and store the starting distance between pointers
           const initialDistance = calculateAverageDistance(relevantPointers);
           this.state.startDistance = initialDistance;

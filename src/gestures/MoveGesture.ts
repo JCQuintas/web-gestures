@@ -52,7 +52,6 @@ export type MoveGestureState = GestureState & {
 export class MoveGesture<GestureName extends string> extends PointerGesture<GestureName> {
   protected state: MoveGestureState = {
     lastPosition: null,
-    startPointers: new Map(),
   };
 
   protected readonly isSinglePhase = false as const;
@@ -103,7 +102,6 @@ export class MoveGesture<GestureName extends string> extends PointerGesture<Gest
     this.isActive = false;
     this.state = {
       lastPosition: null,
-      startPointers: new Map(),
     };
   }
 

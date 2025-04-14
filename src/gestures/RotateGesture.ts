@@ -68,7 +68,6 @@ export type RotateGestureState = GestureState & {
  */
 export class RotateGesture<GestureName extends string> extends PointerGesture<GestureName> {
   protected state: RotateGestureState = {
-    startPointers: new Map(),
     startAngle: 0,
     lastAngle: 0,
     lastRotation: 0,
@@ -107,7 +106,6 @@ export class RotateGesture<GestureName extends string> extends PointerGesture<Ge
   protected resetState() {
     this.isActive = false;
     this.state = {
-      startPointers: new Map(),
       startAngle: 0,
       lastAngle: 0,
       lastRotation: 0,
@@ -145,11 +143,6 @@ export class RotateGesture<GestureName extends string> extends PointerGesture<Ge
     switch (event.type) {
       case 'pointerdown':
         if (relevantPointers.length >= 2 && !this.isActive) {
-          // Store initial pointers
-          relevantPointers.forEach(pointer => {
-            this.state.startPointers.set(pointer.pointerId, pointer);
-          });
-
           // Calculate and store the starting angle
           const initialAngle = calculateRotationAngle(relevantPointers);
           this.state.startAngle = initialAngle;

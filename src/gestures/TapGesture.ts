@@ -71,7 +71,6 @@ export type TapGestureState = GestureState & {
  */
 export class TapGesture<GestureName extends string> extends PointerGesture<GestureName> {
   protected state: TapGestureState = {
-    startPointers: new Map(),
     startCentroid: null,
     currentTapCount: 0,
     lastTapTime: 0,
@@ -122,7 +121,6 @@ export class TapGesture<GestureName extends string> extends PointerGesture<Gestu
   protected resetState(): void {
     this.isActive = false;
     this.state = {
-      startPointers: new Map(),
       startCentroid: null,
       currentTapCount: 0,
       lastTapTime: 0,
@@ -157,11 +155,6 @@ export class TapGesture<GestureName extends string> extends PointerGesture<Gestu
     switch (event.type) {
       case 'pointerdown':
         if (!this.isActive) {
-          // Store initial pointers
-          relevantPointers.forEach(pointer => {
-            this.state.startPointers.set(pointer.pointerId, pointer);
-          });
-
           // Calculate and store the starting centroid
           this.state.startCentroid = calculateCentroid(relevantPointers);
           this.state.lastPosition = { ...this.state.startCentroid };
@@ -212,7 +205,6 @@ export class TapGesture<GestureName extends string> extends PointerGesture<Gestu
 
             // Reset active state but keep the tap count for multi-tap detection
             this.isActive = false;
-            this.state.startPointers.clear();
 
             // For multi-tap detection: keep track of the last tap position
             // but clear the start centroid to prepare for next tap
