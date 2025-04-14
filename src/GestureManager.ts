@@ -133,18 +133,22 @@ export class GestureManager<
           : never;
       }
   >,
-  GestureNameToEventMap = {
-    [K in keyof GestureNameToGestureMap]: Omit<
-      // @ts-expect-error, this makes the types work.
-      GestureNameToGestureMap[K]['eventType'],
-      'detail'
-    > & {
-      // @ts-expect-error, this makes the types work.
-      detail: Omit<GestureNameToGestureMap[K]['eventType']['detail'], 'activeGestures'> & {
-        activeGestures: Record<GestureNameUnion, boolean>;
-      };
-    };
-  },
+  GestureNameToEventMap = Simplify<{
+    [K in keyof GestureNameToGestureMap]: Simplify<
+      Omit<
+        // @ts-expect-error, this makes the types work.
+        GestureNameToGestureMap[K]['eventType'],
+        'detail'
+      > & {
+        detail: Simplify<
+          // @ts-expect-error, this makes the types work.
+          Omit<GestureNameToGestureMap[K]['eventType']['detail'], 'activeGestures'> & {
+            activeGestures: Record<GestureNameUnion, boolean>;
+          }
+        >;
+      }
+    >;
+  }>,
   GestureNameToOptionsMap = {
     // @ts-expect-error, this makes the types work.
     [K in keyof GestureNameToGestureMap]: GestureNameToGestureMap[K]['mutableOptionsType'];
@@ -213,17 +217,6 @@ export class GestureManager<
    * manager.setGestureOptions('pan', element, { threshold: 5 });
    * ```
    */
-  //   public registerElement<
-  //   T extends HTMLElement,
-  //   GNU extends GestureNameUnion,
-  //   GNS extends keyof GestureNameToOptionsMap = GNU extends keyof GestureNameToOptionsMap
-  //     ? GNU
-  //     : never,
-  // >(
-  //   gestureNames: GNS | GNS[],
-  //   element: T,
-  //   options?: Partial<Pick<GestureNameToOptionsMap, GNS>>
-  // ): GestureElement<T, GestureNameUnionComplete, GestureNameToEventMap> {
   public setGestureOptions<
     T extends HTMLElement,
     GNU extends GestureNameUnion,

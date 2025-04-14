@@ -57,9 +57,6 @@ const gestureManager = new GestureManager({
   ],
 });
 
-const _a = gestureManager.gestureNameToMutableStateMap;
-const _b = gestureManager.gestureNameToOptionsMap;
-
 // DOM Elements
 const gestureTarget = document.getElementById('gesture-target') as HTMLDivElement;
 const gestureTarget2 = document.getElementById('gesture-target2') as HTMLDivElement;
