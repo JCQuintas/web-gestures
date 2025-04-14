@@ -42,3 +42,5 @@ export type {
   TurnWheelGestureEventData,
   TurnWheelGestureOptions,
 } from './gestures/TurnWheelGesture';
+
+export type { GestureElement } from './types/GestureElement';
