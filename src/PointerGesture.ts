@@ -75,6 +75,8 @@ export abstract class PointerGesture<GestureName extends string> extends Gesture
   /** Function to unregister from the PointerManager when destroying this gesture */
   protected unregisterHandler: (() => void) | null = null;
 
+  protected abstract readonly optionsType: PointerGestureOptions<GestureName>;
+
   /**
    * Minimum number of simultaneous pointers required to activate the gesture.
    * The gesture will not start until at least this many pointers are active.
@@ -108,6 +110,14 @@ export abstract class PointerGesture<GestureName extends string> extends Gesture
     );
   }
 
+  protected updateOptions(options: Omit<typeof this.optionsType, 'name'>): void {
+    super.updateOptions(options);
+
+    this.minPointers = options.minPointers ?? this.minPointers;
+    this.maxPointers = options.maxPointers ?? this.maxPointers;
+    this.threshold = options.threshold ?? this.threshold;
+  }
+
   /**
    * Handler for pointer events from the PointerManager.
    * Concrete gesture implementations must override this method to provide
@@ -126,5 +136,6 @@ export abstract class PointerGesture<GestureName extends string> extends Gesture
       this.unregisterHandler();
       this.unregisterHandler = null;
     }
+    super.destroy();
   }
 }

@@ -103,6 +103,10 @@ export class PinchGesture<GestureName extends string> extends PointerGesture<Ges
     super.destroy();
   }
 
+  protected updateOptions(options: Omit<typeof this.optionsType, 'name'>): void {
+    super.updateOptions(options);
+  }
+
   protected resetState(): void {
     this.isActive = false;
     this.state = {

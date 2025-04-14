@@ -4,6 +4,7 @@
 
 import { ActiveGesturesRegistry } from './ActiveGesturesRegistry';
 import { PointerData, PointerManager } from './PointerManager';
+import { CustomEventListener } from './types/CustomEventListener';
 
 /**
  * The possible phases of a gesture during its lifecycle.
@@ -163,6 +164,33 @@ export abstract class Gesture<GestureName extends string> {
       this.gesturesRegistry =
         ActiveGesturesRegistry.getInstance() as ActiveGesturesRegistry<GestureName>;
     }
+
+    const changeOptionsEventName = `${this.name}ChangeOptions`;
+    (this.element as CustomEventListener).addEventListener(
+      changeOptionsEventName,
+      this.handleOptionsChange.bind(this)
+    );
+  }
+
+  /**
+   * Handle option change events
+   * @param event Custom event with new options in the detail property
+   */
+  protected handleOptionsChange(event: CustomEvent<Omit<typeof this.optionsType, 'name'>>): void {
+    if (event && event.detail) {
+      this.updateOptions(event.detail);
+    }
+  }
+
+  /**
+   * Update the gesture options with new values
+   * @param options Object containing properties to update
+   */
+  protected updateOptions(options: Omit<typeof this.optionsType, 'name'>): void {
+    // Update common options
+    this.preventDefault = options.preventDefault ?? this.preventDefault;
+    this.stopPropagation = options.stopPropagation ?? this.stopPropagation;
+    this.preventIf = options.preventIf ?? this.preventIf;
   }
 
   /**
@@ -221,7 +249,13 @@ export abstract class Gesture<GestureName extends string> {
    * Clean up the gesture and unregister any listeners
    * Call this method when the gesture is no longer needed to prevent memory leaks
    */
-  public abstract destroy(): void;
+  public destroy(): void {
+    const changeOptionsEventName = `${this.name}ChangeOptions`;
+    (this.element as CustomEventListener).removeEventListener(
+      changeOptionsEventName,
+      this.handleOptionsChange.bind(this)
+    );
+  }
 
   /**
    * Reset the gesture state to its initial values

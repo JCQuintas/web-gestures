@@ -98,6 +98,11 @@ export class MoveGesture<GestureName extends string> extends PointerGesture<Gest
     super.destroy();
   }
 
+  protected updateOptions(options: Omit<typeof this.optionsType, 'name'>): void {
+    // Call parent method to handle common options
+    super.updateOptions(options);
+  }
+
   protected resetState(): void {
     this.isActive = false;
     this.state = {

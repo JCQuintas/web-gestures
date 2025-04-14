@@ -63,6 +63,7 @@ const gestureTarget2 = document.getElementById('gesture-target2') as HTMLDivElem
 const logContainer = document.getElementById('log-container') as HTMLDivElement;
 const clearLogButton = document.getElementById('clear-log') as HTMLButtonElement;
 const resetPositionButton = document.getElementById('reset-position') as HTMLButtonElement;
+const rollMaxButton = document.getElementById('change-roll-max') as HTMLButtonElement;
 
 // Register multiple gestures at once for the element
 // This will return the element with properly typed event listeners
@@ -285,6 +286,16 @@ clearLogButton.addEventListener('click', () => {
 resetPositionButton.addEventListener('click', () => {
   updatePosition(target, { targetX: 0, targetY: 0, scale: 1, rotation: 0 });
   addLogEntry('Position reset');
+});
+
+rollMaxButton.addEventListener('click', () => {
+  target.dispatchEvent(
+    new CustomEvent<{ max: number }>('rollChangeOptions', {
+      detail: { max: 5 },
+      bubbles: false,
+      cancelable: false,
+    })
+  );
 });
 
 // Initial log message

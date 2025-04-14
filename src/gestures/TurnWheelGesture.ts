@@ -187,6 +187,7 @@ export class TurnWheelGesture<GestureName extends string> extends Gesture<Gestur
     // Remove the element-specific event listener
     this.element.removeEventListener('wheel', this.handleWheelEvent.bind(this, this.element));
     this.resetState();
+    super.destroy();
   }
 
   protected resetState(): void {
@@ -196,6 +197,16 @@ export class TurnWheelGesture<GestureName extends string> extends Gesture<Gestur
       totalDeltaY: 0,
       totalDeltaZ: 0,
     };
+  }
+
+  protected updateOptions(options: Omit<typeof this.optionsType, 'name'>): void {
+    super.updateOptions(options);
+
+    this.scale = options.sensitivity ?? this.scale;
+    this.max = options.max ?? this.max;
+    this.min = options.min ?? this.min;
+    this.initialDelta = options.initialDelta ?? this.initialDelta;
+    this.invert = options.invert ?? this.invert;
   }
 
   /**

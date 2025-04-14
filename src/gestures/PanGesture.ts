@@ -126,6 +126,12 @@ export class PanGesture<GestureName extends string> extends PointerGesture<Gestu
     super.destroy();
   }
 
+  protected updateOptions(options: Omit<typeof this.optionsType, 'name'>): void {
+    super.updateOptions(options);
+
+    this.direction = options.direction || this.direction;
+  }
+
   protected resetState(): void {
     this.isActive = false;
     this.state = {

@@ -103,6 +103,10 @@ export class RotateGesture<GestureName extends string> extends PointerGesture<Ge
     super.destroy();
   }
 
+  protected updateOptions(options: Omit<typeof this.optionsType, 'name'>): void {
+    super.updateOptions(options);
+  }
+
   protected resetState() {
     this.isActive = false;
     this.state = {

@@ -118,6 +118,13 @@ export class TapGesture<GestureName extends string> extends PointerGesture<Gestu
     super.destroy();
   }
 
+  protected updateOptions(options: Omit<typeof this.optionsType, 'name'>): void {
+    super.updateOptions(options);
+
+    this.maxDistance = options.maxDistance ?? this.maxDistance;
+    this.taps = options.taps ?? this.taps;
+  }
+
   protected resetState(): void {
     this.isActive = false;
     this.state = {
