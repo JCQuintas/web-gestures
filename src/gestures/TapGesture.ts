@@ -80,6 +80,7 @@ export class TapGesture<GestureName extends string> extends PointerGesture<Gestu
   protected readonly isSinglePhase!: true;
   protected readonly eventType!: TapEvent;
   protected readonly optionsType!: TapGestureOptions<GestureName>;
+  protected readonly mutableOptionsType!: Omit<typeof this.optionsType, 'name'>;
 
   /**
    * Maximum distance a pointer can move for a gesture to still be considered a tap
@@ -118,7 +119,7 @@ export class TapGesture<GestureName extends string> extends PointerGesture<Gestu
     super.destroy();
   }
 
-  protected updateOptions(options: Omit<typeof this.optionsType, 'name'>): void {
+  protected updateOptions(options: typeof this.mutableOptionsType): void {
     super.updateOptions(options);
 
     this.maxDistance = options.maxDistance ?? this.maxDistance;

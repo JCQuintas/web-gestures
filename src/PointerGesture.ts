@@ -76,6 +76,7 @@ export abstract class PointerGesture<GestureName extends string> extends Gesture
   protected unregisterHandler: (() => void) | null = null;
 
   protected abstract readonly optionsType: PointerGestureOptions<GestureName>;
+  protected abstract readonly mutableOptionsType: Omit<typeof this.optionsType, 'name'>;
 
   /**
    * Minimum number of simultaneous pointers required to activate the gesture.
@@ -110,7 +111,7 @@ export abstract class PointerGesture<GestureName extends string> extends Gesture
     );
   }
 
-  protected updateOptions(options: Omit<typeof this.optionsType, 'name'>): void {
+  protected updateOptions(options: typeof this.mutableOptionsType): void {
     super.updateOptions(options);
 
     this.minPointers = options.minPointers ?? this.minPointers;

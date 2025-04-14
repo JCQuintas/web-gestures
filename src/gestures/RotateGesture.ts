@@ -79,6 +79,7 @@ export class RotateGesture<GestureName extends string> extends PointerGesture<Ge
   protected readonly isSinglePhase!: false;
   protected readonly eventType!: RotateEvent;
   protected readonly optionsType!: RotateGestureOptions<GestureName>;
+  protected readonly mutableOptionsType!: Omit<typeof this.optionsType, 'name'>;
 
   constructor(options: RotateGestureOptions<GestureName>) {
     super(options);
@@ -103,7 +104,7 @@ export class RotateGesture<GestureName extends string> extends PointerGesture<Ge
     super.destroy();
   }
 
-  protected updateOptions(options: Omit<typeof this.optionsType, 'name'>): void {
+  protected updateOptions(options: typeof this.mutableOptionsType): void {
     super.updateOptions(options);
   }
 

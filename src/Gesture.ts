@@ -137,6 +137,9 @@ export abstract class Gesture<GestureName extends string> {
   /** @internal For types. The options type for this gesture */
   protected abstract readonly optionsType: GestureOptions<GestureName>;
 
+  /** @internal For types. The options that can be changed at runtime */
+  protected abstract readonly mutableOptionsType: Omit<typeof this.optionsType, 'name'>;
+
   /**
    * Create a new gesture instance with the specified options
    *
@@ -176,7 +179,7 @@ export abstract class Gesture<GestureName extends string> {
    * Handle option change events
    * @param event Custom event with new options in the detail property
    */
-  protected handleOptionsChange(event: CustomEvent<Omit<typeof this.optionsType, 'name'>>): void {
+  protected handleOptionsChange(event: CustomEvent<typeof this.mutableOptionsType>): void {
     if (event && event.detail) {
       this.updateOptions(event.detail);
     }
@@ -186,7 +189,7 @@ export abstract class Gesture<GestureName extends string> {
    * Update the gesture options with new values
    * @param options Object containing properties to update
    */
-  protected updateOptions(options: Omit<typeof this.optionsType, 'name'>): void {
+  protected updateOptions(options: typeof this.mutableOptionsType): void {
     // Update common options
     this.preventDefault = options.preventDefault ?? this.preventDefault;
     this.stopPropagation = options.stopPropagation ?? this.stopPropagation;

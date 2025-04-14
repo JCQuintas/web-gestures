@@ -79,6 +79,7 @@ export class PinchGesture<GestureName extends string> extends PointerGesture<Ges
   protected readonly isSinglePhase!: false;
   protected readonly eventType!: PinchEvent;
   protected readonly optionsType!: PinchGestureOptions<GestureName>;
+  protected readonly mutableOptionsType!: Omit<typeof this.optionsType, 'name'>;
 
   constructor(options: PinchGestureOptions<GestureName>) {
     super(options);
@@ -103,7 +104,7 @@ export class PinchGesture<GestureName extends string> extends PointerGesture<Ges
     super.destroy();
   }
 
-  protected updateOptions(options: Omit<typeof this.optionsType, 'name'>): void {
+  protected updateOptions(options: typeof this.mutableOptionsType): void {
     super.updateOptions(options);
   }
 

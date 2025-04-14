@@ -116,6 +116,7 @@ export class TurnWheelGesture<GestureName extends string> extends Gesture<Gestur
   protected readonly isSinglePhase!: true;
   protected readonly eventType!: TurnWheelEvent;
   protected readonly optionsType!: TurnWheelGestureOptions<GestureName>;
+  protected readonly mutableOptionsType!: Omit<typeof this.optionsType, 'name'>;
 
   /**
    * Scaling factor for delta values
@@ -199,7 +200,7 @@ export class TurnWheelGesture<GestureName extends string> extends Gesture<Gestur
     };
   }
 
-  protected updateOptions(options: Omit<typeof this.optionsType, 'name'>): void {
+  protected updateOptions(options: typeof this.mutableOptionsType): void {
     super.updateOptions(options);
 
     this.scale = options.sensitivity ?? this.scale;

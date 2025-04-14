@@ -94,6 +94,7 @@ export class PanGesture<GestureName extends string> extends PointerGesture<Gestu
   protected readonly isSinglePhase!: false;
   protected readonly eventType!: PanEvent;
   protected readonly optionsType!: PanGestureOptions<GestureName>;
+  protected readonly mutableOptionsType!: Omit<typeof this.optionsType, 'name'>;
 
   /**
    * Allowed directions for the pan gesture
@@ -126,7 +127,7 @@ export class PanGesture<GestureName extends string> extends PointerGesture<Gestu
     super.destroy();
   }
 
-  protected updateOptions(options: Omit<typeof this.optionsType, 'name'>): void {
+  protected updateOptions(options: typeof this.mutableOptionsType): void {
     super.updateOptions(options);
 
     this.direction = options.direction || this.direction;

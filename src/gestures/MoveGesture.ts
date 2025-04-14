@@ -57,6 +57,7 @@ export class MoveGesture<GestureName extends string> extends PointerGesture<Gest
   protected readonly isSinglePhase!: false;
   protected readonly eventType!: MoveEvent;
   protected readonly optionsType!: MoveGestureOptions<GestureName>;
+  protected readonly mutableOptionsType!: Omit<typeof this.optionsType, 'name'>;
 
   constructor(options: MoveGestureOptions<GestureName>) {
     super(options);
@@ -98,7 +99,7 @@ export class MoveGesture<GestureName extends string> extends PointerGesture<Gest
     super.destroy();
   }
 
-  protected updateOptions(options: Omit<typeof this.optionsType, 'name'>): void {
+  protected updateOptions(options: typeof this.mutableOptionsType): void {
     // Call parent method to handle common options
     super.updateOptions(options);
   }
