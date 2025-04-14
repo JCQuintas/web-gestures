@@ -70,6 +70,7 @@ export class MoveGesture<GestureName extends string> extends PointerGesture<Gest
       threshold: this.threshold,
       minPointers: this.minPointers,
       maxPointers: this.maxPointers,
+      preventIf: [...this.preventIf],
       // Apply any overrides passed to the method
       ...overrides,
     });
@@ -156,8 +157,6 @@ export class MoveGesture<GestureName extends string> extends PointerGesture<Gest
     const targetElement = this.getTargetElement(event);
     if (!targetElement) return;
 
-    if (!this.isActive) return;
-
     // Make sure we're still within pointer count constraints
     if (pointersArray.length < this.minPointers || pointersArray.length > this.maxPointers) {
       return;
@@ -167,6 +166,10 @@ export class MoveGesture<GestureName extends string> extends PointerGesture<Gest
     const currentPosition = { x: event.clientX, y: event.clientY };
     this.state.lastPosition = currentPosition;
 
+    if (!this.isActive) {
+      this.emitMoveEvent(targetElement, 'start', pointersArray, event);
+      return;
+    }
     // Emit ongoing event
     this.emitMoveEvent(targetElement, 'ongoing', pointersArray, event);
   }
@@ -184,6 +187,9 @@ export class MoveGesture<GestureName extends string> extends PointerGesture<Gest
     pointers: PointerData[],
     event: PointerEvent
   ): void {
+    if (this.shouldPreventGesture(element)) {
+      return;
+    }
     const currentPosition = this.state.lastPosition || calculateCentroid(pointers);
 
     // Get list of active gestures

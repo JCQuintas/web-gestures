@@ -115,6 +115,7 @@ export class PanGesture<GestureName extends string> extends PointerGesture<Gestu
       minPointers: this.minPointers,
       maxPointers: this.maxPointers,
       direction: [...this.direction],
+      preventIf: [...this.preventIf],
       // Apply any overrides passed to the method
       ...overrides,
     });
@@ -169,6 +170,15 @@ export class PanGesture<GestureName extends string> extends PointerGesture<Gestu
     // Find which element (if any) is being targeted
     const targetElement = this.getTargetElement(event);
     if (!targetElement) return;
+
+    // Check if this gesture should be prevented by active gestures
+    if (this.shouldPreventGesture(targetElement)) {
+      if (this.isActive) {
+        // If the gesture was active but now should be prevented, cancel it gracefully
+        this.cancel(targetElement, pointersArray, event);
+      }
+      return;
+    }
 
     // Filter pointers to only include those targeting our element or its children
     const relevantPointers = pointersArray.filter(

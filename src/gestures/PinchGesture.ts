@@ -92,6 +92,7 @@ export class PinchGesture<GestureName extends string> extends PointerGesture<Ges
       threshold: this.threshold,
       minPointers: this.minPointers,
       maxPointers: this.maxPointers,
+      preventIf: [...this.preventIf],
       // Apply any overrides passed to the method
       ...overrides,
     });
@@ -123,6 +124,16 @@ export class PinchGesture<GestureName extends string> extends PointerGesture<Ges
     // Find which element (if any) is being targeted
     const targetElement = this.getTargetElement(event);
     if (!targetElement) return;
+
+    // Check if this gesture should be prevented by active gestures
+    if (this.shouldPreventGesture(targetElement)) {
+      if (this.isActive) {
+        // If the gesture was active but now should be prevented, end it gracefully
+        this.emitPinchEvent(targetElement, 'cancel', pointersArray, event);
+        this.resetState();
+      }
+      return;
+    }
 
     // Filter pointers to only include those targeting our element or its children
     const relevantPointers = pointersArray.filter(

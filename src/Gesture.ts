@@ -46,6 +46,18 @@ export type GestureOptions<GestureName extends string> = {
   preventDefault?: boolean;
   /** Whether to stop propagation of gesture events */
   stopPropagation?: boolean;
+  // Hard to correctly type this, so we just use string[]
+  /**
+   * List of gesture names that should prevent this gesture from activating when they are active.
+   * If any of these gestures are active, this gesture will not be recognized.
+   *
+   * This only works when the gestures in the array have phases. Because `TurnWheel` and `Tap`
+   * gestures are single-phase, they will not be able to prevent other gestures.
+   *
+   * @example ['pan', 'pinch']
+   * @default [] (no prevented gestures)
+   */
+  preventIf?: string[];
 };
 
 declare const _privateKey: unique symbol;
@@ -98,6 +110,11 @@ export abstract class Gesture<GestureName extends string> {
   /** Whether to stop propagation of gesture events */
   protected stopPropagation: boolean;
 
+  /**
+   * List of gesture names that should prevent this gesture from activating when they are active.
+   */
+  protected preventIf: string[];
+
   /** Reference to the singleton PointerManager instance */
   protected pointerManager!: PointerManager;
 
@@ -128,6 +145,7 @@ export abstract class Gesture<GestureName extends string> {
     this.name = options.name;
     this.preventDefault = options.preventDefault ?? false;
     this.stopPropagation = options.stopPropagation ?? false;
+    this.preventIf = options.preventIf ?? [];
   }
 
   /**
@@ -180,6 +198,23 @@ export abstract class Gesture<GestureName extends string> {
   /** Whether the gesture is currently active */
   get isActive(): boolean {
     return this.gesturesRegistry.isGestureActive(this.element, this) ?? false;
+  }
+
+  /**
+   * Checks if this gesture should be prevented from activating.
+   *
+   * @param element - The DOM element to check against
+   * @returns true if the gesture should be prevented, false otherwise
+   */
+  protected shouldPreventGesture(element: HTMLElement): boolean {
+    if (this.preventIf.length === 0) {
+      return false; // No prevention rules, allow the gesture
+    }
+
+    const activeGestures = this.gesturesRegistry.getActiveGestures(element);
+
+    // Check if any of the gestures that would prevent this one are active
+    return this.preventIf.some(gestureName => activeGestures[gestureName]);
   }
 
   /**

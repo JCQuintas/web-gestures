@@ -107,6 +107,7 @@ export class TapGesture<GestureName extends string> extends PointerGesture<Gestu
       maxPointers: this.maxPointers,
       maxDistance: this.maxDistance,
       taps: this.taps,
+      preventIf: [...this.preventIf],
       // Apply any overrides passed to the method
       ...overrides,
     });

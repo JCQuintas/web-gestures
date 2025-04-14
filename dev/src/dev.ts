@@ -24,6 +24,7 @@ const gestureManager = new GestureManager({
       name: 'move',
       minPointers: 1,
       maxPointers: 1,
+      preventIf: ['pan'], // Prevent move gesture when pan is active
     }),
     new PinchGesture({
       name: 'pinch',

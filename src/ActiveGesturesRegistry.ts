@@ -93,7 +93,7 @@ export class ActiveGesturesRegistry<GestureName extends string> {
    * @param element - The DOM element to query
    * @returns Array of active gesture names
    */
-  public getActiveGestures(element: HTMLElement): Record<GestureName, boolean> {
+  public getActiveGestures(element: HTMLElement): Record<string, boolean> {
     const elementGestures = this.activeGestures.get(element);
     if (!elementGestures) return {} as Record<string, boolean>;
 

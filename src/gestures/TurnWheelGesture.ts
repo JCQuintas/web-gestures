@@ -170,6 +170,7 @@ export class TurnWheelGesture<GestureName extends string> extends Gesture<Gestur
       min: this.min,
       initialDelta: this.initialDelta,
       invert: this.invert,
+      preventIf: [...this.preventIf],
       // Apply any overrides passed to the method
       ...overrides,
     });
@@ -203,6 +204,11 @@ export class TurnWheelGesture<GestureName extends string> extends Gesture<Gestur
    * @param event The original wheel event
    */
   private handleWheelEvent(element: HTMLElement, event: WheelEvent): void {
+    // Check if this gesture should be prevented by active gestures
+    if (this.shouldPreventGesture(element)) {
+      return;
+    }
+
     // Get pointers from the PointerManager to use for centroid calculation
     const pointers = this.pointerManager.getPointers() || new Map();
     const pointersArray = Array.from(pointers.values());
