@@ -218,7 +218,7 @@ export class GestureManager<
   },
   GestureNameToOptionsMap = {
     // @ts-expect-error, this makes the types work.
-    [K in keyof GestureNameToGestureMap]: GestureNameToGestureMap[K]['optionsType'];
+    [K in keyof GestureNameToGestureMap]: Omit<GestureNameToGestureMap[K]['optionsType'], 'name'>;
   },
 > {
   /** Repository of gesture templates that can be cloned for specific elements */
@@ -294,23 +294,29 @@ export class GestureManager<
    * );
    * ```
    */
-  public registerElement<T extends HTMLElement, GNU extends GestureNameUnion>(
+  public registerElement<
+    T extends HTMLElement,
+    GNU extends GestureNameUnion,
+    GNS extends keyof GestureNameToOptionsMap = GNU extends keyof GestureNameToOptionsMap
+      ? GNU
+      : never,
+  >(
     gestureNames: GNU | GNU[],
     element: T,
-    options?: Partial<Record<GNU, Record<string, unknown>>>
+    options?: Partial<Pick<GestureNameToOptionsMap, GNS>>
   ): GestureElement<T, GestureNameUnionComplete, GestureNameToEventMap> {
     // Handle array of gesture names
     if (Array.isArray(gestureNames)) {
       gestureNames.forEach(name => {
-        const gestureOptions = options?.[name];
-        this._registerSingleGesture(name, element, gestureOptions);
+        const gestureOptions = options?.[name as unknown as GNS];
+        this._registerSingleGesture(name, element, gestureOptions!);
       });
       return element as GestureElement<T, GestureNameUnionComplete, GestureNameToEventMap>;
     }
 
     // Handle single gesture name
-    const gestureOptions = options?.[gestureNames];
-    this._registerSingleGesture(gestureNames, element, gestureOptions);
+    const gestureOptions = options?.[gestureNames as unknown as GNS];
+    this._registerSingleGesture(gestureNames, element, gestureOptions!);
     return element as GestureElement<T, GestureNameUnionComplete, GestureNameToEventMap>;
   }
 
