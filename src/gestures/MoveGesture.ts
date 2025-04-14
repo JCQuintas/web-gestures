@@ -54,10 +54,9 @@ export class MoveGesture<GestureName extends string> extends PointerGesture<Gest
     lastPosition: null,
   };
 
-  protected readonly isSinglePhase = false as const;
-  protected readonly eventType: MoveEvent<GestureName> = {} as MoveEvent<GestureName>;
-  protected readonly optionsType: MoveGestureOptions<GestureName> =
-    {} as MoveGestureOptions<GestureName>;
+  protected readonly isSinglePhase!: false;
+  protected readonly eventType!: MoveEvent<GestureName>;
+  protected readonly optionsType!: MoveGestureOptions<GestureName>;
 
   constructor(options: MoveGestureOptions<GestureName>) {
     super(options);

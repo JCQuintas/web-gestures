@@ -78,10 +78,9 @@ export class RotateGesture<GestureName extends string> extends PointerGesture<Ge
     lastDelta: 0,
   };
 
-  public readonly isSinglePhase = false as const;
-  protected readonly eventType: RotateEvent<GestureName> = {} as RotateEvent<GestureName>;
-  protected readonly optionsType: RotateGestureOptions<GestureName> =
-    {} as RotateGestureOptions<GestureName>;
+  protected readonly isSinglePhase!: false;
+  protected readonly eventType!: RotateEvent<GestureName>;
+  protected readonly optionsType!: RotateGestureOptions<GestureName>;
 
   constructor(options: RotateGestureOptions<GestureName>) {
     super(options);

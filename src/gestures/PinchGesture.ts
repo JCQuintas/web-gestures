@@ -78,10 +78,9 @@ export class PinchGesture<GestureName extends string> extends PointerGesture<Ges
     totalScale: 1,
   };
 
-  protected readonly isSinglePhase = false as const;
-  protected readonly eventType: PinchEvent<GestureName> = {} as PinchEvent<GestureName>;
-  protected readonly optionsType: PinchGestureOptions<GestureName> =
-    {} as PinchGestureOptions<GestureName>;
+  protected readonly isSinglePhase!: false;
+  protected readonly eventType!: PinchEvent<GestureName>;
+  protected readonly optionsType!: PinchGestureOptions<GestureName>;
 
   constructor(options: PinchGestureOptions<GestureName>) {
     super(options);

@@ -91,10 +91,9 @@ export class PanGesture<GestureName extends string> extends PointerGesture<Gestu
     totalDeltaY: 0,
   };
 
-  protected readonly isSinglePhase = false as const;
-  protected readonly eventType: PanEvent<GestureName> = {} as PanEvent<GestureName>;
-  protected readonly optionsType: PanGestureOptions<GestureName> =
-    {} as PanGestureOptions<GestureName>;
+  protected readonly isSinglePhase!: false;
+  protected readonly eventType!: PanEvent<GestureName>;
+  protected readonly optionsType!: PanGestureOptions<GestureName>;
 
   /**
    * Allowed directions for the pan gesture

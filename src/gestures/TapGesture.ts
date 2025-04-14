@@ -77,10 +77,9 @@ export class TapGesture<GestureName extends string> extends PointerGesture<Gestu
     lastPosition: null,
   };
 
-  protected readonly isSinglePhase = true as const;
-  protected readonly eventType: TapEvent<GestureName> = {} as TapEvent<GestureName>;
-  protected readonly optionsType: TapGestureOptions<GestureName> =
-    {} as TapGestureOptions<GestureName>;
+  protected readonly isSinglePhase!: true;
+  protected readonly eventType!: TapEvent<GestureName>;
+  protected readonly optionsType!: TapGestureOptions<GestureName>;
 
   /**
    * Maximum distance a pointer can move for a gesture to still be considered a tap
