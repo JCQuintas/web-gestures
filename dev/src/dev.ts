@@ -57,6 +57,9 @@ const gestureManager = new GestureManager({
   ],
 });
 
+const _a = gestureManager.gestureNameToMutableStateMap;
+const _b = gestureManager.gestureNameToOptionsMap;
+
 // DOM Elements
 const gestureTarget = document.getElementById('gesture-target') as HTMLDivElement;
 const gestureTarget2 = document.getElementById('gesture-target2') as HTMLDivElement;
@@ -75,6 +78,7 @@ const target = gestureManager.registerElement(
 
 const target2 = gestureManager.registerElement(['pan', 'pinch', 'rotate', 'roll'], gestureTarget2, {
   roll: { max: 10, min: 0.1 },
+  pinch: { threshold: 0 },
 });
 
 // Set up event listeners

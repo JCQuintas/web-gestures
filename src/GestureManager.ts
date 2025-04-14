@@ -3,6 +3,8 @@ import { Gesture } from './Gesture';
 import { PointerManager } from './PointerManager';
 import { GestureElement } from './types/GestureElement';
 import { MergeUnions } from './types/MergeUnions';
+import { OmitNever } from './types/OmitNever';
+import { Simplify } from './types/Simplify';
 
 /**
  * Configuration options for initializing the GestureManager
@@ -145,14 +147,23 @@ export class GestureManager<
   },
   GestureNameToOptionsMap = {
     // @ts-expect-error, this makes the types work.
-    [K in keyof GestureNameToGestureMap]: Omit<GestureNameToGestureMap[K]['optionsType'], 'name'>;
+    [K in keyof GestureNameToGestureMap]: GestureNameToGestureMap[K]['mutableOptionsType'];
   },
+  GestureNameToStateMap = Simplify<
+    OmitNever<{
+      // @ts-expect-error, this makes the types work.
+      [K in keyof GestureNameToGestureMap]: GestureNameToGestureMap[K]['mutableStateType'];
+    }>
+  >,
 > {
   /** Repository of gesture templates that can be cloned for specific elements */
   private gestureTemplates: Map<string, Gesture<string>> = new Map();
 
   /** Maps DOM elements to their active gesture instances */
   private elementGestureMap: Map<HTMLElement, Map<string, Gesture<string>>> = new Map();
+
+  public gestureNameToOptionsMap!: GestureNameToOptionsMap;
+  public gestureNameToMutableStateMap!: GestureNameToStateMap;
 
   /**
    * Create a new GestureManager instance to coordinate gesture recognition
@@ -229,7 +240,7 @@ export class GestureManager<
       ? GNU
       : never,
   >(
-    gestureNames: GNU | GNU[],
+    gestureNames: GNS | GNS[],
     element: T,
     options?: Partial<Pick<GestureNameToOptionsMap, GNS>>
   ): GestureElement<T, GestureNameUnionComplete, GestureNameToEventMap> {
@@ -237,14 +248,14 @@ export class GestureManager<
     if (Array.isArray(gestureNames)) {
       gestureNames.forEach(name => {
         const gestureOptions = options?.[name as unknown as GNS];
-        this._registerSingleGesture(name, element, gestureOptions!);
+        this._registerSingleGesture(name as string, element, gestureOptions!);
       });
       return element as GestureElement<T, GestureNameUnionComplete, GestureNameToEventMap>;
     }
 
     // Handle single gesture name
     const gestureOptions = options?.[gestureNames as unknown as GNS];
-    this._registerSingleGesture(gestureNames, element, gestureOptions!);
+    this._registerSingleGesture(gestureNames as string, element, gestureOptions!);
     return element as GestureElement<T, GestureNameUnionComplete, GestureNameToEventMap>;
   }
 
