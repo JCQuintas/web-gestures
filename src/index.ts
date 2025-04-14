@@ -42,6 +42,3 @@ export type {
   TurnWheelGestureEventData,
   TurnWheelGestureOptions,
 } from './gestures/TurnWheelGesture';
-
-// Export utility types
-export type { StatefulEventMap } from './types';

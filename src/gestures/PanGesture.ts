@@ -12,7 +12,7 @@
 import { GestureEventData, GesturePhase, GestureState } from '../Gesture';
 import { PointerGesture, PointerGestureOptions } from '../PointerGesture';
 import { PointerData } from '../PointerManager';
-import { InternalEvent } from '../types';
+import { InternalEvent } from '../types/InternalEvent';
 import { calculateCentroid, createEventName, getDirection, isDirectionAllowed } from '../utils';
 
 /**

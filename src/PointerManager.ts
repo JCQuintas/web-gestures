@@ -8,7 +8,7 @@
  * 4. Distributing events to registered gesture recognizers
  */
 
-import { InternalEvent } from './types';
+import { InternalEvent } from './types/InternalEvent';
 
 /**
  * Normalized representation of a pointer, containing all relevant information

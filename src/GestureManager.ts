@@ -1,6 +1,6 @@
 import { Gesture } from './Gesture';
 import { PointerManager } from './PointerManager';
-import { MergeUnions } from './types';
+import { MergeUnions } from './types/MergeUnions';
 
 /**
  * Configuration options for initializing the GestureManager

@@ -12,7 +12,6 @@
     "forceConsistentCasingInFileNames": true,
     "sourceMap": true,
     "rootDir": ".",
-    "baseUrl": ".",
     "noImplicitAny": true,
     "erasableSyntaxOnly": true
   },
