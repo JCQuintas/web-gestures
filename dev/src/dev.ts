@@ -91,7 +91,7 @@ target.addEventListener('pan', event => {
   const detail = event.detail;
 
   addLogEntry(
-    `Pan moved to: x=${Math.round(detail.totalDeltaX)}, y=${Math.round(detail.totalDeltaX)}`
+    `Pan moved to: x=${Math.round(detail.totalDeltaX)}, y=${Math.round(detail.totalDeltaY)}`
   );
   updatePosition(target, { targetX: detail.totalDeltaX, targetY: detail.totalDeltaY });
 });

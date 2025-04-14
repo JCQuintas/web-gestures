@@ -115,12 +115,12 @@ export class PinchGesture<GestureName extends string> extends PointerGesture<Ges
   protected resetState(): void {
     this.isActive = false;
     this.state = {
+      ...this.state,
       startDistance: 0,
       lastDistance: 0,
       lastScale: 1,
       lastTime: 0,
       velocity: 0,
-      totalScale: 1,
     };
   }
 

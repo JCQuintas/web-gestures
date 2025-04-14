@@ -115,9 +115,9 @@ export class RotateGesture<GestureName extends string> extends PointerGesture<Ge
   protected resetState() {
     this.isActive = false;
     this.state = {
+      ...this.state,
       startAngle: 0,
       lastAngle: 0,
-      totalRotation: 0,
       lastTime: 0,
       velocity: 0,
       lastDelta: 0,

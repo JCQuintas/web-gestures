@@ -140,12 +140,11 @@ export class PanGesture<GestureName extends string> extends PointerGesture<Gestu
   protected resetState(): void {
     this.isActive = false;
     this.state = {
+      ...this.state,
       startPointers: new Map(),
       startCentroid: null,
       lastCentroid: null,
       movementThresholdReached: false,
-      totalDeltaX: 0,
-      totalDeltaY: 0,
     };
   }
 
@@ -171,7 +170,7 @@ export class PanGesture<GestureName extends string> extends PointerGesture<Gestu
           );
         }
         // Don't reset total delta values on force reset - just the active gesture state
-        this.resetActiveState();
+        this.resetState();
       }
       return;
     }
@@ -285,11 +284,11 @@ export class PanGesture<GestureName extends string> extends PointerGesture<Gestu
             this.emitPanEvent(targetElement, 'end', relevantPointers, event, currentCentroid);
 
             // Reset active state but keep total delta values
-            this.resetActiveState();
+            this.resetState();
           }
         } else {
           // If threshold wasn't reached (simple click), just reset active state
-          this.resetActiveState();
+          this.resetState();
         }
         break;
     }
@@ -364,16 +363,5 @@ export class PanGesture<GestureName extends string> extends PointerGesture<Gestu
       this.emitPanEvent(element, 'cancel', pointers, event, this.state.lastCentroid);
     }
     this.resetState();
-  }
-
-  /**
-   * Reset the active gesture state for a specific element, but keep total delta values
-   */
-  private resetActiveState(): void {
-    this.isActive = false;
-    this.state.startPointers.clear();
-    this.state.startCentroid = null;
-    this.state.lastCentroid = null;
-    this.state.movementThresholdReached = false;
   }
 }
