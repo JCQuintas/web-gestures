@@ -205,28 +205,25 @@ export class TurnWheelGesture<GestureName extends string> extends Gesture<Gestur
    */
   private handleWheelEvent(element: HTMLElement, event: WheelEvent): void {
     // Get pointers from the PointerManager to use for centroid calculation
-    const pointers = this.pointerManager?.getPointers() || new Map();
+    const pointers = this.pointerManager.getPointers() || new Map();
     const pointersArray = Array.from(pointers.values());
 
-    // Update the accumulated deltas
-    const wheelState = this.state;
-
     // Update total deltas with scaled values
-    wheelState.totalDeltaX += event.deltaX * this.scale * (this.invert ? 1 : -1);
-    wheelState.totalDeltaY += event.deltaY * this.scale * (this.invert ? 1 : -1);
-    wheelState.totalDeltaZ += event.deltaZ * this.scale * (this.invert ? 1 : -1);
+    this.state.totalDeltaX += event.deltaX * this.scale * (this.invert ? 1 : -1);
+    this.state.totalDeltaY += event.deltaY * this.scale * (this.invert ? 1 : -1);
+    this.state.totalDeltaZ += event.deltaZ * this.scale * (this.invert ? 1 : -1);
 
     // Apply proper min/max clamping for each axis
     // Ensure values stay between min and max bounds
     (['totalDeltaX', 'totalDeltaY', 'totalDeltaZ'] as const).forEach(axis => {
       // First clamp at the minimum bound
-      if (wheelState[axis] < this.min) {
-        wheelState[axis] = this.min;
+      if (this.state[axis] < this.min) {
+        this.state[axis] = this.min;
       }
 
       // Then clamp at the maximum bound
-      if (wheelState[axis] > this.max) {
-        wheelState[axis] = this.max;
+      if (this.state[axis] > this.max) {
+        this.state[axis] = this.max;
       }
     });
 
@@ -245,8 +242,8 @@ export class TurnWheelGesture<GestureName extends string> extends Gesture<Gestur
     const centroid =
       pointers.length > 0 ? calculateCentroid(pointers) : { x: event.clientX, y: event.clientY };
 
-    // Get the wheel state for this element
-    const wheelState = this.state;
+    // Get list of active gestures
+    const activeGestures = this.gesturesRegistry.getActiveGestures(element);
 
     // Create custom event data
     const customEventData: TurnWheelGestureEventData = {
@@ -260,9 +257,10 @@ export class TurnWheelGesture<GestureName extends string> extends Gesture<Gestur
       deltaY: event.deltaY * this.scale * (this.invert ? 1 : -1),
       deltaZ: event.deltaZ * this.scale * (this.invert ? 1 : -1),
       deltaMode: event.deltaMode,
-      totalDeltaX: wheelState.totalDeltaX,
-      totalDeltaY: wheelState.totalDeltaY,
-      totalDeltaZ: wheelState.totalDeltaZ,
+      totalDeltaX: this.state.totalDeltaX,
+      totalDeltaY: this.state.totalDeltaY,
+      totalDeltaZ: this.state.totalDeltaZ,
+      activeGestures,
     };
 
     // Apply default event behavior if configured

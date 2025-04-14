@@ -50,6 +50,8 @@ export type PanGestureEventData = GestureEventData & {
   velocity: number;
   /** The original DOM pointer event that triggered this gesture event */
   srcEvent: PointerEvent;
+  /** List of active gestures */
+  activeGestures: string[];
 };
 
 /**
@@ -301,6 +303,9 @@ export class PanGesture<GestureName extends string> extends PointerGesture<Gestu
     const velocityY = timeElapsed > 0 ? deltaY / timeElapsed : 0;
     const velocity = Math.sqrt(velocityX * velocityX + velocityY * velocityY);
 
+    // Get list of active gestures
+    const activeGestures = this.gesturesRegistry.getActiveGestures(element);
+
     // Create custom event data
     const customEventData: PanGestureEventData = {
       centroid: currentCentroid,
@@ -317,6 +322,7 @@ export class PanGesture<GestureName extends string> extends PointerGesture<Gestu
       velocity,
       totalDeltaX: this.state.totalDeltaX,
       totalDeltaY: this.state.totalDeltaY,
+      activeGestures,
     };
 
     // Event names to trigger

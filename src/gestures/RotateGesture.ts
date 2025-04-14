@@ -249,6 +249,9 @@ export class RotateGesture<GestureName extends string> extends PointerGesture<Ge
       delta = this.state.lastDelta;
     }
 
+    // Get list of active gestures
+    const activeGestures = this.gesturesRegistry.getActiveGestures(element);
+
     const customEventData: RotateGestureEventData = {
       centroid,
       target: event.target,
@@ -260,6 +263,7 @@ export class RotateGesture<GestureName extends string> extends PointerGesture<Ge
       delta,
       totalRotation: this.state.lastRotation,
       velocity: this.state.velocity,
+      activeGestures,
     };
 
     // Handle default event behavior

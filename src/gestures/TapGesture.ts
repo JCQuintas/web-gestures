@@ -42,6 +42,8 @@ export type TapGestureEventData = GestureEventData & {
   tapCount: number;
   /** The original DOM pointer event that triggered this gesture event */
   srcEvent: PointerEvent;
+  /** List of active gestures */
+  activeGestures: string[];
 };
 
 /**
@@ -240,6 +242,9 @@ export class TapGesture<GestureName extends string> extends PointerGesture<Gestu
     event: PointerEvent,
     position: { x: number; y: number }
   ): void {
+    // Get list of active gestures
+    const activeGestures = this.gesturesRegistry.getActiveGestures(element);
+
     // Create custom event data for the tap event
     const customEventData: TapGestureEventData = {
       centroid: position,
@@ -251,6 +256,7 @@ export class TapGesture<GestureName extends string> extends PointerGesture<Gestu
       x: position.x,
       y: position.y,
       tapCount: this.state.currentTapCount,
+      activeGestures,
     };
 
     // Dispatch a single 'tap' event (not 'tapStart', 'tapEnd', etc.)
@@ -279,6 +285,9 @@ export class TapGesture<GestureName extends string> extends PointerGesture<Gestu
     if (this.state.startCentroid || this.state.lastPosition) {
       const position = this.state.lastPosition || this.state.startCentroid;
 
+      // Get list of active gestures
+      const activeGestures = this.gesturesRegistry.getActiveGestures(element);
+
       // Create custom event data for the cancel event
       const customEventData: TapGestureEventData = {
         centroid: position!,
@@ -290,6 +299,7 @@ export class TapGesture<GestureName extends string> extends PointerGesture<Gestu
         x: position!.x,
         y: position!.y,
         tapCount: this.state.currentTapCount,
+        activeGestures,
       };
 
       // Dispatch a 'tapCancel' event

@@ -35,6 +35,8 @@ export type PinchGestureEventData = GestureEventData & {
   velocity: number;
   /** The original DOM pointer event that triggered this gesture event */
   srcEvent: PointerEvent;
+  /** List of active gestures */
+  activeGestures: string[];
 };
 
 /**
@@ -235,6 +237,9 @@ export class PinchGesture<GestureName extends string> extends PointerGesture<Ges
     const distance = this.state.lastDistance || 0;
     const scale = this.state.lastScale || 1;
 
+    // Get list of active gestures
+    const activeGestures = this.gesturesRegistry.getActiveGestures(element);
+
     const customEventData: PinchGestureEventData = {
       centroid,
       target: event.target,
@@ -246,6 +251,7 @@ export class PinchGesture<GestureName extends string> extends PointerGesture<Ges
       totalScale: this.state.totalScale,
       distance,
       velocity: this.state.velocity,
+      activeGestures,
     };
 
     // Handle default event behavior

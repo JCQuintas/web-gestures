@@ -28,6 +28,8 @@ export type MoveGestureOptions<GestureName extends string> = PointerGestureOptio
 export type MoveGestureEventData = GestureEventData & {
   /** The original DOM pointer event that triggered this gesture event */
   srcEvent: PointerEvent;
+  /** List of active gestures */
+  activeGestures: string[];
 };
 
 /**
@@ -112,7 +114,7 @@ export class MoveGesture<GestureName extends string> extends PointerGesture<Gest
    */
   private handleElementEnter(element: HTMLElement, event: PointerEvent): void {
     // Get pointers from the PointerManager
-    const pointers = this.pointerManager?.getPointers() || new Map();
+    const pointers = this.pointerManager.getPointers() || new Map();
     const pointersArray = Array.from(pointers.values());
 
     // Only activate if we're within pointer count constraints
@@ -135,7 +137,7 @@ export class MoveGesture<GestureName extends string> extends PointerGesture<Gest
     if (!this.isActive) return;
 
     // Get pointers from the PointerManager
-    const pointers = this.pointerManager?.getPointers() || new Map();
+    const pointers = this.pointerManager.getPointers() || new Map();
     const pointersArray = Array.from(pointers.values());
 
     // Emit end event and reset state
@@ -187,6 +189,9 @@ export class MoveGesture<GestureName extends string> extends PointerGesture<Gest
   ): void {
     const currentPosition = this.state.lastPosition || calculateCentroid(pointers);
 
+    // Get list of active gestures
+    const activeGestures = this.gesturesRegistry.getActiveGestures(element);
+
     // Create custom event data
     const customEventData: MoveGestureEventData = {
       centroid: currentPosition,
@@ -195,6 +200,7 @@ export class MoveGesture<GestureName extends string> extends PointerGesture<Gest
       phase: phase,
       pointers,
       timeStamp: event.timeStamp,
+      activeGestures,
     };
 
     // Event names to trigger

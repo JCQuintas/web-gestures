@@ -32,6 +32,8 @@ export type GestureEventData = {
   pointers: PointerData[];
   /** The time at which the gesture event occurred */
   timeStamp: number;
+  /** List of all currently active gestures */
+  activeGestures: string[];
 };
 
 /**
@@ -97,10 +99,10 @@ export abstract class Gesture<GestureName extends string> {
   protected stopPropagation: boolean;
 
   /** Reference to the singleton PointerManager instance */
-  protected pointerManager: PointerManager | null = null;
+  protected pointerManager!: PointerManager;
 
   /** Reference to the singleton ActiveGesturesRegistry instance */
-  protected gesturesRegistry: ActiveGesturesRegistry<GestureName> | null = null;
+  protected gesturesRegistry!: ActiveGesturesRegistry<GestureName>;
 
   /** The DOM element this gesture is attached to */
   protected element!: HTMLElement;
@@ -169,15 +171,15 @@ export abstract class Gesture<GestureName extends string> {
   /** Whether the gesture is currently active */
   set isActive(isActive: boolean) {
     if (isActive) {
-      this.gesturesRegistry?.registerActiveGesture(this.element, this);
+      this.gesturesRegistry.registerActiveGesture(this.element, this);
     } else {
-      this.gesturesRegistry?.unregisterActiveGesture(this.element, this);
+      this.gesturesRegistry.unregisterActiveGesture(this.element, this);
     }
   }
 
   /** Whether the gesture is currently active */
   get isActive(): boolean {
-    return this.gesturesRegistry?.isGestureActive(this.element, this) ?? false;
+    return this.gesturesRegistry.isGestureActive(this.element, this) ?? false;
   }
 
   /**
