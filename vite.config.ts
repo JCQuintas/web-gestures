@@ -1,19 +1,30 @@
+import { resolve } from 'path';
+import { fileURLToPath } from 'url';
 import { defineConfig } from 'vite';
 
+const __dirname = fileURLToPath(new URL('.', import.meta.url));
+
 export default defineConfig({
-  root: './dev',
+  root: './',
   publicDir: './dev/public',
   server: {
-    open: true,
+    open: './dev/index.html',
   },
   build: {
-    outDir: '../dist/demo',
+    lib: {
+      entry: resolve(__dirname, './src/index.ts'),
+      formats: ['cjs'],
+      fileName: format => `index.${format}.js`,
+    },
+    outDir: 'dist',
+    sourcemap: true,
     emptyOutDir: true,
-  },
-  define: {
-    'process.env': {
-      NODE_ENV: process.env.NODE_ENV || 'development',
-      DEBUG_GESTURES: process.env.DEBUG_GESTURES || 'false',
+    rollupOptions: {
+      external: [],
+      output: {
+        exports: 'named',
+        globals: {},
+      },
     },
   },
 });
