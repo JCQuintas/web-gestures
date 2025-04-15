@@ -26,13 +26,7 @@ describe('TapGesture', () => {
     container.appendChild(target);
 
     gestureManager = new GestureManager({
-      gestures: [
-        new TapGesture({
-          name: 'tap',
-          minPointers: 1,
-          maxPointers: 1,
-        }),
-      ],
+      gestures: [new TapGesture({ name: 'tap' })],
     });
 
     gestureManager.registerElement('tap', target);
@@ -134,5 +128,199 @@ describe('TapGesture', () => {
     // Verify event data shows 2 taps
     const event = tapHandler.mock.calls[0][0] as TapEvent;
     expect(event.detail.tapCount).toBe(2);
+  });
+
+  it('should handle multi-pointer taps', async () => {
+    // Reconfigure gesture with multi-pointer support
+    gestureManager.destroy();
+    gestureManager = new GestureManager({
+      gestures: [
+        new TapGesture({
+          name: 'tap',
+          minPointers: 2,
+          maxPointers: 2,
+        }),
+      ],
+    });
+    gestureManager.registerElement('tap', target);
+
+    // Setup listener
+    const tapHandler = vi.fn();
+    const cancelHandler = vi.fn();
+    target.addEventListener('tap', tapHandler);
+    target.addEventListener('tapCancel', cancelHandler);
+
+    // Create user-event instance
+    const user = userEvent.setup();
+
+    // Simulate a two-finger tap
+    await user.pointer([
+      // First pointer down
+      { keys: '[TouchA>]', target, coords: { x: 45, y: 45 } },
+      // Second pointer down
+      { keys: '[TouchB>]', target, coords: { x: 55, y: 55 } },
+      // Both pointers up
+      { keys: '[/TouchA][/TouchB]', target, coords: { x: 45, y: 45 } },
+    ]);
+
+    // Verify the tap event was fired
+    expect(tapHandler).toHaveBeenCalledTimes(1);
+    expect(cancelHandler).not.toHaveBeenCalled();
+  });
+
+  it('should respect preventDefault and stopPropagation options', async () => {
+    // Reconfigure with preventDefault and stopPropagation
+    gestureManager.destroy();
+    gestureManager = new GestureManager({
+      gestures: [
+        new TapGesture({
+          name: 'tap',
+          minPointers: 1,
+          maxPointers: 1,
+          preventDefault: true,
+          stopPropagation: true,
+        }),
+      ],
+    });
+    gestureManager.registerElement('tap', target);
+
+    // Setup spies for preventDefault and stopPropagation
+    const preventDefaultSpy = vi.spyOn(PointerEvent.prototype, 'preventDefault');
+    const stopPropagationSpy = vi.spyOn(PointerEvent.prototype, 'stopPropagation');
+
+    // Create user-event instance
+    const user = userEvent.setup();
+
+    // Simulate a tap
+    await user.pointer([{ keys: '[MouseLeft]', target, coords: { x: 50, y: 50 } }]);
+
+    // Verify that preventDefault and stopPropagation were called
+    expect(preventDefaultSpy).toHaveBeenCalled();
+    expect(stopPropagationSpy).toHaveBeenCalled();
+  });
+
+  it('should include active gestures in event detail', async () => {
+    // Setup listener
+    const tapHandler = vi.fn();
+    target.addEventListener('tap', tapHandler);
+
+    const user = userEvent.setup();
+
+    // Simulate a tap
+    await user.pointer([{ keys: '[MouseLeft]', target, coords: { x: 50, y: 50 } }]);
+
+    // Verify event includes active gestures
+    const event = tapHandler.mock.calls[0][0] as TapEvent;
+    expect(event.detail.activeGestures).toBeDefined();
+    expect(event.detail.activeGestures.tap).toBe(true);
+  });
+
+  it('should cancel tap on pointercancel event', async () => {
+    // Setup listeners
+    const tapHandler = vi.fn();
+    const cancelHandler = vi.fn();
+    target.addEventListener('tap', tapHandler);
+    target.addEventListener('tapCancel', cancelHandler);
+
+    // Manually dispatch events since userEvent doesn't support pointercancel
+    const pointerdownEvent = new PointerEvent('pointerdown', {
+      bubbles: true,
+      clientX: 50,
+      clientY: 50,
+    });
+    target.dispatchEvent(pointerdownEvent);
+
+    // Then dispatch pointercancel
+    const pointercancelEvent = new PointerEvent('pointercancel', {
+      bubbles: true,
+      clientX: 50,
+      clientY: 50,
+    });
+    target.dispatchEvent(pointercancelEvent);
+
+    // Verify cancel was called but not tap
+    expect(tapHandler).not.toHaveBeenCalled();
+    expect(cancelHandler).toHaveBeenCalledTimes(1);
+  });
+
+  it('should allow movement within maxDistance', async () => {
+    // Set a specific maxDistance
+    gestureManager.setGestureOptions('tap', target, {
+      maxDistance: 15,
+    });
+
+    // Setup listener
+    const tapHandler = vi.fn();
+    target.addEventListener('tap', tapHandler);
+
+    // Create user-event instance
+    const user = userEvent.setup();
+
+    // Simulate a tap with a slight movement (less than maxDistance)
+    await user.pointer([
+      { keys: '[MouseLeft>]', target, coords: { x: 50, y: 50 } },
+      { target, coords: { x: 60, y: 60 } }, // Move 14.14 pixels (10√2)
+      { keys: '[/MouseLeft]', target, coords: { x: 60, y: 60 } },
+    ]);
+
+    // Verify tap event was fired
+    expect(tapHandler).toHaveBeenCalledTimes(1);
+
+    // Verify the coordinates in the event are the final position
+    const event = tapHandler.mock.calls[0][0] as TapEvent;
+    expect(event.detail.x).toBeCloseTo(60);
+    expect(event.detail.y).toBeCloseTo(60);
+  });
+
+  it('should include correct data in tapCancel event', async () => {
+    // Setup listener
+    const cancelHandler = vi.fn();
+    target.addEventListener('tapCancel', cancelHandler);
+
+    // Create user-event instance
+    const user = userEvent.setup();
+
+    // Simulate a tap that moves too far
+    await user.pointer([
+      { keys: '[MouseLeft>]', target, coords: { x: 50, y: 50 } },
+      { target, coords: { x: 80, y: 80 } }, // Move beyond maxDistance
+      { keys: '[/MouseLeft]', target, coords: { x: 80, y: 80 } },
+    ]);
+
+    // Verify cancel event was fired with correct data
+    expect(cancelHandler).toHaveBeenCalledTimes(1);
+
+    const event = cancelHandler.mock.calls[0][0] as CustomEvent;
+    expect(event.detail.phase).toBe('cancel');
+    expect(event.detail.x).toBeCloseTo(80);
+    expect(event.detail.y).toBeCloseTo(80);
+    expect(event.detail.tapCount).toBe(0);
+    expect(event.detail.srcEvent).toBeDefined();
+  });
+
+  it('should detect triple-tap gestures', async () => {
+    // Configure for triple-tap
+    gestureManager.setGestureOptions('tap', target, {
+      taps: 3,
+    });
+
+    // Setup listener
+    const tapHandler = vi.fn();
+    target.addEventListener('tap', tapHandler);
+
+    // Create user-event instance
+    const user = userEvent.setup();
+
+    // Simulate a triple tap sequence
+    await user.pointer([
+      { keys: '[MouseLeft]', target, coords: { x: 50, y: 50 } },
+      { keys: '[MouseLeft]', target, coords: { x: 51, y: 51 } },
+      { keys: '[MouseLeft]', target, coords: { x: 52, y: 52 } },
+    ]);
+
+    // Verify the triple-tap event
+    expect(tapHandler).toHaveBeenCalledTimes(1);
+    const event = tapHandler.mock.calls[0][0] as TapEvent;
+    expect(event.detail.tapCount).toBe(3);
   });
 });
