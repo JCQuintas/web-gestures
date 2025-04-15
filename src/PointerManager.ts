@@ -270,7 +270,11 @@ export class PointerManager {
       this.pointers.set(pointerId, this.createPointerData(event));
       // Capture the pointer to track it even when it leaves the element
       if (event.target instanceof Element) {
-        event.target.setPointerCapture(pointerId);
+        try {
+          event.target.setPointerCapture(pointerId);
+        } catch (_) {
+          // The target may not support pointer capture
+        }
       }
     } else if (type === 'pointermove') {
       this.pointers.set(pointerId, this.createPointerData(event));
@@ -279,7 +283,11 @@ export class PointerManager {
     else if (type === 'pointerup' || type === 'pointercancel') {
       // Release pointer capture on up or cancel
       if (event.target instanceof Element) {
-        event.target.releasePointerCapture(pointerId);
+        try {
+          event.target.releasePointerCapture(pointerId);
+        } catch (_) {
+          // The target may not support pointer capture
+        }
       }
 
       // Update one last time before removing
