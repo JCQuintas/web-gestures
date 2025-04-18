@@ -260,10 +260,10 @@ export class PanGesture<GestureName extends string> extends PointerGesture<Gestu
       case 'pointercancel':
         // If the gesture was active (threshold was reached), emit end event
         if (this.isActive && this.state.movementThresholdReached) {
-          // If all relevant pointers are gone, end the gesture
+          // If we have less than the minimum required pointers, end the gesture
           if (
             relevantPointers.filter(p => p.type !== 'pointerup' && p.type !== 'pointercancel')
-              .length <= this.minPointers
+              .length < this.minPointers
           ) {
             // End the gesture
             const currentCentroid = this.state.lastCentroid || this.state.startCentroid!;
