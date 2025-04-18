@@ -100,7 +100,7 @@ export abstract class PointerGesture<GestureName extends string> extends Gesture
     super(options);
     this.minPointers = options.minPointers ?? 1;
     this.maxPointers = options.maxPointers ?? Infinity;
-    this.threshold = options.threshold ?? 0;
+    this.threshold = options.threshold ?? 10;
   }
 
   public init(element: HTMLElement): void {

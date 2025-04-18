@@ -132,17 +132,10 @@ describe('TapGesture', () => {
 
   it('should handle multi-pointer taps', async () => {
     // Reconfigure gesture with multi-pointer support
-    gestureManager.destroy();
-    gestureManager = new GestureManager({
-      gestures: [
-        new TapGesture({
-          name: 'tap',
-          minPointers: 2,
-          maxPointers: 2,
-        }),
-      ],
+    gestureManager.setGestureOptions('tap', target, {
+      minPointers: 2,
+      maxPointers: 2,
     });
-    gestureManager.registerElement('tap', target);
 
     // Setup listener
     const tapHandler = vi.fn();
@@ -170,19 +163,10 @@ describe('TapGesture', () => {
 
   it('should respect preventDefault and stopPropagation options', async () => {
     // Reconfigure with preventDefault and stopPropagation
-    gestureManager.destroy();
-    gestureManager = new GestureManager({
-      gestures: [
-        new TapGesture({
-          name: 'tap',
-          minPointers: 1,
-          maxPointers: 1,
-          preventDefault: true,
-          stopPropagation: true,
-        }),
-      ],
+    gestureManager.setGestureOptions('tap', target, {
+      preventDefault: true,
+      stopPropagation: true,
     });
-    gestureManager.registerElement('tap', target);
 
     // Setup spies for preventDefault and stopPropagation
     const preventDefaultSpy = vi.spyOn(PointerEvent.prototype, 'preventDefault');

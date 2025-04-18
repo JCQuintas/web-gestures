@@ -152,30 +152,16 @@ export class PanGesture<GestureName extends string> extends PointerGesture<Gestu
    * Handle pointer events for the pan gesture
    */
   protected handlePointerEvent(pointers: Map<number, PointerData>, event: PointerEvent): void {
+    const pointersArray = Array.from(pointers.values());
+
     // Check for our special forceReset flag to handle interrupted gestures (from contextmenu, blur)
     if ((event as InternalEvent).forceReset) {
       // Reset all active pan gestures when we get a force reset event
       // Cancel any active gesture with a proper cancel event
 
-      if (this.isActive) {
-        const relevantPointers = Array.from(pointers.values());
-        // Only emit if we have active state and necessary data
-        if (this.state?.startCentroid && this.state.lastCentroid) {
-          this.emitPanEvent(
-            this.element,
-            'cancel',
-            relevantPointers,
-            event,
-            this.state.lastCentroid
-          );
-        }
-        // Don't reset total delta values on force reset - just the active gesture state
-        this.resetState();
-      }
+      this.cancel(event.target as null, pointersArray, event);
       return;
     }
-
-    const pointersArray = Array.from(pointers.values());
 
     // Find which element (if any) is being targeted
     const targetElement = this.getTargetElement(event);
@@ -277,7 +263,7 @@ export class PanGesture<GestureName extends string> extends PointerGesture<Gestu
           // If all relevant pointers are gone, end the gesture
           if (
             relevantPointers.filter(p => p.type !== 'pointerup' && p.type !== 'pointercancel')
-              .length === 0
+              .length <= this.minPointers
           ) {
             // End the gesture
             const currentCentroid = this.state.lastCentroid || this.state.startCentroid!;
@@ -353,14 +339,29 @@ export class PanGesture<GestureName extends string> extends PointerGesture<Gestu
     });
 
     element.dispatchEvent(domEvent);
+
+    // Apply preventDefault/stopPropagation if configured
+    if (this.preventDefault) {
+      event.preventDefault();
+    }
+
+    if (this.stopPropagation) {
+      event.stopPropagation();
+    }
   }
 
   /**
    * Cancel the current gesture
    */
-  private cancel(element: HTMLElement, pointers: PointerData[], event: PointerEvent): void {
+  private cancel(element: HTMLElement | null, pointers: PointerData[], event: PointerEvent): void {
     if (this.isActive && this.state.startCentroid && this.state.lastCentroid) {
-      this.emitPanEvent(element, 'cancel', pointers, event, this.state.lastCentroid);
+      this.emitPanEvent(
+        element ?? this.element,
+        'cancel',
+        pointers,
+        event,
+        this.state.lastCentroid
+      );
     }
     this.resetState();
   }
