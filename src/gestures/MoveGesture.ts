@@ -13,6 +13,7 @@
 import { GestureEventData, GesturePhase, GestureState } from '../Gesture';
 import { PointerGesture, PointerGestureOptions } from '../PointerGesture';
 import { PointerData } from '../PointerManager';
+import { TargetElement } from '../types/TargetElement';
 import { calculateCentroid, createEventName } from '../utils';
 
 /**
@@ -78,13 +79,13 @@ export class MoveGesture<GestureName extends string> extends PointerGesture<Gest
     });
   }
 
-  public init(element: HTMLElement) {
+  public init(element: TargetElement) {
     super.init(element);
 
     // Add event listeners for entering and leaving elements
     // These are different from pointer events handled by PointerManager
-    element.addEventListener('pointerenter', this.handleElementEnter.bind(this, element));
-    element.addEventListener('pointerleave', this.handleElementLeave.bind(this, element));
+    this.element.addEventListener('pointerenter', this.handleElementEnter.bind(this, element));
+    this.element.addEventListener('pointerleave', this.handleElementLeave.bind(this, element));
   }
 
   public destroy(): void {
@@ -117,7 +118,7 @@ export class MoveGesture<GestureName extends string> extends PointerGesture<Gest
    * @param element The DOM element the pointer entered
    * @param event The original pointer event
    */
-  private handleElementEnter(element: HTMLElement, event: PointerEvent): void {
+  private handleElementEnter(element: TargetElement, event: PointerEvent): void {
     // Get pointers from the PointerManager
     const pointers = this.pointerManager.getPointers() || new Map();
     const pointersArray = Array.from(pointers.values());
@@ -138,7 +139,7 @@ export class MoveGesture<GestureName extends string> extends PointerGesture<Gest
    * @param element The DOM element the pointer left
    * @param event The original pointer event
    */
-  private handleElementLeave(element: HTMLElement, event: PointerEvent): void {
+  private handleElementLeave(element: TargetElement, event: PointerEvent): void {
     if (!this.isActive) return;
 
     // Get pointers from the PointerManager
@@ -189,7 +190,7 @@ export class MoveGesture<GestureName extends string> extends PointerGesture<Gest
    * @param event The original pointer event
    */
   private emitMoveEvent(
-    element: HTMLElement,
+    element: TargetElement,
     phase: GesturePhase,
     pointers: PointerData[],
     event: PointerEvent

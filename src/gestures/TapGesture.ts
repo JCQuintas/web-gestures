@@ -9,6 +9,7 @@
 import { GestureEventData, GestureState } from '../Gesture';
 import { PointerGesture, PointerGestureOptions } from '../PointerGesture';
 import { PointerData } from '../PointerManager';
+import { TargetElement } from '../types/TargetElement';
 import { calculateCentroid, createEventName } from '../utils';
 
 /**
@@ -244,7 +245,7 @@ export class TapGesture<GestureName extends string> extends PointerGesture<Gestu
    * Fire the main tap event when a valid tap is detected
    */
   private fireTapEvent(
-    element: HTMLElement,
+    element: TargetElement,
     pointers: PointerData[],
     event: PointerEvent,
     position: { x: number; y: number }
@@ -288,7 +289,7 @@ export class TapGesture<GestureName extends string> extends PointerGesture<Gestu
   /**
    * Cancel the current tap gesture
    */
-  private cancelTap(element: HTMLElement, pointers: PointerData[], event: PointerEvent): void {
+  private cancelTap(element: TargetElement, pointers: PointerData[], event: PointerEvent): void {
     if (this.state.startCentroid || this.state.lastPosition) {
       const position = this.state.lastPosition || this.state.startCentroid;
 

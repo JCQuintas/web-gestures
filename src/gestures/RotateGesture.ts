@@ -12,6 +12,7 @@
 import { GestureEventData, GesturePhase, GestureState } from '../Gesture';
 import { PointerGesture, PointerGestureOptions } from '../PointerGesture';
 import { PointerData } from '../PointerManager';
+import { TargetElement } from '../types/TargetElement';
 import { calculateCentroid, calculateRotationAngle, createEventName } from '../utils';
 
 /**
@@ -246,7 +247,7 @@ export class RotateGesture<GestureName extends string> extends PointerGesture<Ge
    * Emit rotate-specific events with additional data
    */
   private emitRotateEvent(
-    element: HTMLElement,
+    element: TargetElement,
     phase: GesturePhase,
     pointers: PointerData[],
     event: PointerEvent

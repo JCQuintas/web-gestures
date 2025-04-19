@@ -1,5 +1,6 @@
 import { Gesture, GestureOptions } from './Gesture';
 import { PointerData } from './PointerManager';
+import { TargetElement } from './types/TargetElement';
 
 /**
  * Configuration options for pointer-based gestures, extending the base GestureOptions.
@@ -103,7 +104,7 @@ export abstract class PointerGesture<GestureName extends string> extends Gesture
     this.threshold = options.threshold ?? 10;
   }
 
-  public init(element: HTMLElement): void {
+  public init(element: TargetElement): void {
     super.init(element);
 
     this.unregisterHandler = this.pointerManager!.registerGestureHandler((pointers, event) =>

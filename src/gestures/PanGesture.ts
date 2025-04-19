@@ -13,6 +13,7 @@ import { GestureEventData, GesturePhase, GestureState } from '../Gesture';
 import { PointerGesture, PointerGestureOptions } from '../PointerGesture';
 import { PointerData } from '../PointerManager';
 import { InternalEvent } from '../types/InternalEvent';
+import { TargetElement } from '../types/TargetElement';
 import { calculateCentroid, createEventName, getDirection, isDirectionAllowed } from '../utils';
 
 /**
@@ -284,7 +285,7 @@ export class PanGesture<GestureName extends string> extends PointerGesture<Gestu
    * Emit pan-specific events with additional data
    */
   private emitPanEvent(
-    element: HTMLElement,
+    element: TargetElement,
     phase: GesturePhase,
     pointers: PointerData[],
     event: PointerEvent,
@@ -353,7 +354,11 @@ export class PanGesture<GestureName extends string> extends PointerGesture<Gestu
   /**
    * Cancel the current gesture
    */
-  private cancel(element: HTMLElement | null, pointers: PointerData[], event: PointerEvent): void {
+  private cancel(
+    element: TargetElement | null,
+    pointers: PointerData[],
+    event: PointerEvent
+  ): void {
     if (this.isActive && this.state.startCentroid && this.state.lastCentroid) {
       this.emitPanEvent(
         element ?? this.element,

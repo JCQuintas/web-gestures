@@ -6,6 +6,7 @@
  */
 
 import { Gesture } from './Gesture';
+import { TargetElement } from './types/TargetElement';
 
 /**
  * Type for entries in the active gestures registry
@@ -14,7 +15,7 @@ export type ActiveGestureEntry<GestureName extends string> = {
   /** The gesture instance that is active */
   gesture: Gesture<GestureName>;
   /** The element on which the gesture is active */
-  element: HTMLElement;
+  element: TargetElement;
 };
 
 /**
@@ -25,7 +26,7 @@ export class ActiveGesturesRegistry<GestureName extends string> {
   private static instance: ActiveGesturesRegistry<string> | null = null;
 
   /** Map of elements to their active gestures */
-  private activeGestures: Map<HTMLElement, Set<ActiveGestureEntry<GestureName>>> = new Map();
+  private activeGestures: Map<TargetElement, Set<ActiveGestureEntry<GestureName>>> = new Map();
 
   /**
    * Use ActiveGesturesRegistry.getInstance() instead
@@ -50,7 +51,7 @@ export class ActiveGesturesRegistry<GestureName extends string> {
    * @param element - The DOM element on which the gesture is active
    * @param gesture - The gesture instance that is active
    */
-  public registerActiveGesture(element: HTMLElement, gesture: Gesture<GestureName>): void {
+  public registerActiveGesture(element: TargetElement, gesture: Gesture<GestureName>): void {
     if (!this.activeGestures.has(element)) {
       this.activeGestures.set(element, new Set());
     }
@@ -70,7 +71,7 @@ export class ActiveGesturesRegistry<GestureName extends string> {
    * @param element - The DOM element on which the gesture was active
    * @param gesture - The gesture instance to deactivate
    */
-  public unregisterActiveGesture(element: HTMLElement, gesture: Gesture<GestureName>): void {
+  public unregisterActiveGesture(element: TargetElement, gesture: Gesture<GestureName>): void {
     const elementGestures = this.activeGestures.get(element);
     if (!elementGestures) return;
 
@@ -93,7 +94,7 @@ export class ActiveGesturesRegistry<GestureName extends string> {
    * @param element - The DOM element to query
    * @returns Array of active gesture names
    */
-  public getActiveGestures(element: HTMLElement): Record<string, boolean> {
+  public getActiveGestures(element: TargetElement): Record<string, boolean> {
     const elementGestures = this.activeGestures.get(element);
     if (!elementGestures) return {} as Record<string, boolean>;
 
@@ -113,7 +114,7 @@ export class ActiveGesturesRegistry<GestureName extends string> {
    * @param gesture - The gesture instance to check
    * @returns True if the gesture is active on the element, false otherwise
    */
-  public isGestureActive(element: HTMLElement, gesture: Gesture<GestureName>): boolean {
+  public isGestureActive(element: TargetElement, gesture: Gesture<GestureName>): boolean {
     const elementGestures = this.activeGestures.get(element);
     if (!elementGestures) return false;
     return Array.from(elementGestures).some(entry => entry.gesture === gesture);
@@ -131,7 +132,7 @@ export class ActiveGesturesRegistry<GestureName extends string> {
    *
    * @param element - The DOM element to clear
    */
-  public unregisterElement(element: HTMLElement): void {
+  public unregisterElement(element: TargetElement): void {
     this.activeGestures.delete(element);
   }
 }

@@ -10,6 +10,7 @@
 
 import { Gesture, GestureEventData, GestureOptions, GestureState } from '../Gesture';
 import { PointerData } from '../PointerManager';
+import { TargetElement } from '../types/TargetElement';
 import { calculateCentroid, createEventName } from '../utils';
 
 /**
@@ -178,11 +179,11 @@ export class TurnWheelGesture<GestureName extends string> extends Gesture<Gestur
     });
   }
 
-  public init(element: HTMLElement) {
+  public init(element: TargetElement) {
     super.init(element);
 
     // Add event listener directly to the element
-    element.addEventListener('wheel', this.handleWheelEvent.bind(this, element));
+    this.element.addEventListener('wheel', this.handleWheelEvent.bind(this, element));
   }
 
   public destroy(): void {
@@ -216,7 +217,7 @@ export class TurnWheelGesture<GestureName extends string> extends Gesture<Gestur
    * @param element The element that received the wheel event
    * @param event The original wheel event
    */
-  private handleWheelEvent(element: HTMLElement, event: WheelEvent): void {
+  private handleWheelEvent(element: TargetElement, event: WheelEvent): void {
     // Check if this gesture should be prevented by active gestures
     if (this.shouldPreventGesture(element)) {
       return;
@@ -255,7 +256,7 @@ export class TurnWheelGesture<GestureName extends string> extends Gesture<Gestur
    * @param pointers The current pointers on the element
    * @param event The original wheel event
    */
-  private emitWheelEvent(element: HTMLElement, pointers: PointerData[], event: WheelEvent): void {
+  private emitWheelEvent(element: TargetElement, pointers: PointerData[], event: WheelEvent): void {
     // Calculate centroid - either from existing pointers or from the wheel event position
     const centroid =
       pointers.length > 0 ? calculateCentroid(pointers) : { x: event.clientX, y: event.clientY };

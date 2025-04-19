@@ -1,7 +1,7 @@
 /**
  * Enhanced HTML element type with strongly-typed gesture event handlers.
  *
- * This type extends the standard HTMLElement with correctly typed addEventListener
+ * This type extends the standard Element with correctly typed addEventListener
  * and removeEventListener methods that understand both standard DOM events and
  * custom gesture events.
  *
@@ -31,6 +31,8 @@
  * ```
  */
 
+import { TargetElement } from './TargetElement';
+
 export type GestureElement<
   GestureEventName extends string = string,
   GestureNameToEvent = unknown,
@@ -44,13 +46,13 @@ export type GestureElement<
   >(
     type: K,
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    listener: (this: HTMLElement, ev: GestureEvent) => any,
+    listener: (this: TargetElement, ev: GestureEvent) => any,
     options?: boolean | AddEventListenerOptions
   ): void;
   addEventListener<K extends keyof HTMLElementEventMap>(
     type: K,
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    listener: (this: HTMLElement, ev: HTMLElementEventMap[K]) => any,
+    listener: (this: TargetElement, ev: HTMLElementEventMap[K]) => any,
     options?: boolean | AddEventListenerOptions
   ): void;
   addEventListener(
@@ -66,13 +68,13 @@ export type GestureElement<
   >(
     type: K,
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    listener: (this: HTMLElement, ev: GestureEvent) => any,
+    listener: (this: TargetElement, ev: GestureEvent) => any,
     options?: boolean | EventListenerOptions
   ): void;
   removeEventListener<K extends keyof HTMLElementEventMap>(
     type: K,
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    listener: (this: HTMLElement, ev: HTMLElementEventMap[K]) => any,
+    listener: (this: TargetElement, ev: HTMLElementEventMap[K]) => any,
     options?: boolean | EventListenerOptions
   ): void;
   removeEventListener(

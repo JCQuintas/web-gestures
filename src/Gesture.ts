@@ -5,6 +5,7 @@
 import { ActiveGesturesRegistry } from './ActiveGesturesRegistry';
 import { PointerData, PointerManager } from './PointerManager';
 import { CustomEventListener } from './types/CustomEventListener';
+import { TargetElement } from './types/TargetElement';
 
 /**
  * The possible phases of a gesture during its lifecycle.
@@ -159,8 +160,8 @@ export abstract class Gesture<GestureName extends string> {
    * Initialize the gesture by acquiring the pointer manager singleton
    * Must be called before the gesture can be used
    */
-  public init(element: HTMLElement): void {
-    this.element = element;
+  public init(element: TargetElement): void {
+    this.element = element as HTMLElement;
 
     if (!this.pointerManager) {
       this.pointerManager = PointerManager.getInstance();
@@ -239,7 +240,7 @@ export abstract class Gesture<GestureName extends string> {
    * @param event - The browser event to check
    * @returns The matching element or null if no match is found
    */
-  protected getTargetElement(event: Event): HTMLElement | null {
+  protected getTargetElement(event: Event): TargetElement | null {
     if (this.element === event.target || this.element.contains(event.target as Node)) {
       return this.element;
     }
@@ -266,7 +267,7 @@ export abstract class Gesture<GestureName extends string> {
    * @param element - The DOM element to check against
    * @returns true if the gesture should be prevented, false otherwise
    */
-  protected shouldPreventGesture(element: HTMLElement): boolean {
+  protected shouldPreventGesture(element: TargetElement): boolean {
     if (this.preventIf.length === 0) {
       return false; // No prevention rules, allow the gesture
     }

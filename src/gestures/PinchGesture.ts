@@ -12,6 +12,7 @@
 import { GestureEventData, GesturePhase, GestureState } from '../Gesture';
 import { PointerGesture, PointerGestureOptions } from '../PointerGesture';
 import { PointerData } from '../PointerManager';
+import { TargetElement } from '../types/TargetElement';
 import { calculateAverageDistance, calculateCentroid, createEventName } from '../utils';
 
 /**
@@ -244,7 +245,7 @@ export class PinchGesture<GestureName extends string> extends PointerGesture<Ges
    * Emit pinch-specific events with additional data
    */
   private emitPinchEvent(
-    element: HTMLElement,
+    element: TargetElement,
     phase: GesturePhase,
     pointers: PointerData[],
     event: PointerEvent

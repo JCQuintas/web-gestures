@@ -5,6 +5,7 @@ import { GestureElement } from './types/GestureElement';
 import { MergeUnions } from './types/MergeUnions';
 import { OmitNever } from './types/OmitNever';
 import { Simplify } from './types/Simplify';
+import { TargetElement } from './types/TargetElement';
 
 /**
  * Configuration options for initializing the GestureManager
@@ -17,7 +18,7 @@ export type GestureManagerOptions<
    * The root DOM element to which the PointerManager will attach its event listeners.
    * All gesture detection will be limited to events within this element.
    */
-  root?: HTMLElement;
+  root?: TargetElement;
 
   /**
    * CSS touch-action property to apply to the root element.
@@ -164,7 +165,7 @@ export class GestureManager<
   private gestureTemplates: Map<string, Gesture<string>> = new Map();
 
   /** Maps DOM elements to their active gesture instances */
-  private elementGestureMap: Map<HTMLElement, Map<string, Gesture<string>>> = new Map();
+  private elementGestureMap: Map<TargetElement, Map<string, Gesture<string>>> = new Map();
 
   /**
    * Create a new GestureManager instance to coordinate gesture recognition
@@ -218,7 +219,7 @@ export class GestureManager<
    * ```
    */
   public setGestureOptions<
-    T extends HTMLElement,
+    T extends TargetElement,
     GNU extends GestureNameUnion,
     GN extends keyof GestureNameToOptionsMap & string = GNU extends keyof GestureNameToOptionsMap
       ? GNU
@@ -254,7 +255,7 @@ export class GestureManager<
    * ```
    */
   public setGestureState<
-    T extends HTMLElement,
+    T extends TargetElement,
     GNU extends GestureNameUnion,
     GN extends keyof GestureNameToStateMap & string = GNU extends keyof GestureNameToStateMap
       ? GNU
@@ -307,7 +308,7 @@ export class GestureManager<
    * ```
    */
   public registerElement<
-    T extends HTMLElement,
+    T extends TargetElement,
     GNU extends GestureNameUnion,
     GN extends keyof GestureNameToOptionsMap & string = GNU extends keyof GestureNameToOptionsMap
       ? GNU
@@ -342,7 +343,7 @@ export class GestureManager<
    */
   private _registerSingleGesture(
     gestureName: string,
-    element: HTMLElement,
+    element: TargetElement,
     options?: Record<string, unknown>
   ): boolean {
     // Find the gesture template
@@ -384,7 +385,7 @@ export class GestureManager<
    * @param element - The DOM element to remove the gesture from
    * @returns True if the gesture was found and removed, false otherwise
    */
-  public unregisterElement(gestureName: string, element: HTMLElement): boolean {
+  public unregisterElement(gestureName: string, element: TargetElement): boolean {
     const elementGestures = this.elementGestureMap.get(element);
     if (!elementGestures || !elementGestures.has(gestureName)) {
       return false;
@@ -412,7 +413,7 @@ export class GestureManager<
    *
    * @param element - The DOM element to remove all gestures from
    */
-  public unregisterAllGestures(element: HTMLElement): void {
+  public unregisterAllGestures(element: TargetElement): void {
     const elementGestures = this.elementGestureMap.get(element);
     if (elementGestures) {
       // Unregister all gestures for this element
