@@ -32,7 +32,7 @@
     "dev:preview": "vite preview",
     "build": "pnpm run build:lib && pnpm run build:types && mv dist/src/* dist/ && rm -rf dist/src",
     "build:types": "tsc --project tsconfig.build.json",
-    "build:lib": "vite build --config vite.config.js",
+    "build:lib": "vite build --config vite.config.ts",
     "prepublishOnly": "pnpm run build:all",
     "prettier": "prettier --check .",
     "prettier:fix": "prettier --write .",
