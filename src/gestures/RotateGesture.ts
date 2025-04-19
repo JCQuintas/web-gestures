@@ -9,8 +9,8 @@
  * This gesture is commonly used for rotation controls in drawing or image manipulation interfaces.
  */
 
-import { GestureEventData, GesturePhase, GestureState } from '../Gesture';
-import { PointerGesture, PointerGestureOptions } from '../PointerGesture';
+import { GesturePhase, GestureState } from '../Gesture';
+import { PointerGesture, PointerGestureEventData, PointerGestureOptions } from '../PointerGesture';
 import { PointerData } from '../PointerManager';
 import { TargetElement } from '../types/TargetElement';
 import { calculateCentroid, calculateRotationAngle, createEventName } from '../utils';
@@ -25,7 +25,7 @@ export type RotateGestureOptions<GestureName extends string> = PointerGestureOpt
  * Event data specific to rotate gesture events
  * Contains information about rotation angle, delta, and velocity
  */
-export type RotateGestureEventData = GestureEventData & {
+export type RotateGestureEventData = PointerGestureEventData & {
   /** Current absolute rotation in degrees (0-359) */
   rotation: number;
   /** Change in rotation since the last event in degrees */
@@ -34,8 +34,6 @@ export type RotateGestureEventData = GestureEventData & {
   totalRotation: number;
   /** Angular velocity in degrees per second */
   velocity: number;
-  /** The original DOM pointer event that triggered this gesture event */
-  srcEvent: PointerEvent;
 };
 
 /**

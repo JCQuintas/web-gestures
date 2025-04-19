@@ -6,8 +6,8 @@
  * - The tap is canceled (e.g., moved too far or held too long)
  */
 
-import { GestureEventData, GestureState } from '../Gesture';
-import { PointerGesture, PointerGestureOptions } from '../PointerGesture';
+import { GestureState } from '../Gesture';
+import { PointerGesture, PointerGestureEventData, PointerGestureOptions } from '../PointerGesture';
 import { PointerData } from '../PointerManager';
 import { TargetElement } from '../types/TargetElement';
 import { calculateCentroid, createEventName } from '../utils';
@@ -34,15 +34,13 @@ export type TapGestureOptions<GestureName extends string> = PointerGestureOption
  * Event data specific to tap gesture events
  * Contains information about the tap location and counts
  */
-export type TapGestureEventData = GestureEventData & {
+export type TapGestureEventData = PointerGestureEventData & {
   /** X coordinate of the tap */
   x: number;
   /** Y coordinate of the tap */
   y: number;
   /** Current count of taps in a sequence */
   tapCount: number;
-  /** The original DOM pointer event that triggered this gesture event */
-  srcEvent: PointerEvent;
 };
 
 /**

@@ -9,8 +9,8 @@
  * The gesture can be configured to recognize movement only in specific directions.
  */
 
-import { GestureEventData, GesturePhase, GestureState } from '../Gesture';
-import { PointerGesture, PointerGestureOptions } from '../PointerGesture';
+import { GesturePhase, GestureState } from '../Gesture';
+import { PointerGesture, PointerGestureEventData, PointerGestureOptions } from '../PointerGesture';
 import { PointerData } from '../PointerManager';
 import { InternalEvent } from '../types/InternalEvent';
 import { TargetElement } from '../types/TargetElement';
@@ -32,7 +32,7 @@ export type PanGestureOptions<GestureName extends string> = PointerGestureOption
  * Event data specific to pan gesture events
  * Contains information about movement distance, direction, and velocity
  */
-export type PanGestureEventData = GestureEventData & {
+export type PanGestureEventData = PointerGestureEventData & {
   /** Horizontal distance moved in pixels from the start of the current gesture */
   deltaX: number;
   /** Vertical distance moved in pixels from the start of the current gesture */
@@ -49,8 +49,6 @@ export type PanGestureEventData = GestureEventData & {
   velocityY: number;
   /** Total velocity magnitude in pixels per second */
   velocity: number;
-  /** The original DOM pointer event that triggered this gesture event */
-  srcEvent: PointerEvent;
 };
 
 /**

@@ -10,8 +10,8 @@
  * the move gesture fires automatically when pointers interact with the target element.
  */
 
-import { GestureEventData, GesturePhase, GestureState } from '../Gesture';
-import { PointerGesture, PointerGestureOptions } from '../PointerGesture';
+import { GesturePhase, GestureState } from '../Gesture';
+import { PointerGesture, PointerGestureEventData, PointerGestureOptions } from '../PointerGesture';
 import { PointerData } from '../PointerManager';
 import { TargetElement } from '../types/TargetElement';
 import { calculateCentroid, createEventName } from '../utils';
@@ -26,10 +26,7 @@ export type MoveGestureOptions<GestureName extends string> = PointerGestureOptio
  * Event data specific to move gesture events
  * Includes the source pointer event and standard gesture data
  */
-export type MoveGestureEventData = GestureEventData & {
-  /** The original DOM pointer event that triggered this gesture event */
-  srcEvent: PointerEvent;
-};
+export type MoveGestureEventData = PointerGestureEventData & {};
 
 /**
  * Type definition for the CustomEvent created by MoveGesture

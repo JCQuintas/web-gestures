@@ -9,8 +9,8 @@
  * This gesture is commonly used to implement zoom functionality in touch interfaces.
  */
 
-import { GestureEventData, GesturePhase, GestureState } from '../Gesture';
-import { PointerGesture, PointerGestureOptions } from '../PointerGesture';
+import { GesturePhase, GestureState } from '../Gesture';
+import { PointerGesture, PointerGestureEventData, PointerGestureOptions } from '../PointerGesture';
 import { PointerData } from '../PointerManager';
 import { TargetElement } from '../types/TargetElement';
 import { calculateAverageDistance, calculateCentroid, createEventName } from '../utils';
@@ -33,7 +33,7 @@ export type PinchGestureOptions<GestureName extends string> = PointerGestureOpti
  * Event data specific to pinch gesture events
  * Contains information about scale, distance, and velocity
  */
-export type PinchGestureEventData = GestureEventData & {
+export type PinchGestureEventData = PointerGestureEventData & {
   /** Relative scale factor comparing current distance to initial distance (1.0 = no change) */
   scale: number;
   /** Total accumulated scale factor across all pinch operations */
@@ -42,8 +42,6 @@ export type PinchGestureEventData = GestureEventData & {
   distance: number;
   /** Speed of the pinch movement in pixels per second */
   velocity: number;
-  /** The original DOM pointer event that triggered this gesture event */
-  srcEvent: PointerEvent;
 };
 
 /**

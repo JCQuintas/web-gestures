@@ -1,4 +1,4 @@
-import { Gesture, GestureOptions } from './Gesture';
+import { Gesture, GestureEventData, GestureOptions } from './Gesture';
 import { PointerData } from './PointerManager';
 import { TargetElement } from './types/TargetElement';
 
@@ -37,6 +37,11 @@ export interface PointerGestureOptions<GestureName extends string>
    */
   threshold?: number;
 }
+
+export type PointerGestureEventData = GestureEventData & {
+  /** The original event that triggered this gesture */
+  srcEvent: PointerEvent;
+};
 
 /**
  * Base class for all pointer-based gestures.
