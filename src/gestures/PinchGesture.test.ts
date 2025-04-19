@@ -384,4 +384,91 @@ describe('PinchGesture', () => {
     const lastEvent = pinchHandler.mock.calls[1][0] as PinchEvent;
     expect(lastEvent.detail.totalScale).toBeGreaterThan(1); // Scale should increase throughout
   });
+
+  it('should indicate spreading direction (1) when fingers move apart', async () => {
+    // Setup listener
+    const pinchHandler = vi.fn();
+    target.addEventListener('pinch', pinchHandler);
+
+    // Create user-event instance
+    const user = userEvent.setup();
+
+    // Simulate a spreading pinch (fingers moving apart)
+    await user.pointer([
+      // Two pointers down close together
+      { keys: '[TouchA>]', target, coords: { x: 140, y: 150 } },
+      { keys: '[TouchB>]', target, coords: { x: 160, y: 150 } },
+      // Move pointers apart (zoom in)
+      { pointerName: 'TouchA', target, coords: { x: 130, y: 150 } },
+      { pointerName: 'TouchB', target, coords: { x: 170, y: 150 } },
+      { keys: '[/TouchA][/TouchB]', target, coords: { x: 150, y: 150 } },
+    ]);
+
+    // Get the ongoing event
+    const moveEvent = pinchHandler.mock.calls[0][0] as PinchEvent;
+
+    // Verify direction is 1 (spreading) when fingers move apart
+    expect(moveEvent.detail.direction).toBe(1);
+    expect(moveEvent.detail.velocity).toBeGreaterThan(0);
+  });
+
+  it('should indicate pinching direction (-1) when fingers move together', async () => {
+    // Setup listener
+    const pinchHandler = vi.fn();
+    target.addEventListener('pinch', pinchHandler);
+
+    // Create user-event instance
+    const user = userEvent.setup();
+
+    // Simulate a pinching gesture (fingers moving together)
+    await user.pointer([
+      // Start with two fingers far apart
+      { keys: '[TouchA>]', target, coords: { x: 120, y: 150 } },
+      { keys: '[TouchB>]', target, coords: { x: 180, y: 150 } },
+      // Move fingers closer (zooming out)
+      { pointerName: 'TouchA', target, coords: { x: 130, y: 150 } },
+      { pointerName: 'TouchB', target, coords: { x: 170, y: 150 } },
+      { keys: '[/TouchA][/TouchB]', target, coords: { x: 150, y: 150 } },
+    ]);
+
+    // Get the ongoing event
+    const moveEvent = pinchHandler.mock.calls[0][0] as PinchEvent;
+
+    // Verify direction is -1 (pinching) when fingers move together
+    expect(moveEvent.detail.direction).toBe(-1);
+    expect(moveEvent.detail.velocity).toBeLessThan(0);
+  });
+
+  it('should include direction in all gesture phases', async () => {
+    // Setup listeners
+    const pinchStartHandler = vi.fn();
+    const pinchHandler = vi.fn();
+    const pinchEndHandler = vi.fn();
+
+    target.addEventListener('pinchStart', pinchStartHandler);
+    target.addEventListener('pinch', pinchHandler);
+    target.addEventListener('pinchEnd', pinchEndHandler);
+
+    // Create user-event instance
+    const user = userEvent.setup();
+
+    // Simulate a spreading pinch
+    await user.pointer([
+      { keys: '[TouchA>]', target, coords: { x: 140, y: 150 } },
+      { keys: '[TouchB>]', target, coords: { x: 160, y: 150 } },
+      { pointerName: 'TouchA', target, coords: { x: 130, y: 150 } },
+      { pointerName: 'TouchB', target, coords: { x: 170, y: 150 } },
+      { keys: '[/TouchA][/TouchB]', target, coords: { x: 150, y: 150 } },
+    ]);
+
+    // Verify direction property is present in all event phases
+    const startEvent = pinchStartHandler.mock.calls[0][0] as PinchEvent;
+    expect(startEvent.detail.direction).toBeDefined();
+
+    const ongoingEvent = pinchHandler.mock.calls[0][0] as PinchEvent;
+    expect(ongoingEvent.detail.direction).toBeDefined();
+
+    const endEvent = pinchEndHandler.mock.calls[0][0] as PinchEvent;
+    expect(endEvent.detail.direction).toBeDefined();
+  });
 });

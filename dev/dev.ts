@@ -130,7 +130,9 @@ target.addEventListener('pinchStart', event => {
 target.addEventListener('pinch', event => {
   const detail = event.detail;
 
-  addLogEntry(`Pinch at: scale=${detail.totalScale.toFixed(2)}`);
+  addLogEntry(
+    `Pinch at: scale=${detail.totalScale.toFixed(2)}, direction=${detail.direction === 1 ? 'spreading' : detail.direction === -1 ? 'pinching' : 'no change'}`
+  );
 
   updatePosition(target, { scale: detail.totalScale });
 });

@@ -42,6 +42,8 @@ export type PinchGestureEventData = PointerGestureEventData & {
   distance: number;
   /** Speed of the pinch movement in pixels per second */
   velocity: number;
+  /** Direction of the pinch: 1 for spreading/zooming in, -1 for pinching/zooming out, 0 for no change */
+  direction: -1 | 0 | 1;
 };
 
 /**
@@ -270,6 +272,7 @@ export class PinchGesture<GestureName extends string> extends PointerGesture<Ges
       distance,
       velocity: this.state.velocity,
       activeGestures,
+      direction: this.state.velocity > 0 ? 1 : this.state.velocity < 0 ? -1 : 0,
     };
 
     // Handle default event behavior
