@@ -18,7 +18,15 @@ import { calculateAverageDistance, calculateCentroid, createEventName } from '..
  * Configuration options for the PinchGesture
  * Uses the same options as the base PointerGesture
  */
-export type PinchGestureOptions<GestureName extends string> = PointerGestureOptions<GestureName>;
+export type PinchGestureOptions<GestureName extends string> = PointerGestureOptions<GestureName> & {
+  /**
+   * Minimum number of pointers required to activate the gesture.
+   * The gesture will not start until at least this many pointers are active.
+   *
+   * @default 2
+   */
+  minPointers?: number;
+};
 
 /**
  * Event data specific to pinch gesture events
@@ -86,7 +94,10 @@ export class PinchGesture<GestureName extends string> extends PointerGesture<Ges
   >;
 
   constructor(options: PinchGestureOptions<GestureName>) {
-    super(options);
+    super({
+      ...options,
+      minPointers: options.minPointers ?? 2,
+    });
   }
 
   public clone(overrides?: Record<string, unknown>): PinchGesture<GestureName> {
@@ -149,16 +160,6 @@ export class PinchGesture<GestureName extends string> extends PointerGesture<Ges
       pointer => targetElement === pointer.target || targetElement.contains(pointer.target as Node)
     );
 
-    // Check if we have enough pointers for a pinch (at least 2)
-    if (relevantPointers.length < this.minPointers) {
-      if (this.isActive) {
-        // End the gesture if it was active
-        this.emitPinchEvent(targetElement, 'end', relevantPointers, event);
-        this.resetState();
-      }
-      return;
-    }
-
     switch (event.type) {
       case 'pointerdown':
         if (relevantPointers.length >= 2 && !this.isActive) {
@@ -177,20 +178,21 @@ export class PinchGesture<GestureName extends string> extends PointerGesture<Ges
         break;
 
       case 'pointermove':
-        if (this.isActive && this.state.startDistance && relevantPointers.length >= 2) {
+        if (
+          this.isActive &&
+          this.state.startDistance &&
+          relevantPointers.length >= this.minPointers
+        ) {
           // Calculate current distance between pointers
           const currentDistance = calculateAverageDistance(relevantPointers);
 
           // Calculate scale relative to starting distance
           const scale = this.state.startDistance ? currentDistance / this.state.startDistance : 1;
 
-          // If this is the first move event after activation, don't modify totalScale
-          if (this.state.lastScale !== 1) {
-            // Calculate the relative scale change since last event
-            const scaleChange = scale / this.state.lastScale;
-            // Apply this change to the total accumulated scale
-            this.state.totalScale *= scaleChange;
-          }
+          // Calculate the relative scale change since last event
+          const scaleChange = scale / this.state.lastScale;
+          // Apply this change to the total accumulated scale
+          this.state.totalScale *= scaleChange;
 
           // Calculate velocity (change in scale over time)
           const deltaTime = (event.timeStamp - this.state.lastTime) / 1000; // convert to seconds
@@ -251,8 +253,8 @@ export class PinchGesture<GestureName extends string> extends PointerGesture<Ges
     const centroid = calculateCentroid(pointers);
 
     // Create custom event data
-    const distance = this.state.lastDistance || 0;
-    const scale = this.state.lastScale || 1;
+    const distance = this.state.lastDistance;
+    const scale = this.state.lastScale;
 
     // Get list of active gestures
     const activeGestures = this.gesturesRegistry.getActiveGestures(element);
