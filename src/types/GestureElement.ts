@@ -32,10 +32,10 @@
  */
 
 export type GestureElement<
-  Element extends HTMLElement = HTMLElement,
   GestureEventName extends string = string,
   GestureNameToEvent = unknown,
-> = Omit<Element, 'addEventListener' | 'removeEventListener'> & {
+  T = unknown,
+> = Omit<T, 'addEventListener' | 'removeEventListener'> & {
   addEventListener<
     K extends GestureEventName,
     GestureEvent = GestureNameToEvent extends Record<GestureEventName, Event>

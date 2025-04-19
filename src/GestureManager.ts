@@ -316,20 +316,20 @@ export class GestureManager<
     gestureNames: GN | GN[],
     element: T,
     options?: Partial<Pick<GestureNameToOptionsMap, GN>>
-  ): GestureElement<T, GestureNameUnionComplete, GestureNameToEventMap> {
+  ): GestureElement<GestureNameUnionComplete, GestureNameToEventMap, T> {
     // Handle array of gesture names
     if (Array.isArray(gestureNames)) {
       gestureNames.forEach(name => {
         const gestureOptions = options?.[name];
         this._registerSingleGesture(name, element, gestureOptions!);
       });
-      return element as GestureElement<T, GestureNameUnionComplete, GestureNameToEventMap>;
+      return element as GestureElement<GestureNameUnionComplete, GestureNameToEventMap, T>;
     }
 
     // Handle single gesture name
     const gestureOptions = options?.[gestureNames];
     this._registerSingleGesture(gestureNames, element, gestureOptions!);
-    return element as GestureElement<T, GestureNameUnionComplete, GestureNameToEventMap>;
+    return element as GestureElement<GestureNameUnionComplete, GestureNameToEventMap, T>;
   }
 
   /**
