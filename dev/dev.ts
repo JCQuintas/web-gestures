@@ -287,6 +287,10 @@ clearLogButton.addEventListener('click', () => {
 
 resetPositionButton.addEventListener('click', () => {
   updatePosition(target, { targetX: 0, targetY: 0, scale: 1, rotation: 0 });
+  gestureManager.setGestureState('pan', target, {
+    totalDeltaX: 0,
+    totalDeltaY: 0,
+  });
   addLogEntry('Position reset');
 });
 
