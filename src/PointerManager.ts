@@ -189,14 +189,12 @@ export class PointerManager {
 
     // Add event listeners
     this.root.addEventListener('pointerdown', this.handlePointerEvent, { passive: this.passive });
-    window.addEventListener('pointermove', this.handlePointerEvent, { passive: this.passive });
-    window.addEventListener('pointerup', this.handlePointerEvent, { passive: this.passive });
-    window.addEventListener('pointercancel', this.handlePointerEvent, { passive: this.passive });
+    this.root.addEventListener('pointermove', this.handlePointerEvent, { passive: this.passive });
+    this.root.addEventListener('pointerup', this.handlePointerEvent, { passive: this.passive });
+    this.root.addEventListener('pointercancel', this.handlePointerEvent, { passive: this.passive });
 
     // Add blur and contextmenu event listeners to interrupt all gestures
-    window.addEventListener('blur', this.handleInterruptEvents);
-    window.addEventListener('contextmenu', this.handleInterruptEvents);
-    // Also add contextmenu to the root element to ensure it catches the event early
+    this.root.addEventListener('blur', this.handleInterruptEvents);
     this.root.addEventListener('contextmenu', this.handleInterruptEvents);
   }
 
@@ -352,11 +350,10 @@ export class PointerManager {
    */
   public destroy(): void {
     this.root.removeEventListener('pointerdown', this.handlePointerEvent);
-    window.removeEventListener('pointermove', this.handlePointerEvent);
-    window.removeEventListener('pointerup', this.handlePointerEvent);
-    window.removeEventListener('pointercancel', this.handlePointerEvent);
-    window.removeEventListener('blur', this.handleInterruptEvents);
-    window.removeEventListener('contextmenu', this.handleInterruptEvents);
+    this.root.removeEventListener('pointermove', this.handlePointerEvent);
+    this.root.removeEventListener('pointerup', this.handlePointerEvent);
+    this.root.removeEventListener('pointercancel', this.handlePointerEvent);
+    this.root.removeEventListener('blur', this.handleInterruptEvents);
     this.root.removeEventListener('contextmenu', this.handleInterruptEvents);
 
     this.pointers.clear();
