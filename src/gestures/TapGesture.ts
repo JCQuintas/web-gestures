@@ -34,7 +34,9 @@ export type TapGestureOptions<GestureName extends string> = PointerGestureOption
  * Event data specific to tap gesture events
  * Contains information about the tap location and counts
  */
-export type TapGestureEventData = PointerGestureEventData & {
+export type TapGestureEventData<
+  CustomData extends Record<string, unknown> = Record<string, unknown>,
+> = PointerGestureEventData<CustomData> & {
   /** X coordinate of the tap */
   x: number;
   /** Y coordinate of the tap */
@@ -46,7 +48,8 @@ export type TapGestureEventData = PointerGestureEventData & {
 /**
  * Type definition for the CustomEvent created by TapGesture
  */
-export type TapEvent = CustomEvent<TapGestureEventData>;
+export type TapEvent<CustomData extends Record<string, unknown> = Record<string, unknown>> =
+  CustomEvent<TapGestureEventData<CustomData>>;
 
 /**
  * State tracking for the TapGesture
@@ -263,6 +266,7 @@ export class TapGesture<GestureName extends string> extends PointerGesture<Gestu
       y: position.y,
       tapCount: this.state.currentTapCount,
       activeGestures,
+      customData: this.customData,
     };
 
     // Dispatch a single 'tap' event (not 'tapStart', 'tapEnd', etc.)
@@ -306,6 +310,7 @@ export class TapGesture<GestureName extends string> extends PointerGesture<Gestu
         y: position!.y,
         tapCount: this.state.currentTapCount,
         activeGestures,
+        customData: this.customData,
       };
 
       // Dispatch a 'tapCancel' event

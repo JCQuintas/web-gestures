@@ -21,22 +21,25 @@ export type GesturePhase = 'start' | 'ongoing' | 'end' | 'cancel';
  * Core data structure passed to gesture event handlers.
  * Contains all relevant information about a gesture event.
  */
-export type GestureEventData = {
-  /** The centroid of all active pointers involved in the gesture */
-  centroid: { x: number; y: number };
-  /** The target element of the original event */
-  target: EventTarget | null;
-  /** The original event that triggered this gesture */
-  srcEvent: Event;
-  /** The current phase of the gesture */
-  phase: GesturePhase;
-  /** Array of all active pointers involved in the gesture */
-  pointers: PointerData[];
-  /** The time at which the gesture event occurred */
-  timeStamp: number;
-  /** List of all currently active gestures */
-  activeGestures: Record<string, boolean>;
-};
+export type GestureEventData<CustomData extends Record<string, unknown> = Record<string, unknown>> =
+  {
+    /** The centroid of all active pointers involved in the gesture */
+    centroid: { x: number; y: number };
+    /** The target element of the original event */
+    target: EventTarget | null;
+    /** The original event that triggered this gesture */
+    srcEvent: Event;
+    /** The current phase of the gesture */
+    phase: GesturePhase;
+    /** Array of all active pointers involved in the gesture */
+    pointers: PointerData[];
+    /** The time at which the gesture event occurred */
+    timeStamp: number;
+    /** List of all currently active gestures */
+    activeGestures: Record<string, boolean>;
+    /** User-mutable data object for sharing state between gesture events */
+    customData: CustomData;
+  };
 
 /**
  * Configuration options for creating a gesture instance.
@@ -116,6 +119,12 @@ export abstract class Gesture<GestureName extends string> {
    * List of gesture names that should prevent this gesture from activating when they are active.
    */
   protected preventIf: string[];
+
+  /**
+   * User-mutable data object for sharing state between gesture events
+   * This object is included in all events emitted by this gesture
+   */
+  protected customData: Record<string, unknown> = {};
 
   /** Reference to the singleton PointerManager instance */
   protected pointerManager!: PointerManager;

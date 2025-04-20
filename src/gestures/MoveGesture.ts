@@ -26,12 +26,15 @@ export type MoveGestureOptions<GestureName extends string> = PointerGestureOptio
  * Event data specific to move gesture events
  * Includes the source pointer event and standard gesture data
  */
-export type MoveGestureEventData = PointerGestureEventData & {};
+export type MoveGestureEventData<
+  CustomData extends Record<string, unknown> = Record<string, unknown>,
+> = PointerGestureEventData<CustomData> & {};
 
 /**
  * Type definition for the CustomEvent created by MoveGesture
  */
-export type MoveEvent = CustomEvent<MoveGestureEventData>;
+export type MoveEvent<CustomData extends Record<string, unknown> = Record<string, unknown>> =
+  CustomEvent<MoveGestureEventData<CustomData>>;
 
 /**
  * State tracking for the MoveGesture
@@ -209,6 +212,7 @@ export class MoveGesture<GestureName extends string> extends PointerGesture<Gest
       pointers,
       timeStamp: event.timeStamp,
       activeGestures,
+      customData: this.customData,
     };
 
     // Event names to trigger

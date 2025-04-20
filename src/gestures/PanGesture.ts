@@ -32,7 +32,9 @@ export type PanGestureOptions<GestureName extends string> = PointerGestureOption
  * Event data specific to pan gesture events
  * Contains information about movement distance, direction, and velocity
  */
-export type PanGestureEventData = PointerGestureEventData & {
+export type PanGestureEventData<
+  CustomData extends Record<string, unknown> = Record<string, unknown>,
+> = PointerGestureEventData<CustomData> & {
   /** Horizontal distance moved in pixels from the start of the current gesture */
   deltaX: number;
   /** Vertical distance moved in pixels from the start of the current gesture */
@@ -54,7 +56,8 @@ export type PanGestureEventData = PointerGestureEventData & {
 /**
  * Type definition for the CustomEvent created by PanGesture
  */
-export type PanEvent = CustomEvent<PanGestureEventData>;
+export type PanEvent<CustomData extends Record<string, unknown> = Record<string, unknown>> =
+  CustomEvent<PanGestureEventData<CustomData>>;
 
 /**
  * State tracking for the PanGesture
@@ -325,6 +328,7 @@ export class PanGesture<GestureName extends string> extends PointerGesture<Gestu
       totalDeltaX: this.state.totalDeltaX,
       totalDeltaY: this.state.totalDeltaY,
       activeGestures,
+      customData: this.customData,
     };
 
     // Event names to trigger

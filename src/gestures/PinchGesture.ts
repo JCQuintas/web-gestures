@@ -33,7 +33,9 @@ export type PinchGestureOptions<GestureName extends string> = PointerGestureOpti
  * Event data specific to pinch gesture events
  * Contains information about scale, distance, and velocity
  */
-export type PinchGestureEventData = PointerGestureEventData & {
+export type PinchGestureEventData<
+  CustomData extends Record<string, unknown> = Record<string, unknown>,
+> = PointerGestureEventData<CustomData> & {
   /** Relative scale factor comparing current distance to initial distance (1.0 = no change) */
   scale: number;
   /** Total accumulated scale factor across all pinch operations */
@@ -49,7 +51,8 @@ export type PinchGestureEventData = PointerGestureEventData & {
 /**
  * Type definition for the CustomEvent created by PinchGesture
  */
-export type PinchEvent = CustomEvent<PinchGestureEventData>;
+export type PinchEvent<CustomData extends Record<string, unknown> = Record<string, unknown>> =
+  CustomEvent<PinchGestureEventData<CustomData>>;
 
 /**
  * State tracking for the PinchGesture
@@ -273,6 +276,7 @@ export class PinchGesture<GestureName extends string> extends PointerGesture<Ges
       velocity: this.state.velocity,
       activeGestures,
       direction: this.state.velocity > 0 ? 1 : this.state.velocity < 0 ? -1 : 0,
+      customData: this.customData,
     };
 
     // Handle default event behavior

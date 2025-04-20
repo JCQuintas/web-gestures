@@ -25,7 +25,9 @@ export type RotateGestureOptions<GestureName extends string> = PointerGestureOpt
  * Event data specific to rotate gesture events
  * Contains information about rotation angle, delta, and velocity
  */
-export type RotateGestureEventData = PointerGestureEventData & {
+export type RotateGestureEventData<
+  CustomData extends Record<string, unknown> = Record<string, unknown>,
+> = PointerGestureEventData<CustomData> & {
   /** Current absolute rotation in degrees (0-359) */
   rotation: number;
   /** Change in rotation since the last event in degrees */
@@ -39,7 +41,8 @@ export type RotateGestureEventData = PointerGestureEventData & {
 /**
  * Type definition for the CustomEvent created by RotateGesture
  */
-export type RotateEvent = CustomEvent<RotateGestureEventData>;
+export type RotateEvent<CustomData extends Record<string, unknown> = Record<string, unknown>> =
+  CustomEvent<RotateGestureEventData<CustomData>>;
 
 /**
  * State tracking for the RotateGesture
@@ -282,6 +285,7 @@ export class RotateGesture<GestureName extends string> extends PointerGesture<Ge
       totalRotation: this.state.totalRotation,
       velocity: this.state.velocity,
       activeGestures,
+      customData: this.customData,
     };
 
     // Handle default event behavior

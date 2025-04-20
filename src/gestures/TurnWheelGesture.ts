@@ -61,7 +61,9 @@ export type TurnWheelGestureOptions<GestureName extends string> = GestureOptions
  * Event data specific to wheel gesture events
  * Contains information about scroll delta amounts and mode
  */
-export type TurnWheelGestureEventData = GestureEventData & {
+export type TurnWheelGestureEventData<
+  CustomData extends Record<string, unknown> = Record<string, unknown>,
+> = GestureEventData<CustomData> & {
   /** Horizontal scroll amount */
   deltaX: number;
   /** Vertical scroll amount */
@@ -86,7 +88,8 @@ export type TurnWheelGestureEventData = GestureEventData & {
 /**
  * Type definition for the CustomEvent created by TurnWheelGesture
  */
-export type TurnWheelEvent = CustomEvent<TurnWheelGestureEventData>;
+export type TurnWheelEvent<CustomData extends Record<string, unknown> = Record<string, unknown>> =
+  CustomEvent<TurnWheelGestureEventData<CustomData>>;
 
 /**
  * State tracking for the TurnWheelGesture
@@ -280,6 +283,7 @@ export class TurnWheelGesture<GestureName extends string> extends Gesture<Gestur
       totalDeltaY: this.state.totalDeltaY,
       totalDeltaZ: this.state.totalDeltaZ,
       activeGestures,
+      customData: this.customData,
     };
 
     // Apply default event behavior if configured

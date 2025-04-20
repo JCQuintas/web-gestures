@@ -38,7 +38,9 @@ export interface PointerGestureOptions<GestureName extends string>
   threshold?: number;
 }
 
-export type PointerGestureEventData = GestureEventData & {
+export type PointerGestureEventData<
+  CustomData extends Record<string, unknown> = Record<string, unknown>,
+> = GestureEventData<CustomData> & {
   /** The original event that triggered this gesture */
   srcEvent: PointerEvent;
 };
