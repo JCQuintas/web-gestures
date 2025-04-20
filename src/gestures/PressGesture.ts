@@ -2,8 +2,7 @@
  * PressGesture - Detects press and hold interactions
  *
  * This gesture tracks when users press and hold on an element for a specified duration, firing events when:
- * - The press begins and passes the holding threshold time (start)
- * - The press is ongoing (ongoing)
+ * - The press begins and passes the holding threshold time (start, ongoing)
  * - The press ends (end)
  * - The press is canceled by movement beyond threshold (cancel)
  *
@@ -77,6 +76,8 @@ export type PressGestureState = GestureState & {
  *
  * This gesture detects when users press and hold on an element for a specified duration,
  * and dispatches press-related events when the user holds long enough.
+ *
+ * The `start` and `ongoing` events are dispatched at the same time once the press threshold is reached.
  */
 export class PressGesture<GestureName extends string> extends PointerGesture<GestureName> {
   protected state: PressGestureState = {
@@ -227,6 +228,13 @@ export class PressGesture<GestureName extends string> extends PointerGesture<Ges
                 event,
                 this.state.lastPosition!
               );
+              this.emitPressEvent(
+                targetElement,
+                'ongoing',
+                relevantPointers,
+                event,
+                this.state.lastPosition!
+              );
             }
           }, this.duration);
         }
@@ -246,10 +254,6 @@ export class PressGesture<GestureName extends string> extends PointerGesture<Ges
           // If moved too far, cancel the press gesture
           if (distance > this.maxDistance) {
             this.cancelPress(targetElement, relevantPointers, event);
-          }
-          // If we've already crossed the threshold, emit ongoing events
-          else if (this.state.pressThresholdReached) {
-            this.emitPressEvent(targetElement, 'ongoing', relevantPointers, event, currentPosition);
           }
         }
         break;

@@ -292,10 +292,8 @@ describe('PressGesture', () => {
     // Create user-event instance
     const user = userEvent.setup({ delay: 100 });
 
-    // Start press
     await user.pointer([
       { keys: '[MouseLeft>]', target, coords: { x: 50, y: 50 } },
-      { target, coords: { x: 52, y: 52 } },
       { keys: '[/MouseLeft]', target, coords: { x: 52, y: 52 } },
     ]);
 
@@ -309,7 +307,7 @@ describe('PressGesture', () => {
     const ongoingEvent = pressOngoingHandler.mock.calls[0][0] as PressEvent;
     const endEvent = pressEndHandler.mock.calls[0][0] as PressEvent;
 
-    expect(ongoingEvent.detail.duration).toBeGreaterThan(startEvent.detail.duration);
+    expect(ongoingEvent.detail.duration).toBe(startEvent.detail.duration);
     expect(endEvent.detail.duration).toBeGreaterThan(ongoingEvent.detail.duration);
   });
 
