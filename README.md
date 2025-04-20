@@ -1,5 +1,5 @@
 ```ts
-import { GestureManager, PanGesture } from 'gesture-events';
+import { GestureManager, PanGesture } from '@web-gesture/core';
 
 const gestureManager = new GestureManager({
   root: document.body,

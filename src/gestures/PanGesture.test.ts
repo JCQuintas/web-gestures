@@ -1,4 +1,3 @@
-// filepath: /Users/jcquintas/dev/gesture-events-2/src/gestures/PanGesture.test.ts
 import userEvent from '@testing-library/user-event';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { GestureManager } from '../GestureManager';
