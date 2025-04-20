@@ -35,6 +35,8 @@ export type PanGestureOptions<GestureName extends string> = PointerGestureOption
 export type PanGestureEventData<
   CustomData extends Record<string, unknown> = Record<string, unknown>,
 > = PointerGestureEventData<CustomData> & {
+  /** The centroid position at the start of the gesture */
+  initialCentroid: { x: number; y: number };
   /** Horizontal distance moved in pixels from the start of the current gesture */
   deltaX: number;
   /** Vertical distance moved in pixels from the start of the current gesture */
@@ -313,6 +315,7 @@ export class PanGesture<GestureName extends string> extends PointerGesture<Gestu
 
     // Create custom event data
     const customEventData: PanGestureEventData = {
+      initialCentroid: this.state.startCentroid,
       centroid: currentCentroid,
       target: event.target,
       srcEvent: event,
