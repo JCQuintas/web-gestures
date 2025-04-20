@@ -471,4 +471,86 @@ describe('PinchGesture', () => {
     const endEvent = pinchEndHandler.mock.calls[0][0] as PinchEvent;
     expect(endEvent.detail.direction).toBeDefined();
   });
+
+  it('should calculate deltaScale correctly between events', async () => {
+    // Setup listeners
+    const pinchStartHandler = vi.fn();
+    const pinchHandler = vi.fn();
+    const pinchEndHandler = vi.fn();
+
+    target.addEventListener('pinchStart', pinchStartHandler);
+    target.addEventListener('pinch', pinchHandler);
+    target.addEventListener('pinchEnd', pinchEndHandler);
+
+    // Create user-event instance
+    const user = userEvent.setup();
+
+    // Simulate a pinch sequence with distinct movements
+    await user.pointer([
+      // Two pointers down
+      { keys: '[TouchA>]', target, coords: { x: 140, y: 150 } },
+      { keys: '[TouchB>]', target, coords: { x: 160, y: 150 } },
+      // First movement - move pointers apart
+      { pointerName: 'TouchA', target, coords: { x: 130, y: 150 } },
+      { pointerName: 'TouchB', target, coords: { x: 170, y: 150 } },
+      // Second movement - move pointers even further
+      { pointerName: 'TouchA', target, coords: { x: 120, y: 150 } },
+      { pointerName: 'TouchB', target, coords: { x: 180, y: 150 } },
+      // Release pointers
+      { keys: '[/TouchA][/TouchB]', target, coords: { x: 150, y: 150 } },
+    ]);
+
+    // Verify events were fired
+    expect(pinchStartHandler).toHaveBeenCalledTimes(1);
+    expect(pinchHandler).toHaveBeenCalledTimes(4); // Two movement events
+    expect(pinchEndHandler).toHaveBeenCalledTimes(1);
+
+    // Verify deltaScale in start event should be 0 (no change initially)
+    const startEvent = pinchStartHandler.mock.calls[0][0] as PinchEvent;
+    expect(startEvent.detail.deltaScale).toBe(0);
+
+    // Get the scale values from each ongoing event
+    const firstMoveEvent = pinchHandler.mock.calls[0][0] as PinchEvent;
+    const secondMoveEvent = pinchHandler.mock.calls[1][0] as PinchEvent;
+
+    // Verify delta scale is calculated correctly for each event
+    expect(firstMoveEvent.detail.deltaScale).toBeGreaterThan(0); // First movement increases scale
+    expect(secondMoveEvent.detail.deltaScale).toBeGreaterThan(0); // Second movement increases scale further
+
+    // End event should have the last deltaScale value
+    const endEvent = pinchEndHandler.mock.calls[0][0] as PinchEvent;
+    expect(endEvent.detail.deltaScale).toBeDefined();
+  });
+
+  it('should report correct deltaScale when pinching in and out', async () => {
+    // Setup listeners
+    const pinchHandler = vi.fn();
+    target.addEventListener('pinch', pinchHandler);
+
+    // Create user-event instance
+    const user = userEvent.setup();
+
+    // Simulate pinch out then pinch in
+    await user.pointer([
+      // Two pointers down
+      { keys: '[TouchA>]', target, coords: { x: 140, y: 150 } },
+      { keys: '[TouchB>]', target, coords: { x: 160, y: 150 } },
+      // Move pointers apart (zoom in) - deltaScale > 0
+      { pointerName: 'TouchB', target, coords: { x: 180, y: 150 } },
+      // Move pointers together (zoom out) - deltaScale < 0
+      { pointerName: 'TouchB', target, coords: { x: 165, y: 150 } },
+      // Release pointers
+      { keys: '[/TouchA][/TouchB]', target, coords: { x: 150, y: 150 } },
+    ]);
+
+    // Get the events
+    const firstMoveEvent = pinchHandler.mock.calls[0][0] as PinchEvent;
+    const secondMoveEvent = pinchHandler.mock.calls[1][0] as PinchEvent;
+
+    // First movement should have deltaScale > 1 (zooming in)
+    expect(firstMoveEvent.detail.deltaScale).toBeGreaterThan(0);
+
+    // Second movement should have deltaScale < 1 (zooming out)
+    expect(secondMoveEvent.detail.deltaScale).toBeLessThan(0);
+  });
 });

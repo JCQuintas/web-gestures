@@ -38,6 +38,8 @@ export type PinchGestureEventData<
 > = PointerGestureEventData<CustomData> & {
   /** Relative scale factor comparing current distance to initial distance (1.0 = no change) */
   scale: number;
+  /** Change in scale since the last event */
+  deltaScale: number;
   /** Total accumulated scale factor across all pinch operations */
   totalScale: number;
   /** Current distance between pointers in pixels */
@@ -70,6 +72,8 @@ export type PinchGestureState = GestureState & {
   velocity: number;
   /** Total accumulated scale factor across all pinch operations */
   totalScale: number;
+  /** Change in scale since the last event */
+  deltaScale: number;
 };
 
 /**
@@ -86,6 +90,7 @@ export class PinchGesture<GestureName extends string> extends PointerGesture<Ges
     lastTime: 0,
     velocity: 0,
     totalScale: 1,
+    deltaScale: 0,
   };
 
   protected readonly isSinglePhase!: false;
@@ -136,6 +141,7 @@ export class PinchGesture<GestureName extends string> extends PointerGesture<Ges
       lastScale: 1,
       lastTime: 0,
       velocity: 0,
+      deltaScale: 0,
     };
   }
 
@@ -207,6 +213,7 @@ export class PinchGesture<GestureName extends string> extends PointerGesture<Ges
 
           // Update state
           this.state.lastDistance = currentDistance;
+          this.state.deltaScale = scale - this.state.lastScale;
           this.state.lastScale = scale;
           this.state.lastTime = event.timeStamp;
 
@@ -271,6 +278,7 @@ export class PinchGesture<GestureName extends string> extends PointerGesture<Ges
       pointers,
       timeStamp: event.timeStamp,
       scale,
+      deltaScale: this.state.deltaScale,
       totalScale: this.state.totalScale,
       distance,
       velocity: this.state.velocity,
