@@ -155,7 +155,11 @@ export class TapGesture<GestureName extends string> extends PointerGesture<Gestu
     );
 
     // Check if we have enough pointers and not too many
-    if (relevantPointers.length < this.minPointers || relevantPointers.length > this.maxPointers) {
+    if (
+      this.shouldPreventGesture(targetElement) ||
+      relevantPointers.length < this.minPointers ||
+      relevantPointers.length > this.maxPointers
+    ) {
       if (this.isActive) {
         // Cancel the gesture if it was active
         this.cancelTap(targetElement, relevantPointers, event);
