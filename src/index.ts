@@ -14,6 +14,7 @@ export { PointerManager } from './PointerManager';
 export { MoveGesture } from './gestures/MoveGesture';
 export { PanGesture } from './gestures/PanGesture';
 export { PinchGesture } from './gestures/PinchGesture';
+export { PressGesture } from './gestures/PressGesture';
 export { RotateGesture } from './gestures/RotateGesture';
 export { TapGesture } from './gestures/TapGesture';
 export { TurnWheelGesture } from './gestures/TurnWheelGesture';
@@ -33,6 +34,11 @@ export type {
   PinchGestureEventData,
   PinchGestureOptions,
 } from './gestures/PinchGesture';
+export type {
+  PressEvent,
+  PressGestureEventData,
+  PressGestureOptions,
+} from './gestures/PressGesture';
 export type {
   RotateEvent,
   RotateGestureEventData,

@@ -3,6 +3,7 @@ import {
   MoveGesture,
   PanGesture,
   PinchGesture,
+  PressGesture,
   RotateGesture,
   TapGesture,
   TurnWheelGesture,
@@ -49,10 +50,16 @@ const gestureManager = new GestureManager({
     new TapGesture({
       name: 'tap',
       taps: 1,
+      preventIf: ['press'],
     }),
     new TapGesture({
       name: 'doubleTap',
       taps: 2,
+    }),
+    new PressGesture({
+      name: 'press',
+      duration: 500, // ms to wait before recognizing press
+      maxDistance: 10, // max distance pointer can move
     }),
   ],
 });
@@ -69,7 +76,7 @@ const changeRotationButton = document.getElementById('change-rotation') as HTMLB
 // Register multiple gestures at once for the element
 // This will return the element with properly typed event listeners
 const target = gestureManager.registerElement(
-  ['pan', 'move', 'pinch', 'rotate', 'roll', 'tap', 'doubleTap'],
+  ['pan', 'move', 'pinch', 'rotate', 'roll', 'tap', 'doubleTap', 'press'],
   gestureTarget
 );
 
@@ -244,6 +251,51 @@ target.addEventListener('doubleTap', event => {
   const detail = event.detail;
   addLogEntry(
     `DoubleTap detected at: x=${Math.round(detail.centroid.x)}, y=${Math.round(detail.centroid.y)}`
+  );
+});
+
+// Add press gesture event listeners
+target.addEventListener('pressStart', event => {
+  const detail = event.detail;
+
+  // Change background color to indicate active press
+  target.style.backgroundColor = '#9c27b0';
+
+  addLogEntry(
+    `Press started at: x=${Math.round(detail.x)}, y=${Math.round(detail.y)}, duration=${detail.duration}ms`
+  );
+});
+
+target.addEventListener('press', event => {
+  const detail = event.detail;
+
+  // Only log every 100ms to avoid flooding the log
+  if (detail.duration % 100 < 20) {
+    addLogEntry(
+      `Press ongoing at: x=${Math.round(detail.x)}, y=${Math.round(detail.y)}, duration=${detail.duration}ms`
+    );
+  }
+});
+
+target.addEventListener('pressEnd', event => {
+  const detail = event.detail;
+
+  // Reset background color
+  target.style.backgroundColor = '#4287f5';
+
+  addLogEntry(
+    `Press ended at: x=${Math.round(detail.x)}, y=${Math.round(detail.y)}, duration=${detail.duration}ms`
+  );
+});
+
+target.addEventListener('pressCancel', event => {
+  const detail = event.detail;
+
+  // Reset background color
+  target.style.backgroundColor = '#4287f5';
+
+  addLogEntry(
+    `Press cancelled at: x=${Math.round(detail.x)}, y=${Math.round(detail.y)}, duration=${detail.duration}ms`
   );
 });
 
