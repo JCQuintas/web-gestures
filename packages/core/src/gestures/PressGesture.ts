@@ -78,6 +78,7 @@ export type PressGestureState = GestureState & {
  * and dispatches press-related events when the user holds long enough.
  *
  * The `start` and `ongoing` events are dispatched at the same time once the press threshold is reached.
+ * If the press is canceled (e.g., by moving too far), a `cancel` event is dispatched before the `end` event.
  */
 export class PressGesture<GestureName extends string> extends PointerGesture<GestureName> {
   protected state: PressGestureState = {
@@ -344,6 +345,7 @@ export class PressGesture<GestureName extends string> extends PointerGesture<Ges
       const position = this.state.lastPosition || this.state.startCentroid!;
 
       this.emitPressEvent(element ?? this.element, 'cancel', pointers, event, position);
+      this.emitPressEvent(element ?? this.element, 'end', pointers, event, position);
     }
 
     this.resetState();

@@ -335,4 +335,51 @@ describe('PressGesture', () => {
 
     vi.useRealTimers();
   });
+
+  it('should fire cancel before end when press gesture is cancelled', async () => {
+    // Setup event handlers to track order of events
+    const eventsOrder: string[] = [];
+
+    const pressCancelHandler = vi.fn(() => {
+      eventsOrder.push('cancel');
+    });
+
+    const pressEndHandler = vi.fn(() => {
+      eventsOrder.push('end');
+    });
+
+    target.addEventListener('pressCancel', pressCancelHandler);
+    target.addEventListener('pressEnd', pressEndHandler);
+
+    // Mock the timer functions
+    vi.useFakeTimers();
+
+    // Manually dispatch events for a press that will be cancelled
+    const pointerdownEvent = new PointerEvent('pointerdown', {
+      bubbles: true,
+      clientX: 50,
+      clientY: 50,
+    });
+    target.dispatchEvent(pointerdownEvent);
+
+    // Wait for press duration threshold
+    vi.advanceTimersByTime(120);
+
+    // Simulate moving too far (beyond maxDistance)
+    const pointermoveEvent = new PointerEvent('pointermove', {
+      bubbles: true,
+      clientX: 80, // Move far enough to trigger cancel
+      clientY: 80,
+    });
+    target.dispatchEvent(pointermoveEvent);
+
+    // Verify both cancel and end events were fired
+    expect(pressCancelHandler).toHaveBeenCalledTimes(1);
+    expect(pressEndHandler).toHaveBeenCalledTimes(1);
+
+    // Verify cancel was fired before end
+    expect(eventsOrder).toEqual(['cancel', 'end']);
+
+    vi.useRealTimers();
+  });
 });
