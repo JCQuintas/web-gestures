@@ -24,7 +24,7 @@
   },
   "license": "MIT",
   "scripts": {
-    "build": "pnpm run build:lib && pnpm run build:types && mv dist/src/* dist/ && rm -rf dist/src",
+    "build": "pnpm run build:lib && pnpm run build:types && mv dist/packages/*/src/* dist/ && rm -rf dist/packages/",
     "build:types": "tsc --project tsconfig.build.json",
     "build:lib": "vite build --config vite.config.ts"
   },
