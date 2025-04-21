@@ -170,11 +170,19 @@ export class MoveGesture<GestureName extends string> extends PointerGesture<Gest
       return;
     }
 
+    if (this.shouldPreventGesture(targetElement)) {
+      if (!this.isActive) return;
+      this.resetState();
+      this.emitMoveEvent(targetElement, 'end', pointersArray, event);
+      return;
+    }
+
     // Update position
     const currentPosition = { x: event.clientX, y: event.clientY };
     this.state.lastPosition = currentPosition;
 
     if (!this.isActive) {
+      this.isActive = true;
       this.emitMoveEvent(targetElement, 'start', pointersArray, event);
       return;
     }
@@ -195,9 +203,6 @@ export class MoveGesture<GestureName extends string> extends PointerGesture<Gest
     pointers: PointerData[],
     event: PointerEvent
   ): void {
-    if (this.shouldPreventGesture(element)) {
-      return;
-    }
     const currentPosition = this.state.lastPosition || calculateCentroid(pointers);
 
     // Get list of active gestures
