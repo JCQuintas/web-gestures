@@ -61,8 +61,15 @@ export class MoveGesture<GestureName extends string> extends PointerGesture<Gest
   protected readonly mutableOptionsType!: Omit<typeof this.optionsType, 'name'>;
   protected readonly mutableStateType!: never;
 
+  // Store bound event handlers to properly remove them
+  private handleElementEnterBound: (event: PointerEvent) => void;
+  private handleElementLeaveBound: (event: PointerEvent) => void;
+
   constructor(options: MoveGestureOptions<GestureName>) {
     super(options);
+    // Pre-bind handlers to this instance to maintain reference equality
+    this.handleElementEnterBound = this.handleElementEnter.bind(this);
+    this.handleElementLeaveBound = this.handleElementLeave.bind(this);
   }
 
   public clone(overrides?: Record<string, unknown>): MoveGesture<GestureName> {
@@ -84,19 +91,14 @@ export class MoveGesture<GestureName extends string> extends PointerGesture<Gest
 
     // Add event listeners for entering and leaving elements
     // These are different from pointer events handled by PointerManager
-    this.element.addEventListener('pointerenter', this.handleElementEnter.bind(this, element));
-    this.element.addEventListener('pointerleave', this.handleElementLeave.bind(this, element));
+    this.element.addEventListener('pointerenter', this.handleElementEnterBound);
+    this.element.addEventListener('pointerleave', this.handleElementLeaveBound);
   }
 
   public destroy(): void {
-    this.element.removeEventListener(
-      'pointerenter',
-      this.handleElementEnter.bind(this, this.element)
-    );
-    this.element.removeEventListener(
-      'pointerleave',
-      this.handleElementLeave.bind(this, this.element)
-    );
+    // Remove event listeners using the same function references
+    this.element.removeEventListener('pointerenter', this.handleElementEnterBound);
+    this.element.removeEventListener('pointerleave', this.handleElementLeaveBound);
     this.resetState();
     super.destroy();
   }
@@ -115,10 +117,9 @@ export class MoveGesture<GestureName extends string> extends PointerGesture<Gest
 
   /**
    * Handle pointer enter events for a specific element
-   * @param element The DOM element the pointer entered
    * @param event The original pointer event
    */
-  private handleElementEnter(element: TargetElement, event: PointerEvent): void {
+  private handleElementEnter(event: PointerEvent): void {
     // Get pointers from the PointerManager
     const pointers = this.pointerManager.getPointers() || new Map();
     const pointersArray = Array.from(pointers.values());
@@ -130,16 +131,15 @@ export class MoveGesture<GestureName extends string> extends PointerGesture<Gest
       this.state.lastPosition = currentPosition;
 
       // Emit start event
-      this.emitMoveEvent(element, 'start', pointersArray, event);
+      this.emitMoveEvent(this.element, 'start', pointersArray, event);
     }
   }
 
   /**
    * Handle pointer leave events for a specific element
-   * @param element The DOM element the pointer left
    * @param event The original pointer event
    */
-  private handleElementLeave(element: TargetElement, event: PointerEvent): void {
+  private handleElementLeave(event: PointerEvent): void {
     if (!this.isActive) return;
 
     // Get pointers from the PointerManager
@@ -147,7 +147,7 @@ export class MoveGesture<GestureName extends string> extends PointerGesture<Gest
     const pointersArray = Array.from(pointers.values());
 
     // Emit end event and reset state
-    this.emitMoveEvent(element, 'end', pointersArray, event);
+    this.emitMoveEvent(this.element, 'end', pointersArray, event);
     this.resetState();
   }
 
@@ -158,6 +158,12 @@ export class MoveGesture<GestureName extends string> extends PointerGesture<Gest
    */
   protected handlePointerEvent(pointers: Map<number, PointerData>, event: PointerEvent): void {
     if (event.type !== 'pointermove') return;
+    if (this.preventDefault) {
+      event.preventDefault();
+    }
+    if (this.stopPropagation) {
+      event.stopPropagation();
+    }
 
     const pointersArray = Array.from(pointers.values());
 
