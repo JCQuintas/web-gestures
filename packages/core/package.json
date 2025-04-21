@@ -1,6 +1,6 @@
 {
   "name": "@web-gestures/core",
-  "version": "0.0.2",
+  "version": "0.0.3",
   "description": "The core engine of GestureEvents, a modern and robust multi-pointer gesture detection library for JavaScript.",
   "author": "Jose Quintas <juniorquintas@gmail.com>",
   "keywords": [
@@ -31,18 +31,20 @@
     "build:types": "tsc --project tsconfig.build.json",
     "build:lib": "vite build --config vite.config.ts"
   },
-  "exports": {
-    ".": {
-      "types": "./dist/index.d.ts",
-      "import": "./dist/index.js",
-      "require": "./dist/index.cjs.js"
-    },
-    "./package.json": "./package.json"
-  },
   "files": [
     "dist",
     "LICENSE",
     "README.md"
   ],
-  "sideEffects": false
+  "sideEffects": false,
+  "main": "./dist/index.umd.cjs",
+  "module": "./dist/index.js",
+  "exports": {
+    "./package.json": "./package.json",
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js",
+      "require": "./dist/index.umd.cjs"
+    }
+  }
 }

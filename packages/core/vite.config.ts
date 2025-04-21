@@ -8,8 +8,8 @@ export default defineConfig({
   build: {
     lib: {
       entry: resolve(__dirname, './src/index.ts'),
-      formats: ['cjs'],
-      fileName: format => `index.${format}.js`,
+      name: 'WebGestures_Core',
+      fileName: 'index',
     },
     outDir: 'dist',
     sourcemap: true,
