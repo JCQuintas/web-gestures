@@ -260,6 +260,7 @@ export class TapGesture<GestureName extends string> extends PointerGesture<Gestu
 
     // Create custom event data for the tap event
     const customEventData: TapGestureEventData = {
+      gestureName: this.name,
       centroid: position,
       target: event.target,
       srcEvent: event,
@@ -304,6 +305,7 @@ export class TapGesture<GestureName extends string> extends PointerGesture<Gestu
 
       // Create custom event data for the cancel event
       const customEventData: TapGestureEventData = {
+        gestureName: this.name,
         centroid: position!,
         target: event.target,
         srcEvent: event,

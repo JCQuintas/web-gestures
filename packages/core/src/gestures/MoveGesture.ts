@@ -216,6 +216,7 @@ export class MoveGesture<GestureName extends string> extends PointerGesture<Gest
 
     // Create custom event data
     const customEventData: MoveGestureEventData = {
+      gestureName: this.name,
       centroid: currentPosition,
       target: event.target,
       srcEvent: event,

@@ -271,6 +271,7 @@ export class PinchGesture<GestureName extends string> extends PointerGesture<Ges
     const activeGestures = this.gesturesRegistry.getActiveGestures(element);
 
     const customEventData: PinchGestureEventData = {
+      gestureName: this.name,
       centroid,
       target: event.target,
       srcEvent: event,

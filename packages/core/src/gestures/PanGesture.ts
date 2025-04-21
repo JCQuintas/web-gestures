@@ -315,6 +315,7 @@ export class PanGesture<GestureName extends string> extends PointerGesture<Gestu
 
     // Create custom event data
     const customEventData: PanGestureEventData = {
+      gestureName: this.name,
       initialCentroid: this.state.startCentroid,
       centroid: currentCentroid,
       target: event.target,

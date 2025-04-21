@@ -274,6 +274,7 @@ export class RotateGesture<GestureName extends string> extends PointerGesture<Ge
     const activeGestures = this.gesturesRegistry.getActiveGestures(element);
 
     const customEventData: RotateGestureEventData = {
+      gestureName: this.name,
       centroid,
       target: event.target,
       srcEvent: event,

@@ -272,6 +272,7 @@ export class TurnWheelGesture<GestureName extends string> extends Gesture<Gestur
 
     // Create custom event data
     const customEventData: TurnWheelGestureEventData = {
+      gestureName: this.name,
       centroid,
       target: event.target,
       srcEvent: event,

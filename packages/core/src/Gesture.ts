@@ -23,6 +23,8 @@ export type GesturePhase = 'start' | 'ongoing' | 'end' | 'cancel';
  */
 export type GestureEventData<CustomData extends Record<string, unknown> = Record<string, unknown>> =
   {
+    /** The name of the gesture */
+    gestureName: string;
     /** The centroid of all active pointers involved in the gesture */
     centroid: { x: number; y: number };
     /** The target element of the original event */

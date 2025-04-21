@@ -296,6 +296,7 @@ export class PressGesture<GestureName extends string> extends PointerGesture<Ges
 
     // Create custom event data
     const customEventData: PressGestureEventData = {
+      gestureName: this.name,
       centroid: position,
       target: event.target,
       srcEvent: event,
