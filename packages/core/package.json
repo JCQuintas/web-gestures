@@ -1,7 +1,7 @@
 {
-  "name": "@web-gestures/monorepo",
-  "version": "0.0.0",
-  "description": "The monorepo for @web-gestures, a modern and robust multi-pointer gesture detection library for JavaScript.",
+  "name": "@web-gestures/core",
+  "version": "0.0.1",
+  "description": "The core engine of GestureEvents, a modern and robust multi-pointer gesture detection library for JavaScript.",
   "author": "Jose Quintas <juniorquintas@gmail.com>",
   "keywords": [
     "multitouch",
@@ -24,11 +24,9 @@
   },
   "license": "MIT",
   "scripts": {
-    "dev": "vite",
-    "dev:build": "vite build",
-    "dev:preview": "vite preview",
-    "prettier": "prettier --check .",
-    "prettier:fix": "prettier --write ."
+    "build": "pnpm run build:lib && pnpm run build:types && mv dist/src/* dist/ && rm -rf dist/src",
+    "build:types": "tsc --project tsconfig.build.json",
+    "build:lib": "vite build --config vite.config.ts"
   },
   "devDependencies": {
     "@eslint/js": "^9.24.0",
@@ -47,7 +45,6 @@
     "vite": "^6.2.6",
     "vitest": "^3.1.1"
   },
-  "packageManager": "pnpm@10.8.1+sha512.c50088ba998c67b8ca8c99df8a5e02fd2ae2e2b29aaf238feaa9e124248d3f48f9fb6db2424949ff901cffbb5e0f0cc1ad6aedb602cd29450751d11c35023677",
   "exports": {
     ".": {
       "types": "./dist/index.d.ts",

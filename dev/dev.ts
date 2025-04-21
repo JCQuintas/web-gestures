@@ -7,7 +7,7 @@ import {
   RotateGesture,
   TapGesture,
   TurnWheelGesture,
-} from '../src';
+} from '../packages/core/src';
 
 // Initialize gesture manager with templates
 const gestureManager = new GestureManager({
