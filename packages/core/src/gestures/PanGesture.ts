@@ -272,6 +272,9 @@ export class PanGesture<GestureName extends string> extends PointerGesture<Gestu
           ) {
             // End the gesture
             const currentCentroid = this.state.lastCentroid || this.state.startCentroid!;
+            if (event.type === 'pointercancel') {
+              this.emitPanEvent(targetElement, 'cancel', relevantPointers, event, currentCentroid);
+            }
             this.emitPanEvent(targetElement, 'end', relevantPointers, event, currentCentroid);
 
             // Reset active state but keep total delta values

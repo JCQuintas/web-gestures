@@ -232,6 +232,9 @@ export class PinchGesture<GestureName extends string> extends PointerGesture<Ges
 
           // If we have less than the minimum required pointers, end the gesture
           if (remainingPointers.length < this.minPointers) {
+            if (event.type === 'pointercancel') {
+              this.emitPinchEvent(targetElement, 'cancel', relevantPointers, event);
+            }
             this.emitPinchEvent(targetElement, 'end', relevantPointers, event);
 
             // Reset state
