@@ -1,6 +1,6 @@
 {
   "name": "@web-gestures/monorepo",
-  "version": "0.0.4",
+  "version": "0.0.5",
   "description": "The monorepo for @web-gestures, a modern and robust multi-pointer gesture detection library for JavaScript.",
   "author": "Jose Quintas <juniorquintas@gmail.com>",
   "keywords": [

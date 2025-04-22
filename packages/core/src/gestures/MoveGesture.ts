@@ -191,7 +191,6 @@ export class MoveGesture<GestureName extends string> extends PointerGesture<Gest
     if (!this.isActive) {
       this.isActive = true;
       this.emitMoveEvent(targetElement, 'start', pointersArray, event);
-      return;
     }
     // Emit ongoing event
     this.emitMoveEvent(targetElement, 'ongoing', pointersArray, event);
