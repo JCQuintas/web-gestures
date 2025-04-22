@@ -234,6 +234,7 @@ export class PanGesture<GestureName extends string> extends PointerGesture<Gestu
 
             // Emit start event
             this.emitPanEvent(targetElement, 'start', relevantPointers, event, currentCentroid);
+            this.emitPanEvent(targetElement, 'ongoing', relevantPointers, event, currentCentroid);
           }
           // If we've already crossed the threshold, continue tracking
           else if (this.state.movementThresholdReached && this.isActive) {
@@ -366,13 +367,9 @@ export class PanGesture<GestureName extends string> extends PointerGesture<Gestu
     event: PointerEvent
   ): void {
     if (this.isActive && this.state.startCentroid && this.state.lastCentroid) {
-      this.emitPanEvent(
-        element ?? this.element,
-        'cancel',
-        pointers,
-        event,
-        this.state.lastCentroid
-      );
+      const el = element ?? this.element;
+      this.emitPanEvent(el, 'cancel', pointers, event, this.state.lastCentroid);
+      this.emitPanEvent(el, 'end', pointers, event, this.state.lastCentroid);
     }
     this.resetState();
   }

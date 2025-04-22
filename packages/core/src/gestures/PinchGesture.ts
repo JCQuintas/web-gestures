@@ -184,6 +184,7 @@ export class PinchGesture<GestureName extends string> extends PointerGesture<Ges
 
           // Emit start event
           this.emitPinchEvent(targetElement, 'start', relevantPointers, event);
+          this.emitPinchEvent(targetElement, 'ongoing', relevantPointers, event);
         }
         break;
 
@@ -231,12 +232,7 @@ export class PinchGesture<GestureName extends string> extends PointerGesture<Ges
 
           // If we have less than the minimum required pointers, end the gesture
           if (remainingPointers.length < this.minPointers) {
-            this.emitPinchEvent(
-              targetElement,
-              event.type === 'pointercancel' ? 'cancel' : 'end',
-              relevantPointers,
-              event
-            );
+            this.emitPinchEvent(targetElement, 'end', relevantPointers, event);
 
             // Reset state
             this.resetState();

@@ -220,22 +220,11 @@ export class PressGesture<GestureName extends string> extends PointerGesture<Ges
           this.state.timerId = window.setTimeout(() => {
             if (this.isActive && this.state.startCentroid) {
               this.state.pressThresholdReached = true;
+              const lastPosition = this.state.lastPosition;
 
               // Emit press start event
-              this.emitPressEvent(
-                targetElement,
-                'start',
-                relevantPointers,
-                event,
-                this.state.lastPosition!
-              );
-              this.emitPressEvent(
-                targetElement,
-                'ongoing',
-                relevantPointers,
-                event,
-                this.state.lastPosition!
-              );
+              this.emitPressEvent(targetElement, 'start', relevantPointers, event, lastPosition!);
+              this.emitPressEvent(targetElement, 'ongoing', relevantPointers, event, lastPosition!);
             }
           }, this.duration);
         }
