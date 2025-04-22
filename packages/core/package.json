@@ -1,6 +1,6 @@
 {
   "name": "@web-gestures/core",
-  "version": "0.0.3",
+  "version": "0.0.4",
   "description": "The core engine of GestureEvents, a modern and robust multi-pointer gesture detection library for JavaScript.",
   "author": "Jose Quintas <juniorquintas@gmail.com>",
   "keywords": [

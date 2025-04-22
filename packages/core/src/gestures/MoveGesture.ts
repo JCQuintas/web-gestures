@@ -132,6 +132,7 @@ export class MoveGesture<GestureName extends string> extends PointerGesture<Gest
 
       // Emit start event
       this.emitMoveEvent(this.element, 'start', pointersArray, event);
+      this.emitMoveEvent(this.element, 'ongoing', pointersArray, event);
     }
   }
 
