@@ -178,9 +178,7 @@ target.addEventListener('move', event => {
   moveCount++;
 
   // Only log every 10th move to avoid flooding the log
-  if (moveCount % 10 === 0) {
-    addLogEntry(`Move at: x=${Math.round(detail.centroid.x)}, y=${Math.round(detail.centroid.y)}`);
-  }
+  addLogEntry(`Move at: x=${Math.round(detail.centroid.x)}, y=${Math.round(detail.centroid.y)}`);
 });
 
 target.addEventListener('moveEnd', event => {
