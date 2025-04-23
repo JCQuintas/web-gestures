@@ -193,9 +193,7 @@ export class PressGesture<GestureName extends string> extends PointerGesture<Ges
     }
 
     // Filter pointers to only include those targeting our element or its children
-    const relevantPointers = pointersArray.filter(
-      pointer => targetElement === pointer.target || targetElement.contains(pointer.target as Node)
-    );
+    const relevantPointers = this.getRelevantPointers(pointersArray, targetElement);
 
     // Check if we have enough pointers and not too many
     if (relevantPointers.length < this.minPointers || relevantPointers.length > this.maxPointers) {
@@ -214,6 +212,9 @@ export class PressGesture<GestureName extends string> extends PointerGesture<Ges
           this.state.lastPosition = { ...this.state.startCentroid };
           this.state.startTime = event.timeStamp;
           this.isActive = true;
+
+          // Store the original target element
+          this.originalTarget = targetElement;
 
           // Start the timer for press recognition
           this.clearPressTimer(); // Clear any existing timer first

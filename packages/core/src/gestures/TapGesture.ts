@@ -150,9 +150,7 @@ export class TapGesture<GestureName extends string> extends PointerGesture<Gestu
     if (!targetElement) return;
 
     // Filter pointers to only include those targeting our element or its children
-    const relevantPointers = pointersArray.filter(
-      pointer => targetElement === pointer.target || targetElement.contains(pointer.target as Node)
-    );
+    const relevantPointers = this.getRelevantPointers(pointersArray, targetElement);
 
     // Check if we have enough pointers and not too many
     if (
@@ -174,6 +172,9 @@ export class TapGesture<GestureName extends string> extends PointerGesture<Gestu
           this.state.startCentroid = calculateCentroid(relevantPointers);
           this.state.lastPosition = { ...this.state.startCentroid };
           this.isActive = true;
+
+          // Store the original target element
+          this.originalTarget = targetElement;
         }
         break;
 

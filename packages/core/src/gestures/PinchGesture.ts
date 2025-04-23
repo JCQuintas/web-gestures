@@ -166,9 +166,7 @@ export class PinchGesture<GestureName extends string> extends PointerGesture<Ges
     }
 
     // Filter pointers to only include those targeting our element or its children
-    const relevantPointers = pointersArray.filter(
-      pointer => targetElement === pointer.target || targetElement.contains(pointer.target as Node)
-    );
+    const relevantPointers = this.getRelevantPointers(pointersArray, targetElement);
 
     switch (event.type) {
       case 'pointerdown':
@@ -178,6 +176,9 @@ export class PinchGesture<GestureName extends string> extends PointerGesture<Ges
           this.state.startDistance = initialDistance;
           this.state.lastDistance = initialDistance;
           this.state.lastTime = event.timeStamp;
+
+          // Store the original target element
+          this.originalTarget = targetElement;
 
           // Mark gesture as active
           this.isActive = true;

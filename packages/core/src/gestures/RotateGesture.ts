@@ -147,9 +147,7 @@ export class RotateGesture<GestureName extends string> extends PointerGesture<Ge
     }
 
     // Filter pointers to only include those targeting our element or its children
-    const relevantPointers = pointersArray.filter(
-      pointer => targetElement === pointer.target || targetElement.contains(pointer.target as Node)
-    );
+    const relevantPointers = this.getRelevantPointers(pointersArray, targetElement);
 
     // Check if we have enough pointers for a rotation (at least 2)
     if (relevantPointers.length < this.minPointers || relevantPointers.length > this.maxPointers) {
@@ -172,6 +170,9 @@ export class RotateGesture<GestureName extends string> extends PointerGesture<Ge
 
           // Mark gesture as active
           this.isActive = true;
+
+          // Store the original target element
+          this.originalTarget = targetElement;
 
           // Emit start event
           this.emitRotateEvent(targetElement, 'start', relevantPointers, event);

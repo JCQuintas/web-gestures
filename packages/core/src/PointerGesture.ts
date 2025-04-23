@@ -83,6 +83,9 @@ export abstract class PointerGesture<GestureName extends string> extends Gesture
   /** Function to unregister from the PointerManager when destroying this gesture */
   protected unregisterHandler: (() => void) | null = null;
 
+  /** The original target element when the gesture began, used to prevent limbo state if target is removed */
+  protected originalTarget: TargetElement | null = null;
+
   protected abstract readonly optionsType: PointerGestureOptions<GestureName>;
   protected abstract readonly mutableOptionsType: Omit<typeof this.optionsType, 'name'>;
 
@@ -139,6 +142,28 @@ export abstract class PointerGesture<GestureName extends string> extends Gesture
     pointers: Map<number, PointerData>,
     event: PointerEvent
   ): void;
+
+  /**
+   * Calculate the target element for the gesture based on the active pointers.
+   *
+   * It takes into account the original target element.
+   *
+   * @param pointers - Map of active pointers by pointer ID
+   * @param calculatedTarget - The target element calculated from getTargetElement
+   * @returns A list of relevant pointers for this gesture
+   */
+  protected getRelevantPointers(
+    pointers: PointerData[],
+    calculatedTarget: TargetElement
+  ): PointerData[] {
+    return pointers.filter(
+      pointer =>
+        calculatedTarget === pointer.target ||
+        calculatedTarget.contains(pointer.target as Node) ||
+        pointer.target === this.originalTarget ||
+        calculatedTarget === this.originalTarget
+    );
+  }
 
   public destroy(): void {
     if (this.unregisterHandler) {

@@ -252,7 +252,11 @@ export abstract class Gesture<GestureName extends string> {
    * @returns The matching element or null if no match is found
    */
   protected getTargetElement(event: Event): TargetElement | null {
-    if (this.element === event.target || this.element.contains(event.target as Node)) {
+    if (
+      this.isActive ||
+      this.element === event.target ||
+      this.element.contains(event.target as Node)
+    ) {
       return this.element;
     }
     return null;

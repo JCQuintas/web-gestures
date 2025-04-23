@@ -169,6 +169,7 @@ export class PanGesture<GestureName extends string> extends PointerGesture<Gestu
 
     // Find which element (if any) is being targeted
     const targetElement = this.getTargetElement(event);
+
     if (!targetElement) return;
 
     // Check if this gesture should be prevented by active gestures
@@ -181,9 +182,7 @@ export class PanGesture<GestureName extends string> extends PointerGesture<Gestu
     }
 
     // Filter pointers to only include those targeting our element or its children
-    const relevantPointers = pointersArray.filter(
-      pointer => targetElement === pointer.target || targetElement.contains(pointer.target as Node)
-    );
+    const relevantPointers = this.getRelevantPointers(pointersArray, targetElement);
 
     // Check if we have enough pointers and not too many
     if (relevantPointers.length < this.minPointers || relevantPointers.length > this.maxPointers) {
@@ -201,6 +200,9 @@ export class PanGesture<GestureName extends string> extends PointerGesture<Gestu
           relevantPointers.forEach(pointer => {
             this.state.startPointers.set(pointer.pointerId, pointer);
           });
+
+          // Store the original target element
+          this.originalTarget = targetElement;
 
           // Calculate and store the starting centroid
           this.state.startCentroid = calculateCentroid(relevantPointers);
