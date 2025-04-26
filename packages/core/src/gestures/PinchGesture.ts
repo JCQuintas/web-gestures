@@ -204,7 +204,6 @@ export class PinchGesture<GestureName extends string> extends PointerGesture<Ges
 
           // Only proceed if the distance between pointers has changed enough
           if (distanceChange !== 0 && distanceChange >= this.threshold) {
-            console.log('PinchGesture: distanceChange', distanceChange);
             // Calculate scale relative to starting distance
             const scale = this.state.startDistance ? currentDistance / this.state.startDistance : 1;
 
