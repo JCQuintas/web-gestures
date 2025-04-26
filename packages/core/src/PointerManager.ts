@@ -10,6 +10,7 @@
 
 import { InternalEvent } from './types/InternalEvent';
 import { TargetElement } from './types/TargetElement';
+import { isOS } from './utils/isOS';
 
 /**
  * Normalized representation of a pointer, containing all relevant information
@@ -206,10 +207,9 @@ export class PointerManager {
    * @param event - The event that triggered the interruption (blur or contextmenu)
    */
   private handleInterruptEvents = (event: Event): void => {
-    // For contextmenu events, we need to prevent default to ensure gestures are properly interrupted
-    if (event.type === 'contextmenu') {
-      // Don't prevent the context menu from appearing, just make sure we interrupt gestures
-      // The default behavior should still show the context menu
+    // Ignore contextmenu events on Android to prevent interference with long-press actions
+    if (event.type === 'contextmenu' && isOS(['Android'])) {
+      return;
     }
 
     // Force a reset even if there are no active pointers to ensure any lingering gesture state is cleared
