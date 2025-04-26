@@ -17,6 +17,19 @@ import { TargetElement } from '../types/TargetElement';
 import { calculateCentroid, createEventName, getDirection, isDirectionAllowed } from '../utils';
 
 /**
+ * The direction of movement for the pan gesture
+ * This type defines the detected directions based on the vertical and horizontal components
+ * The values can be 'up', 'down', 'left', 'right' or null if not applicable.
+ *
+ * The null values indicate that the gesture is not moving in that direction.
+ */
+export type Direction = {
+  vertical: 'up' | 'down' | null;
+  horizontal: 'left' | 'right' | null;
+  mainAxis: 'horizontal' | 'vertical' | 'diagonal' | null;
+};
+
+/**
  * Configuration options for PanGesture
  * Extends PointerGestureOptions with direction constraints
  */
@@ -45,8 +58,8 @@ export type PanGestureEventData<
   totalDeltaX: number;
   /** Total accumulated vertical movement in pixels */
   totalDeltaY: number;
-  /** The primary direction of movement (up, down, left, right, or null if no clear direction) */
-  direction: 'up' | 'down' | 'left' | 'right' | null;
+  /** The direction of movement with vertical and horizontal components */
+  direction: Direction;
   /** Horizontal velocity in pixels per second */
   velocityX: number;
   /** Vertical velocity in pixels per second */
@@ -77,6 +90,8 @@ export type PanGestureState = GestureState & {
   totalDeltaY: number;
   /** Map of pointers that initiated the gesture, used for tracking state */
   startPointers: Map<number, PointerData>;
+  /** The last direction of movement detected */
+  lastDirection: Direction;
 };
 
 /**
@@ -93,6 +108,11 @@ export class PanGesture<GestureName extends string> extends PointerGesture<Gestu
     movementThresholdReached: false,
     totalDeltaX: 0,
     totalDeltaY: 0,
+    lastDirection: {
+      vertical: null,
+      horizontal: null,
+      mainAxis: null,
+    },
   };
 
   protected readonly isSinglePhase!: false;
@@ -101,7 +121,11 @@ export class PanGesture<GestureName extends string> extends PointerGesture<Gestu
   protected readonly mutableOptionsType!: Omit<typeof this.optionsType, 'name'>;
   protected readonly mutableStateType!: Omit<
     Partial<typeof this.state>,
-    'startPointers' | 'startCentroid' | 'lastCentroid' | 'movementThresholdReached'
+    | 'startPointers'
+    | 'startCentroid'
+    | 'lastCentroid'
+    | 'movementThresholdReached'
+    | 'lastDirection'
   >;
 
   /**
@@ -149,6 +173,11 @@ export class PanGesture<GestureName extends string> extends PointerGesture<Gestu
       startCentroid: null,
       lastCentroid: null,
       movementThresholdReached: false,
+      lastDirection: {
+        vertical: null,
+        horizontal: null,
+        mainAxis: null,
+      },
     };
   }
 
@@ -223,7 +252,10 @@ export class PanGesture<GestureName extends string> extends PointerGesture<Gestu
           const distance = Math.sqrt(deltaX * deltaX + deltaY * deltaY);
 
           // Determine movement direction
-          const moveDirection = getDirection(this.state.startCentroid, currentCentroid);
+          const moveDirection = getDirection(
+            this.state.lastCentroid ?? this.state.startCentroid,
+            currentCentroid
+          );
 
           // Check if movement passes the threshold and is in an allowed direction
           if (
@@ -260,6 +292,7 @@ export class PanGesture<GestureName extends string> extends PointerGesture<Gestu
 
           // Update last centroid
           this.state.lastCentroid = currentCentroid;
+          this.state.lastDirection = moveDirection;
         }
         break;
 
@@ -306,9 +339,6 @@ export class PanGesture<GestureName extends string> extends PointerGesture<Gestu
     const deltaX = currentCentroid.x - this.state.startCentroid.x;
     const deltaY = currentCentroid.y - this.state.startCentroid.y;
 
-    // Get direction of movement
-    const direction = getDirection(this.state.startCentroid, currentCentroid);
-
     // Calculate velocity - time difference in seconds
     const firstPointer = this.state.startPointers.values().next().value;
     const timeElapsed = firstPointer ? (event.timeStamp - firstPointer.timeStamp) / 1000 : 0;
@@ -331,7 +361,7 @@ export class PanGesture<GestureName extends string> extends PointerGesture<Gestu
       timeStamp: event.timeStamp,
       deltaX,
       deltaY,
-      direction,
+      direction: this.state.lastDirection,
       velocityX,
       velocityY,
       velocity,
