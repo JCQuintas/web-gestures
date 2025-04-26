@@ -106,6 +106,7 @@ export class PinchGesture<GestureName extends string> extends PointerGesture<Ges
     super({
       ...options,
       minPointers: options.minPointers ?? 2,
+      threshold: options.threshold ?? 2,
     });
   }
 
@@ -198,29 +199,35 @@ export class PinchGesture<GestureName extends string> extends PointerGesture<Ges
           // Calculate current distance between pointers
           const currentDistance = calculateAverageDistance(relevantPointers);
 
-          // Calculate scale relative to starting distance
-          const scale = this.state.startDistance ? currentDistance / this.state.startDistance : 1;
+          // Calculate absolute distance change
+          const distanceChange = Math.abs(currentDistance - this.state.lastDistance);
 
-          // Calculate the relative scale change since last event
-          const scaleChange = scale / this.state.lastScale;
-          // Apply this change to the total accumulated scale
-          this.state.totalScale *= scaleChange;
+          // Only proceed if the distance between pointers has changed enough
+          if (distanceChange !== 0 && distanceChange >= this.threshold) {
+            console.log('PinchGesture: distanceChange', distanceChange);
+            // Calculate scale relative to starting distance
+            const scale = this.state.startDistance ? currentDistance / this.state.startDistance : 1;
 
-          // Calculate velocity (change in scale over time)
-          const deltaTime = (event.timeStamp - this.state.lastTime) / 1000; // convert to seconds
-          if (deltaTime > 0 && this.state.lastDistance) {
-            const deltaDistance = currentDistance - this.state.lastDistance;
-            this.state.velocity = deltaDistance / deltaTime;
+            // Calculate the relative scale change since last event
+            const scaleChange = scale / this.state.lastScale;
+            // Apply this change to the total accumulated scale
+            this.state.totalScale *= scaleChange;
+            // Calculate velocity (change in scale over time)
+            const deltaTime = (event.timeStamp - this.state.lastTime) / 1000; // convert to seconds
+            if (deltaTime > 0 && this.state.lastDistance) {
+              const deltaDistance = currentDistance - this.state.lastDistance;
+              this.state.velocity = deltaDistance / deltaTime;
+            }
+
+            // Update state
+            this.state.lastDistance = currentDistance;
+            this.state.deltaScale = scale - this.state.lastScale;
+            this.state.lastScale = scale;
+            this.state.lastTime = event.timeStamp;
+
+            // Emit ongoing event
+            this.emitPinchEvent(targetElement, 'ongoing', relevantPointers, event);
           }
-
-          // Update state
-          this.state.lastDistance = currentDistance;
-          this.state.deltaScale = scale - this.state.lastScale;
-          this.state.lastScale = scale;
-          this.state.lastTime = event.timeStamp;
-
-          // Emit ongoing event
-          this.emitPinchEvent(targetElement, 'ongoing', relevantPointers, event);
         }
         break;
 
