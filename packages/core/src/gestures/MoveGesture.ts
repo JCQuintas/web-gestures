@@ -8,6 +8,8 @@
  *
  * Unlike other gestures which often require specific actions to trigger,
  * the move gesture fires automatically when pointers interact with the target element.
+ *
+ * This gesture only works with mouse pointers, not touch or pen.
  */
 
 import { GesturePhase, GestureState } from '../Gesture';
@@ -49,6 +51,8 @@ export type MoveGestureState = GestureState & {
  *
  * This gesture detects when pointers enter, move within, or leave target elements,
  * and dispatches corresponding custom events.
+ *
+ * This gesture only works with hovering mouse pointers, not touch.
  */
 export class MoveGesture<GestureName extends string> extends PointerGesture<GestureName> {
   protected state: MoveGestureState = {
@@ -120,6 +124,8 @@ export class MoveGesture<GestureName extends string> extends PointerGesture<Gest
    * @param event The original pointer event
    */
   private handleElementEnter(event: PointerEvent): void {
+    if (event.pointerType !== 'mouse' && event.pointerType !== 'pen') return;
+
     // Get pointers from the PointerManager
     const pointers = this.pointerManager.getPointers() || new Map();
     const pointersArray = Array.from(pointers.values());
@@ -141,6 +147,8 @@ export class MoveGesture<GestureName extends string> extends PointerGesture<Gest
    * @param event The original pointer event
    */
   private handleElementLeave(event: PointerEvent): void {
+    if (event.pointerType !== 'mouse' && event.pointerType !== 'pen') return;
+
     if (!this.isActive) return;
 
     // Get pointers from the PointerManager
@@ -158,7 +166,12 @@ export class MoveGesture<GestureName extends string> extends PointerGesture<Gest
    * @param event The original pointer event
    */
   protected handlePointerEvent(pointers: Map<number, PointerData>, event: PointerEvent): void {
-    if (event.type !== 'pointermove') return;
+    if (
+      event.type !== 'pointermove' ||
+      (event.pointerType !== 'mouse' && event.pointerType !== 'pen')
+    )
+      return;
+
     if (this.preventDefault) {
       event.preventDefault();
     }
