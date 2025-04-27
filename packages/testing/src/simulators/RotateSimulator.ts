@@ -12,7 +12,7 @@ export class RotateSimulator extends PointerGestureSimulator {
     super(options);
     this.options = options;
     // Create a second random pointer ID for multi-touch
-    this.secondPointerId = Math.floor(Math.random() * 10000) + 10000;
+    this.secondPointerId = this.pointerManager.generatePointerId();
   }
 
   /**
@@ -24,43 +24,6 @@ export class RotateSimulator extends PointerGestureSimulator {
       x: center.x + radius * Math.cos(radians),
       y: center.y + radius * Math.sin(radians),
     };
-  }
-
-  /**
-   * Dispatches a pointer event for the second finger.
-   */
-  private dispatchSecondPointerEvent(
-    type: string,
-    position: Point,
-    options: Partial<PointerEventInit> = {}
-  ): PointerEvent {
-    const rect = this.element.getBoundingClientRect();
-    const clientX = position.x + rect.left;
-    const clientY = position.y + rect.top;
-
-    const defaults: PointerEventInit = {
-      bubbles: true,
-      cancelable: true,
-      pointerType: this.pointerType,
-      pointerId: this.secondPointerId,
-      clientX,
-      clientY,
-      screenX: clientX,
-      screenY: clientY,
-      view: window,
-      isPrimary: false,
-      ...options,
-    };
-
-    // Set button and buttons properties based on the event type
-    if (type === 'pointerdown' || type === 'mousedown' || type.includes('start')) {
-      defaults.button = 0;
-      defaults.buttons = 1;
-    }
-
-    const event = new PointerEvent(type, defaults);
-    this.element.dispatchEvent(event);
-    return event;
   }
 
   /**
@@ -90,8 +53,8 @@ export class RotateSimulator extends PointerGestureSimulator {
 
     // Start the gesture with pointerdown events
     if (!skipPointerDown) {
-      this.dispatchPointerEvent('pointerdown', firstTouchStart);
-      this.dispatchSecondPointerEvent('pointerdown', secondTouchStart);
+      this.pointerDown(firstTouchStart);
+      this.pointerDown(secondTouchStart, {}, this.secondPointerId);
     }
 
     // Perform the rotation
@@ -102,8 +65,8 @@ export class RotateSimulator extends PointerGestureSimulator {
       const firstTouchPoint = this.getPointAtAngle(center, currentAngle, radius);
       const secondTouchPoint = this.getPointAtAngle(center, currentAngle + 180, radius);
 
-      this.dispatchPointerEvent('pointermove', firstTouchPoint);
-      this.dispatchSecondPointerEvent('pointermove', secondTouchPoint);
+      this.pointerMove(firstTouchPoint);
+      this.pointerMove(secondTouchPoint, {}, this.secondPointerId);
     }
 
     // End the gesture with pointerup events
@@ -111,8 +74,8 @@ export class RotateSimulator extends PointerGestureSimulator {
       const firstTouchEnd = this.getPointAtAngle(center, endAngle, radius);
       const secondTouchEnd = this.getPointAtAngle(center, endAngle + 180, radius);
 
-      this.dispatchPointerEvent('pointerup', firstTouchEnd, { button: 0, buttons: 0 });
-      this.dispatchSecondPointerEvent('pointerup', secondTouchEnd, { button: 0, buttons: 0 });
+      this.pointerUp(firstTouchEnd, { button: 0, buttons: 0 });
+      this.pointerUp(secondTouchEnd, { button: 0, buttons: 0 }, this.secondPointerId);
     }
   }
 }
