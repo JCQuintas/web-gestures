@@ -1,11 +1,13 @@
 {
-  "name": "@web-gestures/core",
+  "name": "@web-gestures/testing",
   "version": "0.0.10",
-  "description": "The core engine of GestureEvents, a modern and robust multi-pointer gesture detection library for JavaScript.",
+  "description": "Testing utilities to emulate user gestures on the browser for @web-gestures",
   "author": "Jose Quintas <juniorquintas@gmail.com>",
   "keywords": [
     "multitouch",
     "gesture",
+    "testing",
+    "simulation",
     "library",
     "wheel",
     "pan",
