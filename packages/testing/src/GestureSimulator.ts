@@ -9,6 +9,7 @@ export class GestureSimulator {
   protected pointerType: string;
   protected pointerId: number;
   protected pointerDownTime: number;
+  protected advanceTimers?: (ms: number) => Promise<void>;
 
   constructor(options: BaseSimulatorOptions) {
     this.element = options.element;
@@ -16,6 +17,7 @@ export class GestureSimulator {
     // Create a random pointer ID to avoid conflicts in multi-pointer scenarios
     this.pointerId = Math.floor(Math.random() * 10000);
     this.pointerDownTime = 0;
+    this.advanceTimers = options.advanceTimers;
   }
 
   /**
@@ -94,8 +96,12 @@ export class GestureSimulator {
 
   /**
    * Delays execution for the specified time.
+   * Uses the advanceTimers if provided, otherwise falls back to setTimeout.
    */
   protected delay(ms: number): Promise<void> {
+    if (this.advanceTimers) {
+      return this.advanceTimers(ms);
+    }
     return new Promise(resolve => setTimeout(resolve, ms));
   }
 

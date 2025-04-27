@@ -38,6 +38,14 @@ export interface BaseSimulatorOptions {
    * @default false
    */
   skipPointerUp?: boolean;
+
+  /**
+   * Custom function to replace setTimeout for advancing timers in tests.
+   * Useful for testing with fake timers.
+   * @param ms Number of milliseconds to advance the timer
+   * @returns Promise that resolves when the timer has advanced
+   */
+  advanceTimers?: (ms: number) => Promise<void>;
 }
 
 /**
