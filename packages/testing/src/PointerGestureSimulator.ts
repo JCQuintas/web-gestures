@@ -2,8 +2,8 @@
  * Simulator for pointer-based gestures (mouse, touch, pen).
  * Extends the base GestureSimulator with pointer-specific event handling.
  */
-import { BaseSimulatorOptions, Point } from './types';
 import { GestureSimulator } from './GestureSimulator';
+import { BaseSimulatorOptions, Point } from './types';
 
 export class PointerGestureSimulator extends GestureSimulator {
   protected pointerType: string;

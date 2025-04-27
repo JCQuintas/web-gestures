@@ -22,7 +22,7 @@ export class TurnWheelSimulator extends PointerGestureSimulator {
       deltaY = 100,
       deltaZ = 0,
       steps = 1,
-      stepDelay = 50
+      stepDelay = 50,
     } = this.options;
 
     // Move pointer to position first

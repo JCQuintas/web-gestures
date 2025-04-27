@@ -2,7 +2,7 @@
  * Simulates a rotate gesture for testing.
  */
 import { PointerGestureSimulator } from '../PointerGestureSimulator';
-import { RotateSimulatorOptions, Point } from '../types';
+import { Point, RotateSimulatorOptions } from '../types';
 
 export class RotateSimulator extends PointerGestureSimulator {
   private options: RotateSimulatorOptions;
@@ -97,11 +97,11 @@ export class RotateSimulator extends PointerGestureSimulator {
     // Perform the rotation
     for (let i = 1; i <= steps; i++) {
       await this.delay(stepDelay);
-      
+
       const currentAngle = startAngle + angleIncrement * i;
       const firstTouchPoint = this.getPointAtAngle(center, currentAngle, radius);
       const secondTouchPoint = this.getPointAtAngle(center, currentAngle + 180, radius);
-      
+
       this.dispatchPointerEvent('pointermove', firstTouchPoint);
       this.dispatchSecondPointerEvent('pointermove', secondTouchPoint);
     }
@@ -110,7 +110,7 @@ export class RotateSimulator extends PointerGestureSimulator {
     if (!skipPointerUp) {
       const firstTouchEnd = this.getPointAtAngle(center, endAngle, radius);
       const secondTouchEnd = this.getPointAtAngle(center, endAngle + 180, radius);
-      
+
       this.dispatchPointerEvent('pointerup', firstTouchEnd, { button: 0, buttons: 0 });
       this.dispatchSecondPointerEvent('pointerup', secondTouchEnd, { button: 0, buttons: 0 });
     }

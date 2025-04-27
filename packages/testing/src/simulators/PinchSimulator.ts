@@ -95,10 +95,10 @@ export class PinchSimulator extends PointerGestureSimulator {
     // Perform the pinch
     for (let i = 1; i <= steps; i++) {
       await this.delay(stepDelay);
-      
+
       const currentDistance = startDistance + distanceIncrement * i;
       const [firstTouchPoint, secondTouchPoint] = this.getPointsAtDistance(center, currentDistance);
-      
+
       this.dispatchPointerEvent('pointermove', firstTouchPoint);
       this.dispatchSecondPointerEvent('pointermove', secondTouchPoint);
     }
@@ -106,7 +106,7 @@ export class PinchSimulator extends PointerGestureSimulator {
     // End the gesture with pointerup events
     if (!skipPointerUp) {
       const [firstTouchEnd, secondTouchEnd] = this.getPointsAtDistance(center, endDistance);
-      
+
       this.dispatchPointerEvent('pointerup', firstTouchEnd, { button: 0, buttons: 0 });
       this.dispatchSecondPointerEvent('pointerup', secondTouchEnd, { button: 0, buttons: 0 });
     }
