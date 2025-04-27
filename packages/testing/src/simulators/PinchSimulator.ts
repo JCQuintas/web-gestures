@@ -12,7 +12,7 @@ export class PinchSimulator extends PointerGestureSimulator {
     super(options);
     this.options = options;
     // Create a second random pointer ID for multi-touch
-    this.secondPointerId = this.pointerManager.generatePointerId();
+    this.secondPointerId = this.pointerIdManager.generatePointerId();
   }
 
   /**

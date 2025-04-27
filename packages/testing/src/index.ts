@@ -5,6 +5,7 @@
  * to validate gesture handlers and callbacks.
  */
 
+import { GestureSimulatorOptions } from './GestureSimulator';
 import { MoveSimulator } from './simulators/MoveSimulator';
 import { PanSimulator } from './simulators/PanSimulator';
 import { PinchSimulator } from './simulators/PinchSimulator';
@@ -13,7 +14,6 @@ import { RotateSimulator } from './simulators/RotateSimulator';
 import { TapSimulator } from './simulators/TapSimulator';
 import { TurnWheelSimulator } from './simulators/TurnWheelSimulator';
 import {
-  BaseSimulatorOptions,
   MoveSimulatorOptions,
   PanSimulatorOptions,
   PinchSimulatorOptions,
@@ -24,7 +24,7 @@ import {
 } from './types';
 
 // Global configuration that applies to all gesture simulations
-let globalConfig: Partial<BaseSimulatorOptions> = {};
+let globalConfig: Partial<GestureSimulatorOptions> = {};
 
 /**
  * User gesture simulator API
@@ -34,7 +34,7 @@ export const userGesture = {
   /**
    * Configure global options for all gesture simulators
    */
-  setup(options: Partial<BaseSimulatorOptions>): void {
+  setup(options: Partial<GestureSimulatorOptions>): void {
     globalConfig = { ...globalConfig, ...options };
   },
 

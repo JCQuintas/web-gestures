@@ -2,136 +2,116 @@
  * Simulator for pointer-based gestures (mouse, touch, pen).
  * Extends the base GestureSimulator with pointer-specific event handling.
  */
-import { GestureSimulator } from './GestureSimulator';
-import { PointerManager } from './PointerManager';
-import { BaseSimulatorOptions, Point } from './types';
+import { GestureSimulator, GestureSimulatorOptions } from './GestureSimulator';
+import { Pointer } from './Pointer';
+import { PointerIdManager } from './PointerIdManager';
+import { Point } from './types';
+
+export type PointerGestureSimulatorOptions = GestureSimulatorOptions & {
+  /**
+   * Whether to skip dispatching a pointerdown event.
+   * Useful when chaining gestures.
+   * @default false
+   */
+  skipPointerDown?: boolean;
+
+  /**
+   * Whether to skip dispatching a pointerup event.
+   * Useful when chaining gestures.
+   * @default false
+   */
+  skipPointerUp?: boolean;
+} & (
+    | {
+        /**
+         * The pointer type to use for the gesture.
+         * @default 'mouse'
+         */
+        pointerType: 'touch' | 'pen';
+
+        /**
+         * Number of pointers to simulate.
+         * @default 1
+         */
+        pointerAmount?: number;
+
+        /**
+         * The distance between pointers.
+         * This is only used when pointerAmount is greater than 1.
+         *
+         * The distance is calculated from the center of the gesture to the pointer.
+         *
+         * @example
+         * If the center is (100, 100) and pointerDistance is 5, the pointers will be at:
+         * - Pointer 1: (95, 100)
+         * - Pointer 2: (105, 100)
+         * - Pointer 3: (100, 95)
+         *
+         *
+         * @default 5
+         */
+        pointerDistance?: number;
+      }
+    | {
+        /**
+         * The pointer type to use for the gesture.
+         * @default 'mouse'
+         */
+        pointerType?: 'mouse';
+      }
+  );
 
 export class PointerGestureSimulator extends GestureSimulator {
-  protected pointerType: string;
-  protected pointerId: number;
-  protected pointerDownTime: number;
-  protected pointerManager: PointerManager;
+  protected pointerType: 'mouse' | 'touch' | 'pen';
+  protected pointerIdManager: PointerIdManager;
+  protected pointerAmount: number;
+  protected pointerDistance: number;
 
-  constructor(options: BaseSimulatorOptions) {
+  constructor(options: PointerGestureSimulatorOptions) {
     super(options);
     this.pointerType = options.pointerType || 'mouse';
-    this.pointerManager = PointerManager.getInstance();
-    // Get a unique pointer ID from the PointerManager
-    this.pointerId = this.pointerManager.generatePointerId();
-    this.pointerDownTime = 0;
-  }
+    this.pointerAmount =
+      this.pointerType === 'mouse' ? 1 : (options as { pointerAmount?: number }).pointerAmount || 1;
+    this.pointerDistance = (options as { pointerDistance?: number }).pointerDistance || 5;
 
-  /**
-   * Creates a pointer event with the specified configuration.
-   */
-  private createPointerEvent(
-    type: string,
-    position: Point,
-    options: Partial<PointerEventInit> = {},
-    pointerId?: number
-  ): PointerEvent {
-    const rect = this.element.getBoundingClientRect();
-    const clientX = position.x + rect.left;
-    const clientY = position.y + rect.top;
-
-    const defaults: PointerEventInit = {
-      bubbles: true,
-      cancelable: true,
-      pointerType: this.pointerType,
-      pointerId: pointerId ?? this.pointerId,
-      clientX,
-      clientY,
-      screenX: clientX,
-      screenY: clientY,
-      view: window,
-      isPrimary: pointerId ? false : true,
-      ...options,
-    };
-
-    // Set button and buttons properties based on the event type
-    if (type === 'pointerdown' || type === 'mousedown' || type.includes('start')) {
-      defaults.button = 0;
-      defaults.buttons = 1;
+    if (this.pointerType === 'mouse' && this.pointerAmount > 1) {
+      throw new Error('Mouse pointer type does not support multiple pointers.');
     }
 
-    return new PointerEvent(type, defaults);
+    this.pointerIdManager = PointerIdManager.getInstance();
   }
 
   /**
-   * Dispatches a pointer event on the target element.
+   * Distributes pointers around a center point.
+   *
+   * @param center - The center point to distribute pointers around.
+   * @returns An array of points representing the distributed pointers.
    */
-  protected dispatchPointerEvent(
-    type: string,
-    position: Point,
-    options: Partial<PointerEventInit> = {},
-    pointerId?: number
-  ): PointerEvent {
-    const event = this.createPointerEvent(type, position, options, pointerId);
-    this.element.dispatchEvent(event);
-    return event;
+  protected distributeAroundCenter(center: Point): Point[] {
+    if (this.pointerAmount < 1) {
+      return [];
+    }
+    if (this.pointerAmount === 1) {
+      return [center];
+    }
+
+    const angle = (2 * Math.PI) / this.pointerAmount;
+    return Array.from({ length: this.pointerAmount }, (_, i) => {
+      const x = center.x + Math.sin(i * angle) * this.pointerDistance;
+      const y = center.y + Math.cos(i * angle) * this.pointerDistance;
+      return { x, y };
+    });
   }
 
   /**
-   * Dispatches a pointerdown event on the target element.
+   * Generates pointers for the gesture.
+   *
+   * @returns An array of Pointer objects.
    */
-  protected pointerDown(
-    position: Point,
-    options: Partial<PointerEventInit> = {},
-    pointerId?: number
-  ): PointerEvent {
-    this.pointerDownTime = Date.now();
-    return this.dispatchPointerEvent('pointerdown', position, options, pointerId);
-  }
-
-  /**
-   * Dispatches a pointermove event on the target element.
-   */
-  protected pointerMove(
-    position: Point,
-    options: Partial<PointerEventInit> = {},
-    pointerId?: number
-  ): PointerEvent {
-    return this.dispatchPointerEvent('pointermove', position, options, pointerId);
-  }
-
-  /**
-   * Dispatches a pointerup event on the target element.
-   */
-  protected pointerUp(
-    position: Point,
-    options: Partial<PointerEventInit> = {},
-    pointerId?: number
-  ): PointerEvent {
-    const event = this.dispatchPointerEvent(
-      'pointerup',
-      position,
-      {
-        button: 0,
-        buttons: 0,
-        ...options,
-      },
-      pointerId
-    );
-
-    // Release the pointer ID after pointerup
-    this.pointerManager.releasePointerId(pointerId ?? this.pointerId);
-
-    return event;
-  }
-
-  /**
-   * Dispatches a pointercancel event on the target element.
-   */
-  protected pointerCancel(
-    position: Point,
-    options: Partial<PointerEventInit> = {},
-    pointerId?: number
-  ): PointerEvent {
-    const event = this.dispatchPointerEvent('pointercancel', position, options, pointerId);
-
-    // Release the pointer ID after pointercancel
-    this.pointerManager.releasePointerId(pointerId ?? this.pointerId);
-
-    return event;
+  protected generatePointers(): Pointer[] {
+    return Array.from({ length: this.pointerAmount }, () => {
+      const pointerId = this.pointerIdManager.generatePointerId();
+      return new Pointer(this.element, this.pointerType, pointerId);
+    });
   }
 }

@@ -1,14 +1,32 @@
+import { Point } from './types';
+
+/**
+ * Options common to all gesture simulators.
+ */
+export interface GestureSimulatorOptions {
+  /**
+   * The element to perform the gesture on.
+   */
+  element: HTMLElement | SVGElement;
+
+  /**
+   * Custom function to replace setTimeout for advancing timers in tests.
+   * Useful for testing with fake timers.
+   * @param ms Number of milliseconds to advance the timer
+   * @returns Promise that resolves when the timer has advanced
+   */
+  advanceTimers?: (ms: number) => Promise<void>;
+}
+
 /**
  * Base class for simulating gestures in a testing environment.
  * Provides common utilities for gesture simulators.
  */
-import { BaseSimulatorOptions, Point } from './types';
-
 export class GestureSimulator {
   protected element: HTMLElement | SVGElement;
   protected advanceTimers?: (ms: number) => Promise<void>;
 
-  constructor(options: BaseSimulatorOptions) {
+  constructor(options: GestureSimulatorOptions) {
     this.element = options.element;
     this.advanceTimers = options.advanceTimers;
   }

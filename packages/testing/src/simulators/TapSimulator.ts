@@ -1,8 +1,30 @@
+import {
+  PointerGestureSimulator,
+  PointerGestureSimulatorOptions,
+} from '../PointerGestureSimulator';
+import { Point } from '../types';
+
 /**
- * Simulates a tap gesture for testing.
+ * Options for a tap gesture simulation.
  */
-import { PointerGestureSimulator } from '../PointerGestureSimulator';
-import { TapSimulatorOptions } from '../types';
+export type TapSimulatorOptions = PointerGestureSimulatorOptions & {
+  /**
+   * Position of the tap.
+   */
+  position: Point;
+
+  /**
+   * Number of taps to perform.
+   * @default 1
+   */
+  taps?: number;
+
+  /**
+   * Delay between taps in milliseconds.
+   * @default 100s
+   */
+  delay?: number;
+};
 
 export class TapSimulator extends PointerGestureSimulator {
   private options: TapSimulatorOptions;
@@ -20,15 +42,19 @@ export class TapSimulator extends PointerGestureSimulator {
 
     for (let i = 0; i < taps; i++) {
       // Trigger pointerdown at the position
-      this.pointerDown(position);
+      const positions = this.distributeAroundCenter(position);
+      const pointers = this.generatePointers();
 
-      // Wait a small amount of time before pointerup
+      pointers.forEach((pointer, index) => {
+        pointer.pointerDown(positions[index]);
+      });
+
       await this.delay(10);
 
-      // Trigger pointerup
-      this.pointerUp(position);
+      pointers.forEach((pointer, index) => {
+        pointer.pointerUp(positions[index]);
+      });
 
-      // If there are more taps to perform, wait for the delay
       if (i < taps - 1) {
         await this.delay(tapDelay);
       }

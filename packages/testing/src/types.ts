@@ -1,6 +1,4 @@
-/**
- * Common types used throughout the testing package.
- */
+import { GestureSimulatorOptions } from './GestureSimulator';
 
 /**
  * Represents a point on the screen.
@@ -11,47 +9,9 @@ export interface Point {
 }
 
 /**
- * Options common to all gesture simulators.
- */
-export interface BaseSimulatorOptions {
-  /**
-   * The element to perform the gesture on.
-   */
-  element: HTMLElement | SVGElement;
-
-  /**
-   * The pointer type to use for the gesture.
-   * @default 'mouse'
-   */
-  pointerType?: 'mouse' | 'touch' | 'pen';
-
-  /**
-   * Whether to skip dispatching a pointerdown event.
-   * Useful when chaining gestures.
-   * @default false
-   */
-  skipPointerDown?: boolean;
-
-  /**
-   * Whether to skip dispatching a pointerup event.
-   * Useful when chaining gestures.
-   * @default false
-   */
-  skipPointerUp?: boolean;
-
-  /**
-   * Custom function to replace setTimeout for advancing timers in tests.
-   * Useful for testing with fake timers.
-   * @param ms Number of milliseconds to advance the timer
-   * @returns Promise that resolves when the timer has advanced
-   */
-  advanceTimers?: (ms: number) => Promise<void>;
-}
-
-/**
  * Options for a pan gesture simulation.
  */
-export interface PanSimulatorOptions extends BaseSimulatorOptions {
+export interface PanSimulatorOptions extends GestureSimulatorOptions {
   /**
    * Starting point of the pan gesture.
    */
@@ -78,7 +38,7 @@ export interface PanSimulatorOptions extends BaseSimulatorOptions {
 /**
  * Options for a pinch gesture simulation.
  */
-export interface PinchSimulatorOptions extends BaseSimulatorOptions {
+export interface PinchSimulatorOptions extends GestureSimulatorOptions {
   /**
    * Center point of the pinch gesture.
    */
@@ -110,7 +70,7 @@ export interface PinchSimulatorOptions extends BaseSimulatorOptions {
 /**
  * Options for a rotate gesture simulation.
  */
-export interface RotateSimulatorOptions extends BaseSimulatorOptions {
+export interface RotateSimulatorOptions extends GestureSimulatorOptions {
   /**
    * Center point of the rotation.
    */
@@ -150,7 +110,7 @@ export interface RotateSimulatorOptions extends BaseSimulatorOptions {
 /**
  * Options for a press gesture simulation.
  */
-export interface PressSimulatorOptions extends BaseSimulatorOptions {
+export interface PressSimulatorOptions extends GestureSimulatorOptions {
   /**
    * Position of the press.
    */
@@ -164,31 +124,9 @@ export interface PressSimulatorOptions extends BaseSimulatorOptions {
 }
 
 /**
- * Options for a tap gesture simulation.
- */
-export interface TapSimulatorOptions extends BaseSimulatorOptions {
-  /**
-   * Position of the tap.
-   */
-  position: Point;
-
-  /**
-   * Number of taps to perform.
-   * @default 1
-   */
-  taps?: number;
-
-  /**
-   * Delay between taps in milliseconds.
-   * @default 100
-   */
-  delay?: number;
-}
-
-/**
  * Options for a move gesture simulation.
  */
-export interface MoveSimulatorOptions extends BaseSimulatorOptions {
+export interface MoveSimulatorOptions extends GestureSimulatorOptions {
   /**
    * Starting point of the move.
    */
@@ -210,44 +148,4 @@ export interface MoveSimulatorOptions extends BaseSimulatorOptions {
    * @default 10
    */
   steps?: number;
-}
-
-/**
- * Options for a wheel/scroll gesture simulation.
- */
-export interface TurnWheelSimulatorOptions extends BaseSimulatorOptions {
-  /**
-   * Position where the wheel event should occur.
-   */
-  position: Point;
-
-  /**
-   * Delta X value for horizontal scrolling.
-   * @default 0
-   */
-  deltaX?: number;
-
-  /**
-   * Delta Y value for vertical scrolling.
-   * @default 100
-   */
-  deltaY?: number;
-
-  /**
-   * Delta Z value for 3D scrolling.
-   * @default 0
-   */
-  deltaZ?: number;
-
-  /**
-   * Number of wheel events to dispatch.
-   * @default 1
-   */
-  steps?: number;
-
-  /**
-   * Delay between wheel events in milliseconds.
-   * @default 50
-   */
-  stepDelay?: number;
 }

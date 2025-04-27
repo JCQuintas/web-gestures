@@ -1,10 +1,57 @@
 /**
  * Simulates a turn wheel (scroll) gesture for testing.
  */
-import { PointerGestureSimulator } from '../PointerGestureSimulator';
-import { TurnWheelSimulatorOptions } from '../types';
+import { GestureSimulator, GestureSimulatorOptions } from '../GestureSimulator';
+import { Point } from '../types';
 
-export class TurnWheelSimulator extends PointerGestureSimulator {
+/**
+ * Options for a wheel/scroll gesture simulation.
+ */
+export interface TurnWheelSimulatorOptions extends GestureSimulatorOptions {
+  /**
+   * Position where the wheel event should occur.
+   */
+  position: Point;
+
+  /**
+   * Skips the pointermove event before the wheel event.
+   * This is useful when you want to simulate a wheel event without moving the pointer.
+   * @default false
+   */
+  skipPointerMove?: boolean;
+
+  /**
+   * Delta X value for horizontal scrolling.
+   * @default 0
+   */
+  deltaX?: number;
+
+  /**
+   * Delta Y value for vertical scrolling.
+   * @default 100
+   */
+  deltaY?: number;
+
+  /**
+   * Delta Z value for 3D scrolling.
+   * @default 0
+   */
+  deltaZ?: number;
+
+  /**
+   * Number of wheel events to dispatch.
+   * @default 1
+   */
+  steps?: number;
+
+  /**
+   * Delay between wheel events in milliseconds.
+   * @default 50
+   */
+  stepDelay?: number;
+}
+
+export class TurnWheelSimulator extends GestureSimulator {
   private options: TurnWheelSimulatorOptions;
 
   constructor(options: TurnWheelSimulatorOptions) {
@@ -23,10 +70,29 @@ export class TurnWheelSimulator extends PointerGestureSimulator {
       deltaZ = 0,
       steps = 1,
       stepDelay = 50,
+      skipPointerMove = false,
     } = this.options;
 
-    // Move pointer to position first
-    this.dispatchPointerEvent('pointermove', position);
+    if (!skipPointerMove) {
+      // Move pointer to position first
+      const rect = this.element.getBoundingClientRect();
+      const clientX = position.x + rect.left;
+      const clientY = position.y + rect.top;
+
+      const moveEvent = new PointerEvent('pointermove', {
+        bubbles: true,
+        cancelable: true,
+        pointerType: 'mouse',
+        pointerId: 1,
+        clientX,
+        clientY,
+        screenX: clientX,
+        screenY: clientY,
+        view: window,
+      });
+
+      this.element.dispatchEvent(moveEvent);
+    }
 
     // Dispatch wheel events
     for (let i = 0; i < steps; i++) {
