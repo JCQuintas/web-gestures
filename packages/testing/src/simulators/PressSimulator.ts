@@ -1,37 +1,30 @@
 /**
- * Simulates a press gesture for testing press interactions.
+ * Simulates a press gesture for testing.
  */
-import { GestureSimulator } from '../GestureSimulator';
+import { PointerGestureSimulator } from '../PointerGestureSimulator';
 import { PressSimulatorOptions } from '../types';
 
-export class PressSimulator extends GestureSimulator {
+export class PressSimulator extends PointerGestureSimulator {
   private options: PressSimulatorOptions;
-  
+
   constructor(options: PressSimulatorOptions) {
     super(options);
     this.options = options;
   }
-  
+
   /**
-   * Simulates a press gesture at the specified position for the specified duration.
+   * Simulates a press gesture at the specified position.
    */
   public async simulatePress(): Promise<void> {
-    const { 
-      position, 
-      duration = 500,
-      skipPointerDown = false,
-      skipPointerUp = false 
-    } = this.options;
-    
-    // Trigger pointerdown
-    if (!skipPointerDown) {
-      this.pointerDown(position);
-    }
-    
-    // Hold for the duration
+    const { position, duration = 500, skipPointerUp = false } = this.options;
+
+    // Trigger pointerdown at the position
+    this.pointerDown(position);
+
+    // Wait for the specified duration
     await this.delay(duration);
-    
-    // Trigger pointerup
+
+    // Trigger pointerup if not skipped
     if (!skipPointerUp) {
       this.pointerUp(position);
     }

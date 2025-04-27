@@ -1,22 +1,59 @@
 /**
- * Simulates a pinch gesture for testing pinch/zoom interactions.
+ * Simulates a pinch gesture for testing.
  */
-import { GestureSimulator } from '../GestureSimulator';
+import { PointerGestureSimulator } from '../PointerGestureSimulator';
 import { PinchSimulatorOptions, Point } from '../types';
 
-export class PinchSimulator extends GestureSimulator {
+export class PinchSimulator extends PointerGestureSimulator {
   private options: PinchSimulatorOptions;
-  private secondaryPointerId: number;
+  private secondPointerId: number;
 
   constructor(options: PinchSimulatorOptions) {
     super(options);
     this.options = options;
-    // Create a different pointer ID for the second touch point
-    this.secondaryPointerId = this.pointerId + 1;
+    // Create a second random pointer ID for multi-touch
+    this.secondPointerId = Math.floor(Math.random() * 10000) + 10000;
   }
 
   /**
-   * Calculate two points at a given distance from the center
+   * Dispatches a pointer event for the second finger.
+   */
+  private dispatchSecondPointerEvent(
+    type: string,
+    position: Point,
+    options: Partial<PointerEventInit> = {}
+  ): PointerEvent {
+    const rect = this.element.getBoundingClientRect();
+    const clientX = position.x + rect.left;
+    const clientY = position.y + rect.top;
+
+    const defaults: PointerEventInit = {
+      bubbles: true,
+      cancelable: true,
+      pointerType: this.pointerType,
+      pointerId: this.secondPointerId,
+      clientX,
+      clientY,
+      screenX: clientX,
+      screenY: clientY,
+      view: window,
+      isPrimary: false,
+      ...options,
+    };
+
+    // Set button and buttons properties based on the event type
+    if (type === 'pointerdown' || type === 'mousedown' || type.includes('start')) {
+      defaults.button = 0;
+      defaults.buttons = 1;
+    }
+
+    const event = new PointerEvent(type, defaults);
+    this.element.dispatchEvent(event);
+    return event;
+  }
+
+  /**
+   * Gets the positions of two points at a given distance from a center point.
    */
   private getPointsAtDistance(center: Point, distance: number): [Point, Point] {
     const halfDistance = distance / 2;
@@ -27,7 +64,7 @@ export class PinchSimulator extends GestureSimulator {
   }
 
   /**
-   * Simulate a pinch gesture (pinch in or out)
+   * Simulates a pinch gesture.
    */
   public async simulatePinch(): Promise<void> {
     const {
@@ -43,51 +80,35 @@ export class PinchSimulator extends GestureSimulator {
     // Calculate delay between steps
     const stepDelay = duration / steps;
 
-    // Generate intermediate distances
-    const distances: number[] = [];
-    for (let i = 0; i <= steps; i++) {
-      const t = i / steps;
-      distances.push(startDistance + (endDistance - startDistance) * t);
-    }
+    // Calculate distance increment per step
+    const distanceIncrement = (endDistance - startDistance) / steps;
 
-    // Get initial points
-    const [point1Start, point2Start] = this.getPointsAtDistance(center, startDistance);
+    // Calculate start positions for the two touch points
+    const [firstTouchStart, secondTouchStart] = this.getPointsAtDistance(center, startDistance);
 
-    // Trigger pointerdown events
+    // Start the gesture with pointerdown events
     if (!skipPointerDown) {
-      this.pointerDown(point1Start);
-      this.dispatchPointerEvent('pointerdown', point2Start, {
-        pointerId: this.secondaryPointerId,
-        isPrimary: false,
-      });
+      this.dispatchPointerEvent('pointerdown', firstTouchStart);
+      this.dispatchSecondPointerEvent('pointerdown', secondTouchStart);
     }
 
-    // Move through intermediate points
+    // Perform the pinch
     for (let i = 1; i <= steps; i++) {
       await this.delay(stepDelay);
-      const [point1, point2] = this.getPointsAtDistance(center, distances[i]);
-
-      // Move both pointers
-      this.pointerMove(point1);
-      this.dispatchPointerEvent('pointermove', point2, {
-        pointerId: this.secondaryPointerId,
-        isPrimary: false,
-      });
+      
+      const currentDistance = startDistance + distanceIncrement * i;
+      const [firstTouchPoint, secondTouchPoint] = this.getPointsAtDistance(center, currentDistance);
+      
+      this.dispatchPointerEvent('pointermove', firstTouchPoint);
+      this.dispatchSecondPointerEvent('pointermove', secondTouchPoint);
     }
 
-    // Get final points
-    const [point1End, point2End] = this.getPointsAtDistance(center, endDistance);
-
-    // Trigger pointerup events
+    // End the gesture with pointerup events
     if (!skipPointerUp) {
-      await this.delay(stepDelay);
-      this.pointerUp(point1End);
-      this.dispatchPointerEvent('pointerup', point2End, {
-        pointerId: this.secondaryPointerId,
-        isPrimary: false,
-        button: 0,
-        buttons: 0,
-      });
+      const [firstTouchEnd, secondTouchEnd] = this.getPointsAtDistance(center, endDistance);
+      
+      this.dispatchPointerEvent('pointerup', firstTouchEnd, { button: 0, buttons: 0 });
+      this.dispatchSecondPointerEvent('pointerup', secondTouchEnd, { button: 0, buttons: 0 });
     }
   }
 }

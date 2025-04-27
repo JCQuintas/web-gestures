@@ -89,9 +89,9 @@ export const userGesture = {
   /**
    * Simulate a wheel (scroll) gesture
    */
-  async wheel(options: TurnWheelSimulatorOptions): Promise<void> {
+  async turnWheel(options: TurnWheelSimulatorOptions): Promise<void> {
     const simulator = new TurnWheelSimulator({ ...globalConfig, ...options });
-    return simulator.simulateWheel();
+    return simulator.simulateTurnWheel();
   },
 };
 
@@ -100,6 +100,7 @@ export * from './types';
 
 // Export simulator classes for advanced usage
 export { GestureSimulator } from './GestureSimulator';
+export { PointerGestureSimulator } from './PointerGestureSimulator';
 export { MoveSimulator } from './simulators/MoveSimulator';
 export { PanSimulator } from './simulators/PanSimulator';
 export { PinchSimulator } from './simulators/PinchSimulator';

@@ -1,10 +1,10 @@
 /**
  * Simulates a pan (drag) gesture for testing.
  */
-import { GestureSimulator } from '../GestureSimulator';
+import { PointerGestureSimulator } from '../PointerGestureSimulator';
 import { PanSimulatorOptions } from '../types';
 
-export class PanSimulator extends GestureSimulator {
+export class PanSimulator extends PointerGestureSimulator {
   private options: PanSimulatorOptions;
 
   constructor(options: PanSimulatorOptions) {

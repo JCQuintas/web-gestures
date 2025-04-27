@@ -1,10 +1,10 @@
 /**
- * Simulates a tap gesture for testing tap interactions.
+ * Simulates a tap gesture for testing.
  */
-import { GestureSimulator } from '../GestureSimulator';
+import { PointerGestureSimulator } from '../PointerGestureSimulator';
 import { TapSimulatorOptions } from '../types';
 
-export class TapSimulator extends GestureSimulator {
+export class TapSimulator extends PointerGestureSimulator {
   private options: TapSimulatorOptions;
 
   constructor(options: TapSimulatorOptions) {
@@ -13,32 +13,24 @@ export class TapSimulator extends GestureSimulator {
   }
 
   /**
-   * Simulates a single tap.
-   */
-  private async simulateSingleTap(): Promise<void> {
-    const { position } = this.options;
-
-    // Quick tap is just a pointerdown followed immediately by a pointerup
-    this.pointerDown(position);
-
-    // Small delay to make it feel like a real tap (roughly 50ms)
-    await this.delay(50);
-
-    this.pointerUp(position);
-  }
-
-  /**
-   * Simulates a tap gesture with the specified number of taps.
+   * Simulates a tap gesture at the specified position.
    */
   public async simulateTap(): Promise<void> {
-    const { taps = 1, delay = 100 } = this.options;
+    const { position, taps = 1, delay: tapDelay = 100 } = this.options;
 
     for (let i = 0; i < taps; i++) {
-      await this.simulateSingleTap();
+      // Trigger pointerdown at the position
+      this.pointerDown(position);
 
-      // Add delay between taps if there are more taps to come
+      // Wait a small amount of time before pointerup
+      await this.delay(10);
+
+      // Trigger pointerup
+      this.pointerUp(position);
+
+      // If there are more taps to perform, wait for the delay
       if (i < taps - 1) {
-        await this.delay(delay);
+        await this.delay(tapDelay);
       }
     }
   }

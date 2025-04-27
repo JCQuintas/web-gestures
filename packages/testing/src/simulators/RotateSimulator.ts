@@ -1,48 +1,70 @@
 /**
- * Simulates a rotate gesture for testing rotation interactions.
+ * Simulates a rotate gesture for testing.
  */
-import { GestureSimulator } from '../GestureSimulator';
-import { Point, RotateSimulatorOptions } from '../types';
+import { PointerGestureSimulator } from '../PointerGestureSimulator';
+import { RotateSimulatorOptions, Point } from '../types';
 
-export class RotateSimulator extends GestureSimulator {
+export class RotateSimulator extends PointerGestureSimulator {
   private options: RotateSimulatorOptions;
-  private secondaryPointerId: number;
+  private secondPointerId: number;
 
   constructor(options: RotateSimulatorOptions) {
     super(options);
     this.options = options;
-    // Create a different pointer ID for the second touch point
-    this.secondaryPointerId = this.pointerId + 1;
+    // Create a second random pointer ID for multi-touch
+    this.secondPointerId = Math.floor(Math.random() * 10000) + 10000;
   }
 
   /**
-   * Calculate a point at a given angle and radius from the center
+   * Calculates a point at a given angle and radius from a center point.
    */
-  private pointOnCircle(center: Point, radius: number, angleDegrees: number): Point {
-    const angleRadians = (angleDegrees * Math.PI) / 180;
+  private getPointAtAngle(center: Point, angle: number, radius: number): Point {
+    const radians = (angle * Math.PI) / 180;
     return {
-      x: center.x + radius * Math.cos(angleRadians),
-      y: center.y + radius * Math.sin(angleRadians),
+      x: center.x + radius * Math.cos(radians),
+      y: center.y + radius * Math.sin(radians),
     };
   }
 
   /**
-   * Calculate two points opposite each other at given angles
+   * Dispatches a pointer event for the second finger.
    */
-  private getPointsAtAngle(
-    center: Point,
-    radius: number,
-    angle1Degrees: number,
-    angle2Degrees: number
-  ): [Point, Point] {
-    return [
-      this.pointOnCircle(center, radius, angle1Degrees),
-      this.pointOnCircle(center, radius, angle2Degrees),
-    ];
+  private dispatchSecondPointerEvent(
+    type: string,
+    position: Point,
+    options: Partial<PointerEventInit> = {}
+  ): PointerEvent {
+    const rect = this.element.getBoundingClientRect();
+    const clientX = position.x + rect.left;
+    const clientY = position.y + rect.top;
+
+    const defaults: PointerEventInit = {
+      bubbles: true,
+      cancelable: true,
+      pointerType: this.pointerType,
+      pointerId: this.secondPointerId,
+      clientX,
+      clientY,
+      screenX: clientX,
+      screenY: clientY,
+      view: window,
+      isPrimary: false,
+      ...options,
+    };
+
+    // Set button and buttons properties based on the event type
+    if (type === 'pointerdown' || type === 'mousedown' || type.includes('start')) {
+      defaults.button = 0;
+      defaults.buttons = 1;
+    }
+
+    const event = new PointerEvent(type, defaults);
+    this.element.dispatchEvent(event);
+    return event;
   }
 
   /**
-   * Simulate a rotation gesture
+   * Simulates a rotate gesture.
    */
   public async simulateRotate(): Promise<void> {
     const {
@@ -59,69 +81,38 @@ export class RotateSimulator extends GestureSimulator {
     // Calculate delay between steps
     const stepDelay = duration / steps;
 
-    // Generate intermediate angles
-    const angles: number[] = [];
-    for (let i = 0; i <= steps; i++) {
-      const t = i / steps;
-      angles.push(startAngle + (endAngle - startAngle) * t);
-    }
+    // Calculate angle increment per step
+    const angleIncrement = (endAngle - startAngle) / steps;
 
-    // Pointer 2 is 180 degrees opposite from pointer 1
-    const getSecondAngle = (angle: number) => (angle + 180) % 360;
+    // Calculate start positions for the two touch points
+    const firstTouchStart = this.getPointAtAngle(center, startAngle, radius);
+    const secondTouchStart = this.getPointAtAngle(center, startAngle + 180, radius);
 
-    // Get initial points
-    const [point1Start, point2Start] = this.getPointsAtAngle(
-      center,
-      radius,
-      startAngle,
-      getSecondAngle(startAngle)
-    );
-
-    // Trigger pointerdown events
+    // Start the gesture with pointerdown events
     if (!skipPointerDown) {
-      this.pointerDown(point1Start);
-      this.dispatchPointerEvent('pointerdown', point2Start, {
-        pointerId: this.secondaryPointerId,
-        isPrimary: false,
-      });
+      this.dispatchPointerEvent('pointerdown', firstTouchStart);
+      this.dispatchSecondPointerEvent('pointerdown', secondTouchStart);
     }
 
-    // Move through intermediate angles
+    // Perform the rotation
     for (let i = 1; i <= steps; i++) {
       await this.delay(stepDelay);
-      const [point1, point2] = this.getPointsAtAngle(
-        center,
-        radius,
-        angles[i],
-        getSecondAngle(angles[i])
-      );
-
-      // Move both pointers
-      this.pointerMove(point1);
-      this.dispatchPointerEvent('pointermove', point2, {
-        pointerId: this.secondaryPointerId,
-        isPrimary: false,
-      });
+      
+      const currentAngle = startAngle + angleIncrement * i;
+      const firstTouchPoint = this.getPointAtAngle(center, currentAngle, radius);
+      const secondTouchPoint = this.getPointAtAngle(center, currentAngle + 180, radius);
+      
+      this.dispatchPointerEvent('pointermove', firstTouchPoint);
+      this.dispatchSecondPointerEvent('pointermove', secondTouchPoint);
     }
 
-    // Get final points
-    const [point1End, point2End] = this.getPointsAtAngle(
-      center,
-      radius,
-      endAngle,
-      getSecondAngle(endAngle)
-    );
-
-    // Trigger pointerup events
+    // End the gesture with pointerup events
     if (!skipPointerUp) {
-      await this.delay(stepDelay);
-      this.pointerUp(point1End);
-      this.dispatchPointerEvent('pointerup', point2End, {
-        pointerId: this.secondaryPointerId,
-        isPrimary: false,
-        button: 0,
-        buttons: 0,
-      });
+      const firstTouchEnd = this.getPointAtAngle(center, endAngle, radius);
+      const secondTouchEnd = this.getPointAtAngle(center, endAngle + 180, radius);
+      
+      this.dispatchPointerEvent('pointerup', firstTouchEnd, { button: 0, buttons: 0 });
+      this.dispatchSecondPointerEvent('pointerup', secondTouchEnd, { button: 0, buttons: 0 });
     }
   }
 }

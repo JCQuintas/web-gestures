@@ -1,10 +1,10 @@
 /**
  * Simulates a move (hover) gesture for testing move interactions.
  */
-import { GestureSimulator } from '../GestureSimulator';
+import { PointerGestureSimulator } from '../PointerGestureSimulator';
 import { MoveSimulatorOptions } from '../types';
 
-export class MoveSimulator extends GestureSimulator {
+export class MoveSimulator extends PointerGestureSimulator {
   private options: MoveSimulatorOptions;
 
   constructor(options: MoveSimulatorOptions) {
