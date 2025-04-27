@@ -9,7 +9,10 @@ export class MoveSimulator extends GestureSimulator {
 
   constructor(options: MoveSimulatorOptions) {
     super(options);
-    this.options = { ...options, pointerType: 'mouse' }; // Force mouse type for move
+    if (options.pointerType === 'touch') {
+      throw new Error(`MoveSimulator doesn't support the touch pointer type.`);
+    }
+    this.options = { ...options };
   }
 
   /**
