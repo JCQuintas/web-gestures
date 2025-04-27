@@ -168,20 +168,17 @@ export abstract class Gesture<GestureName extends string> {
   }
 
   /**
-   * Initialize the gesture by acquiring the pointer manager singleton
+   * Initialize the gesture by acquiring the pointer manager and gestures registry
    * Must be called before the gesture can be used
    */
-  public init(element: TargetElement): void {
+  public init(
+    element: TargetElement,
+    pointerManager: PointerManager,
+    gestureRegistry: ActiveGesturesRegistry<GestureName>
+  ): void {
     this.element = element as HTMLElement;
-
-    if (!this.pointerManager) {
-      this.pointerManager = PointerManager.getInstance();
-    }
-
-    if (!this.gesturesRegistry) {
-      this.gesturesRegistry =
-        ActiveGesturesRegistry.getInstance() as ActiveGesturesRegistry<GestureName>;
-    }
+    this.pointerManager = pointerManager;
+    this.gesturesRegistry = gestureRegistry;
 
     const changeOptionsEventName = `${this.name}ChangeOptions`;
     (this.element as CustomEventListener).addEventListener(

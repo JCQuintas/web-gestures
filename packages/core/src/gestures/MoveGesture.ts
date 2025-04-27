@@ -12,9 +12,10 @@
  * This gesture only works with mouse pointers, not touch or pen.
  */
 
+import { ActiveGesturesRegistry } from '../ActiveGesturesRegistry';
 import { GesturePhase, GestureState } from '../Gesture';
 import { PointerGesture, PointerGestureEventData, PointerGestureOptions } from '../PointerGesture';
-import { PointerData } from '../PointerManager';
+import { PointerData, PointerManager } from '../PointerManager';
 import { TargetElement } from '../types/TargetElement';
 import { calculateCentroid, createEventName } from '../utils';
 
@@ -90,8 +91,12 @@ export class MoveGesture<GestureName extends string> extends PointerGesture<Gest
     });
   }
 
-  public init(element: TargetElement) {
-    super.init(element);
+  public init(
+    element: TargetElement,
+    pointerManager: PointerManager,
+    gestureRegistry: ActiveGesturesRegistry<GestureName>
+  ): void {
+    super.init(element, pointerManager, gestureRegistry);
 
     // Add event listeners for entering and leaving elements
     // These are different from pointer events handled by PointerManager

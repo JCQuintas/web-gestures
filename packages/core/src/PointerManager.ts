@@ -84,7 +84,7 @@ export type PointerManagerOptions = {
 };
 
 /**
- * Singleton manager for handling pointer events across the application.
+ * Manager for handling pointer events across the application.
  *
  * PointerManager serves as the foundational layer for gesture recognition,
  * providing a centralized system for tracking active pointers and distributing
@@ -95,9 +95,6 @@ export type PointerManagerOptions = {
  * simultaneous pointers.
  */
 export class PointerManager {
-  /** Singleton instance reference */
-  private static instance: PointerManager | null = null;
-
   /** Root element where pointer events are captured */
   private root: HTMLElement;
 
@@ -114,35 +111,12 @@ export class PointerManager {
   private gestureHandlers: Set<(pointers: Map<number, PointerData>, event: PointerEvent) => void> =
     new Set();
 
-  /**
-   * Use PointerManager.getInstance() instead.
-   */
-  private constructor(options: PointerManagerOptions) {
+  public constructor(options: PointerManagerOptions) {
     this.root = (options.root ?? document.documentElement) as HTMLElement;
     this.touchAction = options.touchAction || 'auto';
     this.passive = options.passive !== false;
 
     this.setupEventListeners();
-  }
-
-  /**
-   * Get or create the singleton instance of PointerManager.
-   *
-   * On first call, options must be provided to initialize the manager.
-   * Subsequent calls can omit options as the instance is already created.
-   *
-   * @param options - Configuration options (required on first call only)
-   * @returns The singleton PointerManager instance
-   * @throws Error if first call doesn't include options
-   */
-  public static getInstance(options?: PointerManagerOptions): PointerManager {
-    if (!PointerManager.instance && options) {
-      PointerManager.instance = new PointerManager(options);
-    } else if (!PointerManager.instance && !options) {
-      throw new Error('PointerManager must be initialized with options first time');
-    }
-
-    return PointerManager.instance!;
   }
 
   /**
@@ -359,6 +333,5 @@ export class PointerManager {
 
     this.pointers.clear();
     this.gestureHandlers.clear();
-    PointerManager.instance = null;
   }
 }

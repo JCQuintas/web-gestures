@@ -1,5 +1,6 @@
+import { ActiveGesturesRegistry } from './ActiveGesturesRegistry';
 import { Gesture, GestureEventData, GestureOptions } from './Gesture';
-import { PointerData } from './PointerManager';
+import { PointerData, PointerManager } from './PointerManager';
 import { TargetElement } from './types/TargetElement';
 
 /**
@@ -114,8 +115,12 @@ export abstract class PointerGesture<GestureName extends string> extends Gesture
     this.threshold = options.threshold ?? 0;
   }
 
-  public init(element: TargetElement): void {
-    super.init(element);
+  public init(
+    element: TargetElement,
+    pointerManager: PointerManager,
+    gestureRegistry: ActiveGesturesRegistry<GestureName>
+  ): void {
+    super.init(element, pointerManager, gestureRegistry);
 
     this.unregisterHandler = this.pointerManager!.registerGestureHandler((pointers, event) =>
       this.handlePointerEvent(pointers, event)

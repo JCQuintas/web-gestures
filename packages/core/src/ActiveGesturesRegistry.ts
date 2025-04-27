@@ -19,31 +19,11 @@ export type ActiveGestureEntry<GestureName extends string> = {
 };
 
 /**
- * Singleton registry that maintains a record of all currently active gestures across elements
+ * Registry that maintains a record of all currently active gestures across elements
  */
 export class ActiveGesturesRegistry<GestureName extends string> {
-  /** Singleton instance reference */
-  private static instance: ActiveGesturesRegistry<string> | null = null;
-
   /** Map of elements to their active gestures */
   private activeGestures: Map<TargetElement, Set<ActiveGestureEntry<GestureName>>> = new Map();
-
-  /**
-   * Use ActiveGesturesRegistry.getInstance() instead
-   */
-  private constructor() {}
-
-  /**
-   * Get or create the singleton instance of ActiveGesturesRegistry
-   *
-   * @returns The singleton ActiveGesturesRegistry instance
-   */
-  public static getInstance(): ActiveGesturesRegistry<string> {
-    if (!ActiveGesturesRegistry.instance) {
-      ActiveGesturesRegistry.instance = new ActiveGesturesRegistry();
-    }
-    return ActiveGesturesRegistry.instance;
-  }
 
   /**
    * Register a gesture as active on an element

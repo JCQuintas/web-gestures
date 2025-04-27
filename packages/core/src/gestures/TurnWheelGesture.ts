@@ -8,8 +8,9 @@
  * wheel gestures are always considered "ongoing" since they are discrete events.
  */
 
+import { ActiveGesturesRegistry } from '../ActiveGesturesRegistry';
 import { Gesture, GestureEventData, GestureOptions, GestureState } from '../Gesture';
-import { PointerData } from '../PointerManager';
+import { PointerData, PointerManager } from '../PointerManager';
 import { TargetElement } from '../types/TargetElement';
 import { calculateCentroid, createEventName } from '../utils';
 
@@ -186,8 +187,12 @@ export class TurnWheelGesture<GestureName extends string> extends Gesture<Gestur
     });
   }
 
-  public init(element: TargetElement) {
-    super.init(element);
+  public init(
+    element: TargetElement,
+    pointerManager: PointerManager,
+    gestureRegistry: ActiveGesturesRegistry<GestureName>
+  ): void {
+    super.init(element, pointerManager, gestureRegistry);
 
     // Add event listener directly to the element
     this.element.addEventListener('wheel', this.handleWheelEventBound);
