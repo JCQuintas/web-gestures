@@ -1,7 +1,7 @@
 {
   "name": "@web-gestures/testing",
   "private": true,
-  "version": "0.0.11",
+  "version": "0.0.12",
   "description": "Testing utilities to emulate user gestures on the browser for @web-gestures",
   "author": "Jose Quintas <juniorquintas@gmail.com>",
   "keywords": [
