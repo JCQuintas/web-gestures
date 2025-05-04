@@ -92,6 +92,8 @@ export type PanGestureState = GestureState & {
   startPointers: Map<number, PointerData>;
   /** The last direction of movement detected */
   lastDirection: Direction;
+  /** The last delta movement in pixels since the last event */
+  lastDeltas: { x: number; y: number } | null;
 };
 
 /**
@@ -113,6 +115,7 @@ export class PanGesture<GestureName extends string> extends PointerGesture<Gestu
       horizontal: null,
       mainAxis: null,
     },
+    lastDeltas: null,
   };
 
   protected readonly isSinglePhase!: false;
@@ -172,6 +175,7 @@ export class PanGesture<GestureName extends string> extends PointerGesture<Gestu
       startPointers: new Map(),
       startCentroid: null,
       lastCentroid: null,
+      lastDeltas: null,
       movementThresholdReached: false,
       lastDirection: {
         vertical: null,
@@ -245,11 +249,13 @@ export class PanGesture<GestureName extends string> extends PointerGesture<Gestu
           const currentCentroid = calculateCentroid(relevantPointers);
 
           // Calculate delta from start
-          const deltaX = currentCentroid.x - this.state.startCentroid.x;
-          const deltaY = currentCentroid.y - this.state.startCentroid.y;
+          const distanceDeltaX = currentCentroid.x - this.state.startCentroid.x;
+          const distanceDeltaY = currentCentroid.y - this.state.startCentroid.y;
 
           // Calculate movement distance
-          const distance = Math.sqrt(deltaX * deltaX + deltaY * deltaY);
+          const distance = Math.sqrt(
+            distanceDeltaX * distanceDeltaX + distanceDeltaY * distanceDeltaY
+          );
 
           // Determine movement direction
           const moveDirection = getDirection(
@@ -282,6 +288,7 @@ export class PanGesture<GestureName extends string> extends PointerGesture<Gestu
 
             // Update total accumulated delta
             if (this.state.movementThresholdReached) {
+              this.state.lastDeltas = { x: lastDeltaX, y: lastDeltaY };
               this.state.totalDeltaX += lastDeltaX;
               this.state.totalDeltaY += lastDeltaY;
             }
@@ -311,12 +318,9 @@ export class PanGesture<GestureName extends string> extends PointerGesture<Gestu
               this.emitPanEvent(targetElement, 'cancel', relevantPointers, event, currentCentroid);
             }
             this.emitPanEvent(targetElement, 'end', relevantPointers, event, currentCentroid);
-
-            // Reset active state but keep total delta values
             this.resetState();
           }
         } else {
-          // If threshold wasn't reached (simple click), just reset active state
           this.resetState();
         }
         break;
@@ -335,9 +339,8 @@ export class PanGesture<GestureName extends string> extends PointerGesture<Gestu
   ): void {
     if (!this.state.startCentroid) return;
 
-    // Calculate deltas from start position
-    const deltaX = currentCentroid.x - this.state.startCentroid.x;
-    const deltaY = currentCentroid.y - this.state.startCentroid.y;
+    const deltaX = this.state.lastDeltas?.x ?? 0;
+    const deltaY = this.state.lastDeltas?.y ?? 0;
 
     // Calculate velocity - time difference in seconds
     const firstPointer = this.state.startPointers.values().next().value;
