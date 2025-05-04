@@ -1,9 +1,42 @@
+import {
+  PointerGestureSimulator,
+  PointerGestureSimulatorOptions,
+} from '../PointerGestureSimulator';
+import { Point } from '../types/Point';
+
+/**
+ * Options for a pan gesture simulation.
+ */
+export type PanSimulatorOptions = PointerGestureSimulatorOptions & {
+  /**
+   * Starting point of the pan gesture.
+   */
+  start: Point;
+
+  /**
+   * End point of the pan gesture.
+   */
+  end: Point;
+
+  /**
+   * Number of intermediary events to dispatch.
+   * @default 10
+   */
+  steps?: number;
+
+  /**
+   * Duration of the gesture in milliseconds.
+   *
+   * Will be used to calculate the delay between each step.
+   *
+   * @default 300
+   */
+  duration?: number;
+};
+
 /**
  * Simulates a pan (drag) gesture for testing.
  */
-import { PointerGestureSimulator } from '../PointerGestureSimulator';
-import { PanSimulatorOptions } from '../types';
-
 export class PanSimulator extends PointerGestureSimulator {
   private options: PanSimulatorOptions;
 
@@ -28,24 +61,38 @@ export class PanSimulator extends PointerGestureSimulator {
     // Calculate delay between steps
     const stepDelay = duration / steps;
 
-    // Generate intermediate points
-    const points = this.generatePoints(start, end, steps);
+    const pointers = this.generatePointers();
 
     // Trigger pointerdown at start position
     if (!skipPointerDown) {
-      this.pointerDown(start);
+      const positions = this.distributeAroundCenter(start);
+      pointers.forEach((pointer, index) => {
+        pointer.pointerDown(positions[index]);
+      });
     }
 
     // Move through intermediate points
-    for (let i = 1; i < points.length; i++) {
-      await this.delay(stepDelay);
-      this.pointerMove(points[i]);
+    for (let i = 0; i <= steps; i++) {
+      // Calculate the current position using linear interpolation
+      const currentPosition = this.lerp(start, end, i / steps);
+      const positions = this.distributeAroundCenter(currentPosition);
+
+      pointers.forEach((pointer, index) => {
+        pointer.pointerMove(positions[index]);
+      });
+
+      if (i < steps - 1) {
+        await this.delay(stepDelay);
+      }
     }
 
     // Trigger pointerup at end position
     if (!skipPointerUp) {
+      const positions = this.distributeAroundCenter(end);
       await this.delay(stepDelay);
-      this.pointerUp(end);
+      pointers.forEach((pointer, index) => {
+        pointer.pointerUp(positions[index]);
+      });
     }
   }
 }

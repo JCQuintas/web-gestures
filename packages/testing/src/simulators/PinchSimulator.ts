@@ -1,29 +1,62 @@
+import {
+  PointerGestureSimulator,
+  PointerGestureSimulatorOptions,
+} from '../PointerGestureSimulator';
+import { Point } from '../types/Point';
+
+/**
+ * Options for a pinch gesture simulation.
+ */
+export type PinchSimulatorOptions = PointerGestureSimulatorOptions & {
+  /**
+   * Center point of the pinch gesture.
+   */
+  center: Point;
+
+  /**
+   * Initial distance between the two pointers.
+   */
+  startDistance: number;
+
+  /**
+   * Final distance between the two pointers.
+   */
+  endDistance: number;
+
+  /**
+   * Number of intermediary events to dispatch.
+   * @default 10
+   */
+  steps?: number;
+
+  /**
+   * Duration of the gesture in milliseconds.
+   *
+   * Will be used to calculate the delay between each step.
+   *
+   * @default 300
+   */
+  duration?: number;
+};
+
 /**
  * Simulates a pinch gesture for testing.
  */
-import { PointerGestureSimulator } from '../PointerGestureSimulator';
-import { PinchSimulatorOptions, Point } from '../types';
-
 export class PinchSimulator extends PointerGestureSimulator {
   private options: PinchSimulatorOptions;
-  private secondPointerId: number;
 
   constructor(options: PinchSimulatorOptions) {
-    super(options);
+    super({
+      pointerAmount: 2,
+      ...options,
+    });
     this.options = options;
-    // Create a second random pointer ID for multi-touch
-    this.secondPointerId = this.pointerIdManager.generatePointerId();
-  }
-
-  /**
-   * Calculates points for a pinch gesture at a given distance from center.
-   */
-  private getPinchPoints(center: Point, distance: number): [Point, Point] {
-    const halfDistance = distance / 2;
-    return [
-      { x: center.x - halfDistance, y: center.y },
-      { x: center.x + halfDistance, y: center.y },
-    ];
+    if (options.pointerType === 'mouse') {
+      throw new Error(`PinchSimulator doesn't support the mouse pointer type.`);
+    }
+    if ((options as { pointerAmount?: number }).pointerAmount ?? 2 < 2) {
+      throw new Error(`PinchSimulator requires at least 2 pointers.`);
+    }
   }
 
   /**
@@ -47,31 +80,37 @@ export class PinchSimulator extends PointerGestureSimulator {
     const distanceIncrement = (endDistance - startDistance) / steps;
 
     // Calculate start positions
-    const [firstTouchStart, secondTouchStart] = this.getPinchPoints(center, startDistance);
+    const positions = this.distributeAroundCenter(center, startDistance);
+    const pointers = this.generatePointers();
 
     // Start the gesture with pointerdown events
     if (!skipPointerDown) {
-      this.pointerDown(firstTouchStart);
-      this.pointerDown(secondTouchStart, {}, this.secondPointerId);
+      pointers.forEach((pointer, index) => {
+        pointer.pointerDown(positions[index]);
+      });
     }
 
-    // Perform the pinch
-    for (let i = 1; i <= steps; i++) {
-      await this.delay(stepDelay);
-
+    // Simulate the pinch gesture
+    for (let i = 0; i <= steps; i++) {
+      // Calculate the current distance
       const currentDistance = startDistance + distanceIncrement * i;
-      const [firstTouchPoint, secondTouchPoint] = this.getPinchPoints(center, currentDistance);
 
-      this.pointerMove(firstTouchPoint);
-      this.pointerMove(secondTouchPoint, {}, this.secondPointerId);
+      // Calculate the new positions based on the current distance
+      const newPositions = this.distributeAroundCenter(center, currentDistance);
+
+      // Move pointers to the new positions
+      pointers.forEach((pointer, index) => {
+        pointer.pointerMove(newPositions[index]);
+      });
+
+      // Wait for the specified delay
+      await this.delay(stepDelay);
     }
-
     // End the gesture with pointerup events
     if (!skipPointerUp) {
-      const [firstTouchEnd, secondTouchEnd] = this.getPinchPoints(center, endDistance);
-
-      this.pointerUp(firstTouchEnd);
-      this.pointerUp(secondTouchEnd, {}, this.secondPointerId);
+      pointers.forEach((pointer, index) => {
+        pointer.pointerUp(positions[index]);
+      });
     }
   }
 }

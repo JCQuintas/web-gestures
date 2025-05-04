@@ -1,29 +1,69 @@
+import {
+  PointerGestureSimulator,
+  PointerGestureSimulatorOptions,
+} from '../PointerGestureSimulator';
+import { Point } from '../types/Point';
+
+/**
+ * Options for a rotate gesture simulation.
+ */
+export type RotateSimulatorOptions = PointerGestureSimulatorOptions & {
+  /**
+   * Center point of the rotation.
+   */
+  center: Point;
+
+  /**
+   * Radius of the rotation in pixels.
+   * @default 50
+   */
+  radius?: number;
+
+  /**
+   * Starting angle in degrees.
+   * @default 0
+   */
+  startAngle?: number;
+
+  /**
+   * Ending angle in degrees.
+   * @default 90
+   */
+  endAngle?: number;
+
+  /**
+   * Number of intermediary events to dispatch.
+   * @default 10
+   */
+  steps?: number;
+
+  /**
+   * Duration of the gesture in milliseconds.
+   *
+   * Will be used to calculate the delay between each step.
+   * @default 300
+   */
+  duration?: number;
+};
+
 /**
  * Simulates a rotate gesture for testing.
  */
-import { PointerGestureSimulator } from '../PointerGestureSimulator';
-import { Point, RotateSimulatorOptions } from '../types';
-
 export class RotateSimulator extends PointerGestureSimulator {
   private options: RotateSimulatorOptions;
-  private secondPointerId: number;
 
   constructor(options: RotateSimulatorOptions) {
-    super(options);
+    super({
+      pointerAmount: 2,
+      ...options,
+    });
     this.options = options;
-    // Create a second random pointer ID for multi-touch
-    this.secondPointerId = this.pointerIdManager.generatePointerId();
-  }
-
-  /**
-   * Calculates a point at a given angle and radius from a center point.
-   */
-  private getPointAtAngle(center: Point, angle: number, radius: number): Point {
-    const radians = (angle * Math.PI) / 180;
-    return {
-      x: center.x + radius * Math.cos(radians),
-      y: center.y + radius * Math.sin(radians),
-    };
+    if (options.pointerType === 'mouse') {
+      throw new Error(`RotateSimulator doesn't support the mouse pointer type.`);
+    }
+    if ((options as { pointerAmount?: number }).pointerAmount ?? 2 < 2) {
+      throw new Error(`RotateSimulator requires at least 2 pointers.`);
+    }
   }
 
   /**
@@ -47,35 +87,37 @@ export class RotateSimulator extends PointerGestureSimulator {
     // Calculate angle increment per step
     const angleIncrement = (endAngle - startAngle) / steps;
 
-    // Calculate start positions for the two touch points
-    const firstTouchStart = this.getPointAtAngle(center, startAngle, radius);
-    const secondTouchStart = this.getPointAtAngle(center, startAngle + 180, radius);
+    // Calculate the initial positions of the pointers
+    const positions = this.distributeAroundCenter(center, radius, startAngle);
+    const pointers = this.generatePointers();
 
-    // Start the gesture with pointerdown events
+    // Trigger pointerdown at the initial positions
     if (!skipPointerDown) {
-      this.pointerDown(firstTouchStart);
-      this.pointerDown(secondTouchStart, {}, this.secondPointerId);
+      pointers.forEach((pointer, i) => {
+        pointer.pointerDown(positions[i]);
+      });
     }
+    // Simulate the rotation in steps
+    for (let i = 0; i < steps; i++) {
+      // Calculate the new angle for this step
+      const angle = startAngle + angleIncrement * (i + 1);
 
-    // Perform the rotation
-    for (let i = 1; i <= steps; i++) {
+      // Calculate the new positions of the pointers
+      const newPositions = this.distributeAroundCenter(center, radius, angle);
+
+      // Trigger pointermove at the new positions
+      pointers.forEach((pointer, i) => {
+        pointer.pointerMove(newPositions[i]);
+      });
+
+      // Wait for the specified delay before the next step
       await this.delay(stepDelay);
-
-      const currentAngle = startAngle + angleIncrement * i;
-      const firstTouchPoint = this.getPointAtAngle(center, currentAngle, radius);
-      const secondTouchPoint = this.getPointAtAngle(center, currentAngle + 180, radius);
-
-      this.pointerMove(firstTouchPoint);
-      this.pointerMove(secondTouchPoint, {}, this.secondPointerId);
     }
-
-    // End the gesture with pointerup events
+    // Trigger pointerup if not skipped
     if (!skipPointerUp) {
-      const firstTouchEnd = this.getPointAtAngle(center, endAngle, radius);
-      const secondTouchEnd = this.getPointAtAngle(center, endAngle + 180, radius);
-
-      this.pointerUp(firstTouchEnd, { button: 0, buttons: 0 });
-      this.pointerUp(secondTouchEnd, { button: 0, buttons: 0 }, this.secondPointerId);
+      pointers.forEach((pointer, i) => {
+        pointer.pointerUp(positions[i]);
+      });
     }
   }
 }

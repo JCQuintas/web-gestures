@@ -1,8 +1,5 @@
-/**
- * Simulates a turn wheel (scroll) gesture for testing.
- */
 import { GestureSimulator, GestureSimulatorOptions } from '../GestureSimulator';
-import { Point } from '../types';
+import { Point } from '../types/Point';
 
 /**
  * Options for a wheel/scroll gesture simulation.
@@ -39,18 +36,22 @@ export interface TurnWheelSimulatorOptions extends GestureSimulatorOptions {
   deltaZ?: number;
 
   /**
-   * Number of wheel events to dispatch.
+   * Number of steps to simulate the wheel event.
    * @default 1
    */
   steps?: number;
 
   /**
-   * Delay between wheel events in milliseconds.
-   * @default 50
+   * Duration of the gesture in milliseconds.
+   * This is used to calculate the delay between each step.
+   * @default 100
    */
-  stepDelay?: number;
+  duration?: number;
 }
 
+/**
+ * Simulates a turn wheel (scroll) gesture for testing.
+ */
 export class TurnWheelSimulator extends GestureSimulator {
   private options: TurnWheelSimulatorOptions;
 
@@ -69,9 +70,11 @@ export class TurnWheelSimulator extends GestureSimulator {
       deltaY = 100,
       deltaZ = 0,
       steps = 1,
-      stepDelay = 50,
+      duration = 100,
       skipPointerMove = false,
     } = this.options;
+
+    const stepDelay = duration / steps;
 
     if (!skipPointerMove) {
       // Move pointer to position first

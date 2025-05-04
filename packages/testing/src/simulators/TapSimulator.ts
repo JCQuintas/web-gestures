@@ -2,7 +2,7 @@ import {
   PointerGestureSimulator,
   PointerGestureSimulatorOptions,
 } from '../PointerGestureSimulator';
-import { Point } from '../types';
+import { Point } from '../types/Point';
 
 /**
  * Options for a tap gesture simulation.

@@ -1,4 +1,4 @@
-import { Point } from './types';
+import { Point } from './types/Point';
 
 /**
  * Options common to all gesture simulators.
@@ -50,17 +50,5 @@ export class GestureSimulator {
       x: start.x + (end.x - start.x) * t,
       y: start.y + (end.y - start.y) * t,
     };
-  }
-
-  /**
-   * Generates points along a line from start to end.
-   */
-  protected generatePoints(start: Point, end: Point, steps: number): Point[] {
-    const points: Point[] = [];
-    for (let i = 0; i <= steps; i++) {
-      const t = i / steps;
-      points.push(this.lerp(start, end, t));
-    }
-    return points;
   }
 }

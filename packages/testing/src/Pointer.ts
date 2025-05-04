@@ -1,4 +1,4 @@
-import { Point } from './types';
+import { Point } from './types/Point';
 
 /**
  * Pointer class to simulate pointer events on a target element.
@@ -20,6 +20,13 @@ export class Pointer {
     this.element = element;
     this.pointerType = pointerType;
     this.pointerId = pointerId;
+
+    if (pointerType === 'mouse' && pointerId !== 1) {
+      throw new Error('Pointer ID for mouse must be 1');
+    }
+    if (pointerType !== 'mouse' && pointerId <= 1) {
+      throw new Error('Pointer ID for non-mouse pointers must be greater than 1');
+    }
   }
 
   /**

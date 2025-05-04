@@ -1,28 +1,13 @@
-/**
- * Entry point for @web-gestures/testing
- *
- * A utility package for simulating user gestures in testing environments
- * to validate gesture handlers and callbacks.
- */
-
 import { GestureSimulatorOptions } from './GestureSimulator';
-import { MoveSimulator } from './simulators/MoveSimulator';
-import { PanSimulator } from './simulators/PanSimulator';
-import { PinchSimulator } from './simulators/PinchSimulator';
-import { PressSimulator } from './simulators/PressSimulator';
-import { RotateSimulator } from './simulators/RotateSimulator';
-import { TapSimulator } from './simulators/TapSimulator';
-import { TurnWheelSimulator } from './simulators/TurnWheelSimulator';
-import {
-  MoveSimulatorOptions,
-  PanSimulatorOptions,
-  PinchSimulatorOptions,
-  PressSimulatorOptions,
-  RotateSimulatorOptions,
-  TapSimulatorOptions,
-  TurnWheelSimulatorOptions,
-} from './types';
+import { MoveSimulator, MoveSimulatorOptions } from './simulators/MoveSimulator';
+import { PanSimulator, PanSimulatorOptions } from './simulators/PanSimulator';
+import { PinchSimulator, PinchSimulatorOptions } from './simulators/PinchSimulator';
+import { PressSimulator, PressSimulatorOptions } from './simulators/PressSimulator';
+import { RotateSimulator, RotateSimulatorOptions } from './simulators/RotateSimulator';
+import { TapSimulator, TapSimulatorOptions } from './simulators/TapSimulator';
+import { TurnWheelSimulator, TurnWheelSimulatorOptions } from './simulators/TurnWheelSimulator';
 
+// TODO: change this to userGesture = new UserGesture()
 // Global configuration that applies to all gesture simulations
 let globalConfig: Partial<GestureSimulatorOptions> = {};
 
@@ -96,7 +81,7 @@ export const userGesture = {
 };
 
 // Export types for TypeScript users
-export * from './types';
+export * from './types/Point';
 
 // Export simulator classes for advanced usage
 export { GestureSimulator } from './GestureSimulator';

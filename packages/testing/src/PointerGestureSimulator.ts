@@ -1,11 +1,8 @@
-/**
- * Simulator for pointer-based gestures (mouse, touch, pen).
- * Extends the base GestureSimulator with pointer-specific event handling.
- */
 import { GestureSimulator, GestureSimulatorOptions } from './GestureSimulator';
 import { Pointer } from './Pointer';
 import { PointerIdManager } from './PointerIdManager';
-import { Point } from './types';
+import { MergeUnions } from './types/MergeUnions';
+import { Point } from './types/Point';
 
 export type PointerGestureSimulatorOptions = GestureSimulatorOptions & {
   /**
@@ -47,7 +44,6 @@ export type PointerGestureSimulatorOptions = GestureSimulatorOptions & {
          * - Pointer 2: (105, 100)
          * - Pointer 3: (100, 95)
          *
-         *
          * @default 5
          */
         pointerDistance?: number;
@@ -61,18 +57,21 @@ export type PointerGestureSimulatorOptions = GestureSimulatorOptions & {
       }
   );
 
+/**
+ * Simulator for pointer-based gestures (mouse, touch, pen).
+ * Extends the base GestureSimulator with pointer-specific event handling.
+ */
 export class PointerGestureSimulator extends GestureSimulator {
   protected pointerType: 'mouse' | 'touch' | 'pen';
   protected pointerIdManager: PointerIdManager;
   protected pointerAmount: number;
   protected pointerDistance: number;
 
-  constructor(options: PointerGestureSimulatorOptions) {
+  constructor(options: MergeUnions<PointerGestureSimulatorOptions>) {
     super(options);
     this.pointerType = options.pointerType || 'mouse';
-    this.pointerAmount =
-      this.pointerType === 'mouse' ? 1 : (options as { pointerAmount?: number }).pointerAmount || 1;
-    this.pointerDistance = (options as { pointerDistance?: number }).pointerDistance || 5;
+    this.pointerAmount = this.pointerType === 'mouse' ? 1 : options.pointerAmount || 1;
+    this.pointerDistance = options.pointerDistance || 5;
 
     if (this.pointerType === 'mouse' && this.pointerAmount > 1) {
       throw new Error('Mouse pointer type does not support multiple pointers.');
@@ -85,9 +84,11 @@ export class PointerGestureSimulator extends GestureSimulator {
    * Distributes pointers around a center point.
    *
    * @param center - The center point to distribute pointers around.
+   * @param distance - The distance from the center to the pointers.
+   * @param turnAngle - The angle to skew the pointers by.
    * @returns An array of points representing the distributed pointers.
    */
-  protected distributeAroundCenter(center: Point): Point[] {
+  protected distributeAroundCenter(center: Point, distance?: number, turnAngle?: number): Point[] {
     if (this.pointerAmount < 1) {
       return [];
     }
@@ -97,8 +98,10 @@ export class PointerGestureSimulator extends GestureSimulator {
 
     const angle = (2 * Math.PI) / this.pointerAmount;
     return Array.from({ length: this.pointerAmount }, (_, i) => {
-      const x = center.x + Math.sin(i * angle) * this.pointerDistance;
-      const y = center.y + Math.cos(i * angle) * this.pointerDistance;
+      const x =
+        center.x + Math.sin(i * angle + (turnAngle ?? 0)) * (distance ?? this.pointerDistance);
+      const y =
+        center.y + Math.cos(i * angle + (turnAngle ?? 0)) * (distance ?? this.pointerDistance);
       return { x, y };
     });
   }
@@ -109,8 +112,12 @@ export class PointerGestureSimulator extends GestureSimulator {
    * @returns An array of Pointer objects.
    */
   protected generatePointers(): Pointer[] {
+    if (this.pointerType === 'mouse') {
+      return [new Pointer(this.element)];
+    }
+
     return Array.from({ length: this.pointerAmount }, () => {
-      const pointerId = this.pointerIdManager.generatePointerId();
+      const pointerId = this.pointerIdManager.newPointerId();
       return new Pointer(this.element, this.pointerType, pointerId);
     });
   }

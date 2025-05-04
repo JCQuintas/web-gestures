@@ -31,7 +31,7 @@ export class PointerIdManager {
    *
    * @returns A unique pointer ID that is not currently in use
    */
-  public generatePointerId(): number {
+  public newPointerId(): number {
     return this.idCounter++;
   }
 }
