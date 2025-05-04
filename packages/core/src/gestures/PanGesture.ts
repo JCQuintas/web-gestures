@@ -207,10 +207,8 @@ export class PanGesture<GestureName extends string> extends PointerGesture<Gestu
 
     // Check if this gesture should be prevented by active gestures
     if (this.shouldPreventGesture(targetElement)) {
-      if (this.isActive) {
-        // If the gesture was active but now should be prevented, cancel it gracefully
-        this.cancel(targetElement, pointersArray, event);
-      }
+      // If the gesture was active but now should be prevented, cancel it gracefully
+      this.cancel(targetElement, pointersArray, event);
       return;
     }
 
@@ -219,10 +217,8 @@ export class PanGesture<GestureName extends string> extends PointerGesture<Gestu
 
     // Check if we have enough pointers and not too many
     if (relevantPointers.length < this.minPointers || relevantPointers.length > this.maxPointers) {
-      if (this.isActive) {
-        // Cancel or end the gesture if it was active
-        this.cancel(targetElement, relevantPointers, event);
-      }
+      // Cancel or end the gesture if it was active
+      this.cancel(targetElement, relevantPointers, event);
       return;
     }
 
@@ -404,10 +400,10 @@ export class PanGesture<GestureName extends string> extends PointerGesture<Gestu
     pointers: PointerData[],
     event: PointerEvent
   ): void {
-    if (this.isActive && this.state.startCentroid && this.state.lastCentroid) {
+    if (this.isActive) {
       const el = element ?? this.element;
-      this.emitPanEvent(el, 'cancel', pointers, event, this.state.lastCentroid);
-      this.emitPanEvent(el, 'end', pointers, event, this.state.lastCentroid);
+      this.emitPanEvent(el, 'cancel', pointers, event, this.state.lastCentroid!);
+      this.emitPanEvent(el, 'end', pointers, event, this.state.lastCentroid!);
     }
     this.resetState();
   }

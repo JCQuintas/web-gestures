@@ -67,6 +67,7 @@ const gestureManager = new GestureManager({
 // DOM Elements
 const gestureTarget = document.getElementById('gesture-target') as HTMLDivElement;
 const gestureTarget2 = document.getElementById('gesture-target2') as HTMLDivElement;
+const gestureTarget3 = document.getElementById('gesture-target3') as HTMLDivElement;
 const logContainer = document.getElementById('log-container') as HTMLDivElement;
 const clearLogButton = document.getElementById('clear-log') as HTMLButtonElement;
 const resetPositionButton = document.getElementById('reset-position') as HTMLButtonElement;
@@ -83,6 +84,28 @@ const target = gestureManager.registerElement(
 const target2 = gestureManager.registerElement(['pan', 'pinch', 'rotate', 'roll'], gestureTarget2, {
   roll: { max: 10, min: 0.1 },
   pinch: { threshold: 0 },
+});
+
+const target3 = gestureManager.registerElement(['pan', 'pinch'], gestureTarget3);
+
+target3.addEventListener('pan', event => {
+  const detail = event.detail;
+  // Get the x and y from the transform property
+  const transform = window.getComputedStyle(target3).transform;
+  const matrix = new DOMMatrix(transform);
+  const currentX = matrix.m41;
+  const currentY = matrix.m42;
+  const targetX = currentX + detail.deltaX;
+  const targetY = currentY + detail.deltaY;
+  const currentScale = Math.sqrt(matrix.a * matrix.a + matrix.b * matrix.b);
+
+  target3.style.transform = `translate(${targetX}px, ${targetY}px) scale(${currentScale})`;
+});
+
+target3.addEventListener('pinch', event => {
+  const detail = event.detail;
+
+  updatePosition(target3, { scale: detail.totalScale });
 });
 
 // Set up event listeners
