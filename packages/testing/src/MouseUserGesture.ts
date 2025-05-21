@@ -1,3 +1,4 @@
+import { MoveUserGestureRoot } from './gestures/MoveUserGesture';
 import { TapUserGestureRoot } from './gestures/TapUserGesture';
 import { UserGestureOptions } from './UserGestureOptions';
 
@@ -11,4 +12,5 @@ export interface MouseUserGestureRootExtension {}
 export type MouseUserGestureRoot = {
   setup: (options: UserGestureOptions) => MouseUserGestureRoot;
 } & TapUserGestureRoot &
+  MoveUserGestureRoot &
   MouseUserGestureRootExtension;

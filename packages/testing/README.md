@@ -70,4 +70,22 @@ await mouse.tap({
   taps: 2,
   delay: 50,
 });
+
+await mouse
+  .move({
+    target: document.querySelector('#target'),
+    duration: 500,
+  })
+  .byDistance({
+    distance: 100,
+    angle: 0,
+  })
+  .byPoints({
+    start: { x: 0, y: 0 },
+    end: { x: 100, y: 100 },
+    duration: 500,
+  })
+  .run({
+    releasePointers: false,
+  });
 ```
