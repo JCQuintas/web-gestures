@@ -1,3 +1,6 @@
+/**
+ * Pointers are used to simulate touch events in tests.
+ */
 export type Pointer = {
   /**
    * The id of the pointer.
@@ -28,6 +31,13 @@ export type Pointer = {
   target?: Element;
 };
 
+/**
+ * A mouse pointer is a pointer with an id of 1.
+ *
+ * It is used to simulate mouse events in tests.
+ */
+export type MousePointer = Omit<Pointer, 'id'>;
+
 export type PointerAmount = {
   /**
    * The number of pointers to be used.
@@ -46,7 +56,8 @@ export type PointerAmount = {
    *
    * If not provided, the ids will be generated automatically. Starting from 500.
    *
-   * If provided, the ids must be unique and in the range of 1-1000.
+   * If provided, the ids must be unique and bigger than 1.
+   * A mouse pointer will always have an id of 1.
    */
   ids?: number[];
 };
@@ -57,3 +68,8 @@ export type PointerAmount = {
  * It can be an object with the amount and distance properties, or an array of pointers.
  */
 export type Pointers = PointerAmount | Pointer[];
+
+/**
+ * The type of pointers.
+ */
+export type PointerTypes = 'mouse' | 'touch';

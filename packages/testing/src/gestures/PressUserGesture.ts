@@ -1,22 +1,16 @@
 import { MousePointer, Pointers, PointerTypes } from '../Pointers';
 
-export type TapUserGestureOptions<P extends PointerTypes> = {
+export type PressUserGestureOptions<P extends PointerTypes> = {
   /**
-   * The target element to tap on.
+   * The target element to press on.
    */
   target: Element;
   /**
-   * The amount of taps to be performed.
+   * The duration of the press in milliseconds.
    *
-   * @default 1
+   * @default 500
    */
-  taps?: number;
-  /**
-   * The delay between taps in milliseconds.
-   *
-   * @default 50
-   */
-  delay?: number;
+  duration?: number;
 } & P extends 'mouse'
   ? {
       /**
@@ -36,11 +30,11 @@ export type TapUserGestureOptions<P extends PointerTypes> = {
       pointers?: Pointers;
     };
 
-export type TapUserGestureRoot<P extends PointerTypes> = {
+export type PressUserGestureRoot<P extends PointerTypes> = {
   /**
-   * Taps on the target element.
+   * Press on the target element.
    *
-   * @returns A promise that resolves when the tap gesture is completed.
+   * @returns A promise that resolves when the press gesture is completed.
    */
-  tap: (options: TapUserGestureOptions<P>) => Promise<void>;
+  press: (options: PressUserGestureOptions<P>) => Promise<void>;
 };

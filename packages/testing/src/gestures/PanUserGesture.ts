@@ -1,8 +1,8 @@
 import { Pointers } from '../Pointers';
 
-export type PinchUserGestureOptions = {
+export type PanUserGestureOptions = {
   /**
-   * The target element to start the pinch on.
+   * The target element to start the pan on.
    */
   target: Element;
   /**
@@ -15,17 +15,16 @@ export type PinchUserGestureOptions = {
    */
   pointers?: Pointers;
   /**
-   * The distance to pinch by in pixels.
+   * The distance to pan by in pixels.
    *
    * ```ts
-   *   0 // No pinch
-   *  50 // Pinch out
-   * -50 // Pinch in
+   *  <=0 // No pan
+   *  >0  // Pan
    * ```
    */
   distance: number;
   /**
-   * The duration of the pinch in milliseconds.
+   * The duration of the pan in milliseconds.
    *
    * @default 500
    */
@@ -37,19 +36,19 @@ export type PinchUserGestureOptions = {
    */
   steps?: number;
   /**
-   * The angle of the pinch in degrees.
+   * The angle of the pan in degrees.
    *
    * ```ts
-   * 0 // Horizontal pinch
-   * 90 // Vertical pinch
-   * 45 // Diagonal pinch
+   * 0 // Horizontal pan
+   * 90 // Vertical pan
+   * 45 // Diagonal pan
    * ```
    *
    * @default 0
    */
   angle?: number;
   /**
-   * Defines if the pointers should be released after the pinch gesture.
+   * Defines if the pointers should be released after the pan gesture.
    *
    * If set to true, all pointers will be released.
    * If set to an array of ids, only the pointers with the given ids will be released.
@@ -63,11 +62,11 @@ export type PinchUserGestureOptions = {
   releasePointers?: boolean | number[];
 };
 
-export type PinchUserGestureRoot = {
+export type PanUserGestureRoot = {
   /**
-   * Sets up the pinch gesture with the given options.
+   * Sets up the pan gesture with the given options.
    *
-   * @returns The pinch gesture builder.
+   * @returns The pan gesture builder.
    */
-  pinch: (options: PinchUserGestureOptions) => Promise<void>;
+  pan: (options: PanUserGestureOptions) => Promise<void>;
 };

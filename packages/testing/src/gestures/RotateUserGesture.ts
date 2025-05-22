@@ -1,8 +1,9 @@
+import { Point } from '../Point';
 import { Pointers } from '../Pointers';
 
-export type PinchUserGestureOptions = {
+export type RotateUserGestureOptions = {
   /**
-   * The target element to start the pinch on.
+   * The target element to start the rotate on.
    */
   target: Element;
   /**
@@ -15,17 +16,7 @@ export type PinchUserGestureOptions = {
    */
   pointers?: Pointers;
   /**
-   * The distance to pinch by in pixels.
-   *
-   * ```ts
-   *   0 // No pinch
-   *  50 // Pinch out
-   * -50 // Pinch in
-   * ```
-   */
-  distance: number;
-  /**
-   * The duration of the pinch in milliseconds.
+   * The duration of the rotate in milliseconds.
    *
    * @default 500
    */
@@ -37,19 +28,20 @@ export type PinchUserGestureOptions = {
    */
   steps?: number;
   /**
-   * The angle of the pinch in degrees.
+   * The angle to rotate to in degrees.
    *
-   * ```ts
-   * 0 // Horizontal pinch
-   * 90 // Vertical pinch
-   * 45 // Diagonal pinch
-   * ```
-   *
-   * @default 0
+   * @default 90
    */
-  angle?: number;
+  rotationAngle?: number;
   /**
-   * Defines if the pointers should be released after the pinch gesture.
+   * The center of rotation.
+   *
+   * If not set and pointers are set, the center will be the center point between the pointers.
+   * If not set and pointers are not set, the center will be the center of the target element.
+   */
+  rotationCenter?: Point;
+  /**
+   * Defines if the pointers should be released after the rotate gesture.
    *
    * If set to true, all pointers will be released.
    * If set to an array of ids, only the pointers with the given ids will be released.
@@ -63,11 +55,11 @@ export type PinchUserGestureOptions = {
   releasePointers?: boolean | number[];
 };
 
-export type PinchUserGestureRoot = {
+export type RotateUserGestureRoot = {
   /**
-   * Sets up the pinch gesture with the given options.
+   * Sets up the rotate gesture with the given options.
    *
-   * @returns The pinch gesture builder.
+   * @returns The rotate gesture builder.
    */
-  pinch: (options: PinchUserGestureOptions) => Promise<void>;
+  rotate: (options: RotateUserGestureOptions) => Promise<void>;
 };
