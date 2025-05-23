@@ -48,5 +48,8 @@
       "import": "./dist/index.js",
       "require": "./dist/index.umd.cjs"
     }
+  },
+  "devDependencies": {
+    "@web-gestures/testing": "workspace:*"
   }
 }

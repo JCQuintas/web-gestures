@@ -13,7 +13,11 @@
     "sourceMap": true,
     "rootDir": ".",
     "noImplicitAny": true,
-    "erasableSyntaxOnly": true
+    "erasableSyntaxOnly": true,
+    "paths": {
+      "@web-gestures/core": ["./packages/core/src"],
+      "@web-gestures/testing": ["./packages/testing/src"]
+    }
   },
   "exclude": ["node_modules", "dist"]
 }
