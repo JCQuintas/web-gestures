@@ -11,7 +11,7 @@ export type PressUserGestureOptions<P extends PointerType> = {
    * @default 500
    */
   duration?: number;
-} & P extends 'mouse'
+} & (P extends 'mouse'
   ? {
       /**
        * The pointer configuration to be used.
@@ -28,7 +28,7 @@ export type PressUserGestureOptions<P extends PointerType> = {
        * { amount: 1, distance: 50 }
        */
       pointers?: Pointers;
-    };
+    });
 
 export type PressUserGestureRoot<P extends PointerType> = {
   /**

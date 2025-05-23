@@ -17,7 +17,7 @@ export type TapUserGestureOptions<P extends PointerType> = {
    * @default 50
    */
   delay?: number;
-} & P extends 'mouse'
+} & (P extends 'mouse'
   ? {
       /**
        * The pointer configuration to be used.
@@ -34,7 +34,7 @@ export type TapUserGestureOptions<P extends PointerType> = {
        * { amount: 1, distance: 50 }
        */
       pointers?: Pointers;
-    };
+    });
 
 export type TapUserGestureRoot<P extends PointerType> = {
   /**
