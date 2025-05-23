@@ -98,6 +98,28 @@ export class PointerManager {
     return 500 + this.count;
   }
 
+  parseMousePointer(pointer: Pointer | undefined, target: Element): Required<Pointer> {
+    if (this.mode !== 'mouse') {
+      throw new Error('Mouse pointer can only be used in mouse mode');
+    }
+
+    const finalTarget = pointer?.target ?? target;
+    const targetRect = finalTarget.getBoundingClientRect();
+    const x = pointer?.x ?? targetRect.left + targetRect.width / 2;
+    const y = pointer?.y ?? targetRect.top + targetRect.height / 2;
+
+    const finalPointer = {
+      id: 1,
+      x,
+      y,
+      target: finalTarget,
+    };
+
+    this.updatePointers(finalPointer);
+
+    return finalPointer;
+  }
+
   parsePointers(
     pointers: Pointers | undefined,
     target: Element,
@@ -117,16 +139,16 @@ export class PointerManager {
       }
     }
 
-    // Get the target element's bounding rect
-    const targetRect = target.getBoundingClientRect();
-    const centerX = targetRect.left + targetRect.width / 2;
-    const centerY = targetRect.top + targetRect.height / 2;
-
     // Normalize pointers to be an array
-    let pointersArray = Array.isArray(normalizedPointers) ? normalizedPointers : [];
+    let pointersArray: Required<Pointer>[] = [];
 
     if (!Array.isArray(normalizedPointers)) {
       const { amount, distance: pointerDistance, ids } = normalizedPointers;
+
+      // Get the target element's bounding rect
+      const targetRect = target.getBoundingClientRect();
+      const centerX = targetRect.left + targetRect.width / 2;
+      const centerY = targetRect.top + targetRect.height / 2;
 
       // Create pointers in a circle around the center of the target
       pointersArray = Array.from({ length: amount }).map((_, index) => {
@@ -141,19 +163,32 @@ export class PointerManager {
           target,
         };
       });
+    } else {
+      const allTargets = new Set<Element>(
+        normalizedPointers.map(pointer => pointer.target ?? target)
+      );
+      const targetRectMap = new Map<Element, { centerX: number; centerY: number }>(
+        Array.from(allTargets).map(target => {
+          const rect = target.getBoundingClientRect();
+
+          return [
+            target,
+            { centerX: rect.left + rect.width / 2, centerY: rect.top + rect.height / 2 },
+          ];
+        })
+      );
+
+      pointersArray = normalizedPointers.map(pointer => ({
+        id: pointer.id ?? this.nextId(),
+        target: pointer.target ?? target,
+        x: pointer.x ?? targetRectMap.get(pointer.target ?? target)!.centerX,
+        y: pointer.y ?? targetRectMap.get(pointer.target ?? target)!.centerY,
+      }));
     }
 
-    // Ensure all pointers have all required properties
-    const finalPointers = pointersArray.map(pointer => ({
-      id: pointer.id ?? this.nextId(),
-      target: pointer.target ?? target,
-      x: pointer.x ?? centerX,
-      y: pointer.y ?? centerY,
-    }));
+    this.addPointers(pointersArray);
 
-    this.addPointers(finalPointers);
-
-    return finalPointers;
+    return pointersArray;
   }
 
   pointerDown(pointer: Required<Pointer>): void {
