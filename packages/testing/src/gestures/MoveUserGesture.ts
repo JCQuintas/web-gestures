@@ -13,14 +13,7 @@ export const move = async (
   options: MoveUserGestureOptions,
   advanceTimers?: (ms: number) => Promise<void>
 ): Promise<void> => {
-  const {
-    target,
-    pointer,
-    distance,
-    duration = 500,
-    steps = 10,
-    angle = 0,
-  } = options;
+  const { target, pointer, distance, duration = 500, steps = 10, angle = 0 } = options;
 
   if (!target) {
     throw new Error('Target element is required for move gesture');

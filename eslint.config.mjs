@@ -32,4 +32,13 @@ export default defineConfig([
       ],
     },
   },
+  {
+    ignores: [
+      '**/node_modules/**',
+      '**/dist/**',
+      '**/build/**',
+      '**/coverage/**',
+      '**/__screenshots__/**',
+    ],
+  },
 ]);

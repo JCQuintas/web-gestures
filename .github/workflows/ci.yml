@@ -74,7 +74,7 @@ jobs:
       - name: Setup Node.js
         uses: actions/setup-node@v4.4.0
         with:
-          node-version: 20.x
+          node-version: 24.x
           cache: 'pnpm'
 
       - name: Install dependencies
@@ -99,14 +99,14 @@ jobs:
       - name: Setup Node.js
         uses: actions/setup-node@v4.4.0
         with:
-          node-version: 20.x
+          node-version: 24.x
           cache: 'pnpm'
 
       - name: Install dependencies
         run: pnpm install
 
       - name: Run Prettier check
-        run: pnpm prettier --check .
+        run: pnpm prettier
 
       - name: Run ESLint
         run: pnpm eslint --max-warnings 0

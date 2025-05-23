@@ -31,6 +31,8 @@
     "build": "pnpm --if-present --filter \"@web-gestures/*\" build",
     "prettier": "prettier --check .",
     "prettier:fix": "prettier --write .",
+    "eslint": "eslint .",
+    "eslint:fix": "eslint . --fix",
     "test": "vitest"
   },
   "devDependencies": {
