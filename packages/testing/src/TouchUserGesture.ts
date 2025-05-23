@@ -1,9 +1,17 @@
-import { PanUserGestureRoot } from './gestures/PanUserGesture.types';
-import { PinchUserGestureRoot } from './gestures/PinchUserGesture.types';
-import { PressUserGestureRoot } from './gestures/PressUserGesture.types';
-import { RotateUserGestureRoot } from './gestures/RotateUserGesture.types';
-import { TapUserGestureRoot } from './gestures/TapUserGesture.types';
-import { UserGestureOptions } from './UserGestureOptions';
+import { pan } from './gestures/PanUserGesture';
+import { PanUserGestureOptions, PanUserGestureRoot } from './gestures/PanUserGesture.types';
+import { pinch } from './gestures/PinchUserGesture';
+import { PinchUserGestureOptions, PinchUserGestureRoot } from './gestures/PinchUserGesture.types';
+import { press } from './gestures/PressUserGesture';
+import { PressUserGestureOptions, PressUserGestureRoot } from './gestures/PressUserGesture.types';
+import { rotate } from './gestures/RotateUserGesture';
+import {
+  RotateUserGestureOptions,
+  RotateUserGestureRoot,
+} from './gestures/RotateUserGesture.types';
+import { tap } from './gestures/TapUserGesture';
+import { TapUserGestureOptions, TapUserGestureRoot } from './gestures/TapUserGesture.types';
+import { UserGesture, UserGestureOptions } from './UserGesture';
 
 /**
  * Used for providing a custom touch gesture.
@@ -23,3 +31,66 @@ export type TouchUserGestureRoot = {
   PanUserGestureRoot &
   RotateUserGestureRoot &
   TouchUserGestureRootExtension;
+
+/**
+ * Class implementing touch gestures for testing.
+ * Provides methods for tap, press, pinch, pan, and rotate gestures with touch pointers.
+ */
+export class TouchUserGesture extends UserGesture implements TouchUserGestureRoot {
+  constructor() {
+    super('touch');
+  }
+
+  /**
+   * Taps on the target element.
+   *
+   * @param options - Options for the tap gesture.
+   * @returns A promise that resolves when the tap gesture is completed.
+   */
+  async tap(options: TapUserGestureOptions<'touch'>): Promise<void> {
+    return tap(this.pointerManager, options, this.advanceTimers);
+  }
+
+  /**
+   * Presses on the target element.
+   *
+   * @param options - Options for the press gesture.
+   * @returns A promise that resolves when the press gesture is completed.
+   */
+  async press(options: PressUserGestureOptions<'touch'>): Promise<void> {
+    return press(this.pointerManager, options, this.advanceTimers);
+  }
+
+  /**
+   * Performs a pinch gesture on the target element.
+   *
+   * @param options - Options for the pinch gesture.
+   * @returns A promise that resolves when the pinch gesture is completed.
+   */
+  async pinch(options: PinchUserGestureOptions): Promise<void> {
+    return pinch(this.pointerManager, options, this.advanceTimers);
+  }
+
+  /**
+   * Performs a pan gesture on the target element.
+   *
+   * @param options - Options for the pan gesture.
+   * @returns A promise that resolves when the pan gesture is completed.
+   */
+  async pan(options: PanUserGestureOptions): Promise<void> {
+    return pan(this.pointerManager, options, this.advanceTimers);
+  }
+
+  /**
+   * Performs a rotate gesture on the target element.
+   *
+   * @param options - Options for the rotate gesture.
+   * @returns A promise that resolves when the rotate gesture is completed.
+   */
+  async rotate(options: RotateUserGestureOptions): Promise<void> {
+    return rotate(this.pointerManager, options, this.advanceTimers);
+  }
+}
+
+// Export an instance of TouchUserGesture as the default export
+export const touchGesture = new TouchUserGesture();
