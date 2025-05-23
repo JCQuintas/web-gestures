@@ -1,7 +1,7 @@
-import { MoveUserGestureRoot } from './gestures/MoveUserGesture';
-import { PressUserGestureRoot } from './gestures/PressUserGesture';
-import { TapUserGestureRoot } from './gestures/TapUserGesture';
-import { TurnWheelUserGestureRoot } from './gestures/TurnWheelUserGesture';
+import { MoveUserGestureRoot } from './gestures/MoveUserGesture.types';
+import { PressUserGestureRoot } from './gestures/PressUserGesture.types';
+import { TapUserGestureRoot } from './gestures/TapUserGesture.types';
+import { TurnWheelUserGestureRoot } from './gestures/TurnWheelUserGesture.types';
 import { UserGestureOptions } from './UserGestureOptions';
 
 /**

@@ -1,8 +1,8 @@
-import { PanUserGestureRoot } from './gestures/PanUserGesture';
-import { PinchUserGestureRoot } from './gestures/PinchUserGesture';
-import { PressUserGestureRoot } from './gestures/PressUserGesture';
-import { RotateUserGestureRoot } from './gestures/RotateUserGesture';
-import { TapUserGestureRoot } from './gestures/TapUserGesture';
+import { PanUserGestureRoot } from './gestures/PanUserGesture.types';
+import { PinchUserGestureRoot } from './gestures/PinchUserGesture.types';
+import { PressUserGestureRoot } from './gestures/PressUserGesture.types';
+import { RotateUserGestureRoot } from './gestures/RotateUserGesture.types';
+import { TapUserGestureRoot } from './gestures/TapUserGesture.types';
 import { UserGestureOptions } from './UserGestureOptions';
 
 /**
