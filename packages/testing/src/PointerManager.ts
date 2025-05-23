@@ -2,10 +2,9 @@ import { Pointer, Pointers, PointerType } from './Pointers';
 
 export type PointerState = {
   id: number;
-  type: PointerType;
   x: number;
   y: number;
-  isDown: boolean;
+  isDown?: boolean;
   target: Element;
 };
 
@@ -15,12 +14,11 @@ export type PointerTargetChange = {
 };
 
 export class PointerManager {
-  private pointers: Map<number, PointerState> = new Map([
+  protected pointers: Map<number, PointerState> = new Map([
     [
       1,
       {
         id: 1,
-        type: 'mouse',
         x: 0,
         y: 0,
         isDown: false,
@@ -28,20 +26,20 @@ export class PointerManager {
       },
     ],
   ]);
-  private count = 0;
-  private mode: PointerType;
+  protected count = 0;
+  public readonly mode: PointerType;
 
   constructor(mode: PointerType) {
     this.mode = mode;
   }
 
-  addPointer(pointer: PointerState | PointerState[]): void {
+  protected addPointers(pointer: PointerState | PointerState[]): void {
     if (this.mode === 'mouse') {
       // Mouse mode only allows one pointer
       return;
     }
     if (Array.isArray(pointer)) {
-      return pointer.forEach(p => this.addPointer(p));
+      return pointer.forEach(p => this.addPointers(p));
     }
     if (this.pointers.has(pointer.id)) {
       throw new Error(`Pointer with id ${pointer.id} already exists`);
@@ -49,7 +47,7 @@ export class PointerManager {
     this.pointers.set(pointer.id, pointer);
   }
 
-  removePointer(id: number | number[]): void {
+  protected removePointers(id: number | number[]): void {
     if (this.mode === 'mouse') {
       // Mouse pointer cannot be removed
       return;
@@ -60,22 +58,24 @@ export class PointerManager {
     this.pointers.delete(id);
   }
 
-  getPointer(id: number): PointerState | undefined;
-  getPointer(id: number[]): (PointerState | undefined)[];
-  getPointer(id: number | number[]): PointerState | (PointerState | undefined)[] | undefined {
+  protected getPointers(id: number): PointerState | undefined;
+  protected getPointers(id: number[]): (PointerState | undefined)[];
+  protected getPointers(
+    id: number | number[]
+  ): PointerState | (PointerState | undefined)[] | undefined {
     if (Array.isArray(id)) {
       return id.map(pointerId => this.pointers.get(pointerId));
     }
     return this.pointers.get(id);
   }
 
-  updatePointer(pointer: Omit<PointerState, 'type'>): PointerTargetChange | undefined;
-  updatePointer(pointer: Omit<PointerState, 'type'>[]): (PointerTargetChange | undefined)[];
-  updatePointer(
-    pointer: Omit<PointerState, 'type'> | Omit<PointerState, 'type'>[]
+  protected updatePointers(pointer: PointerState): PointerTargetChange | undefined;
+  protected updatePointers(pointer: PointerState[]): (PointerTargetChange | undefined)[];
+  protected updatePointers(
+    pointer: PointerState | PointerState[]
   ): PointerTargetChange | (PointerTargetChange | undefined)[] | undefined {
     if (Array.isArray(pointer)) {
-      return pointer.map(p => this.updatePointer(p));
+      return pointer.map(p => this.updatePointers(p));
     }
 
     const existingPointer = this.pointers.get(pointer.id);
@@ -136,11 +136,70 @@ export class PointerManager {
     }
 
     // Ensure all pointers have all required properties
-    return pointersArray.map(pointer => ({
+    const finalPointers = pointersArray.map(pointer => ({
       id: pointer.id ?? this.nextId(),
       target: pointer.target ?? target,
       x: pointer.x ?? centerX,
       y: pointer.y ?? centerY,
     }));
+
+    this.addPointers(finalPointers);
+
+    return finalPointers;
+  }
+
+  pointerDown(pointer: Required<Pointer>): void {
+    const event = new PointerEvent('pointerdown', {
+      bubbles: true,
+      cancelable: true,
+      clientX: pointer.x,
+      clientY: pointer.y,
+      pointerId: pointer.id,
+      pointerType: this.mode,
+    });
+
+    this.updatePointers({
+      ...pointer,
+      isDown: true,
+    });
+
+    pointer.target.dispatchEvent(event);
+  }
+
+  pointerMove(pointer: Required<Pointer>): void {
+    const event = new PointerEvent('pointermove', {
+      bubbles: true,
+      cancelable: true,
+      clientX: pointer.x,
+      clientY: pointer.y,
+      pointerId: pointer.id,
+      pointerType: this.mode,
+    });
+
+    this.updatePointers(pointer);
+
+    pointer.target.dispatchEvent(event);
+  }
+
+  pointerUp(pointer: Required<Pointer>): void {
+    const event = new PointerEvent('pointerup', {
+      bubbles: true,
+      cancelable: true,
+      clientX: pointer.x,
+      clientY: pointer.y,
+      pointerId: pointer.id,
+      pointerType: this.mode,
+    });
+
+    if (this.mode === 'mouse') {
+      this.updatePointers({
+        ...pointer,
+        isDown: false,
+      });
+    } else {
+      this.removePointers(pointer.id);
+    }
+
+    pointer.target.dispatchEvent(event);
   }
 }
