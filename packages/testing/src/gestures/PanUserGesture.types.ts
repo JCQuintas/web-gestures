@@ -11,7 +11,7 @@ export type PanUserGestureOptions = {
    * It can be an object with the amount and distance properties, or an array of pointers.
    *
    * @default
-   * { amount: 2, distance: 50 }
+   * { amount: 1, distance: 0 }
    */
   pointers?: Pointers;
   /**

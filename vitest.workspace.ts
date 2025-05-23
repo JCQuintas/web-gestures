@@ -16,12 +16,16 @@ export default defineWorkspace([
           {
             browser: 'chromium',
           },
-          {
-            browser: 'firefox',
-          },
-          {
-            browser: 'webkit',
-          },
+          ...(process.env.CI
+            ? [
+                {
+                  browser: 'firefox',
+                },
+                {
+                  browser: 'webkit',
+                },
+              ]
+            : []),
         ],
       },
     },

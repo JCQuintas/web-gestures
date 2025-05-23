@@ -41,16 +41,12 @@ export type MousePointer = Omit<Pointer, 'id'>;
 export type PointerAmount = {
   /**
    * The number of pointers to be used.
-   *
-   * @default 1
    */
-  amount: number;
+  amount?: number;
   /**
    * The distance between the pointers.
-   *
-   * @default 50
    */
-  distance: number;
+  distance?: number;
   /**
    * Ids to be used for the pointers.
    *

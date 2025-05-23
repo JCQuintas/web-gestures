@@ -1,4 +1,4 @@
-import { Pointer, Pointers, PointerType } from './Pointers';
+import { Pointer, PointerAmount, Pointers, PointerType } from './Pointers';
 
 export type PointerState = {
   id: number;
@@ -42,7 +42,7 @@ export class PointerManager {
       return pointer.forEach(p => this.addPointers(p));
     }
     if (this.pointers.has(pointer.id)) {
-      throw new Error(`Pointer with id ${pointer.id} already exists`);
+      return;
     }
     this.pointers.set(pointer.id, pointer);
   }
@@ -98,12 +98,20 @@ export class PointerManager {
     return 500 + this.count;
   }
 
-  parsePointers(pointers: Pointers, target: Element): Required<Pointer>[] {
+  parsePointers(
+    pointers: Pointers | undefined,
+    target: Element,
+    defaultConfig: Required<Omit<PointerAmount, 'ids'>>
+  ): Required<Pointer>[] {
+    const normalizedPointers = Array.isArray(pointers)
+      ? pointers
+      : { ...defaultConfig, ...pointers };
+
     if (this.mode === 'mouse') {
       // If the mode is mouse, we only need one pointer
       if (
-        (Array.isArray(pointers) && pointers.length > 1) ||
-        (!Array.isArray(pointers) && pointers.amount !== 1)
+        (Array.isArray(normalizedPointers) && normalizedPointers.length > 1) ||
+        (!Array.isArray(normalizedPointers) && normalizedPointers.amount !== 1)
       ) {
         throw new Error('Mouse mode only supports one pointer');
       }
@@ -115,10 +123,10 @@ export class PointerManager {
     const centerY = targetRect.top + targetRect.height / 2;
 
     // Normalize pointers to be an array
-    let pointersArray = Array.isArray(pointers) ? pointers : [];
+    let pointersArray = Array.isArray(normalizedPointers) ? normalizedPointers : [];
 
-    if (!Array.isArray(pointers)) {
-      const { amount, distance: pointerDistance, ids } = pointers;
+    if (!Array.isArray(normalizedPointers)) {
+      const { amount, distance: pointerDistance, ids } = normalizedPointers;
 
       // Create pointers in a circle around the center of the target
       pointersArray = Array.from({ length: amount }).map((_, index) => {
@@ -149,6 +157,10 @@ export class PointerManager {
   }
 
   pointerDown(pointer: Required<Pointer>): void {
+    if (this.pointers.get(pointer.id)?.isDown === true) {
+      return;
+    }
+
     const event = new PointerEvent('pointerdown', {
       bubbles: true,
       cancelable: true,
