@@ -1,6 +1,6 @@
-import { MousePointer, Pointers, PointerTypes } from '../Pointers';
+import { MousePointer, Pointers, PointerType } from '../Pointers';
 
-export type PressUserGestureOptions<P extends PointerTypes> = {
+export type PressUserGestureOptions<P extends PointerType> = {
   /**
    * The target element to press on.
    */
@@ -30,7 +30,7 @@ export type PressUserGestureOptions<P extends PointerTypes> = {
       pointers?: Pointers;
     };
 
-export type PressUserGestureRoot<P extends PointerTypes> = {
+export type PressUserGestureRoot<P extends PointerType> = {
   /**
    * Press on the target element.
    *

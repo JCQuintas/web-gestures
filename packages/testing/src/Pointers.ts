@@ -72,4 +72,4 @@ export type Pointers = PointerAmount | Pointer[];
 /**
  * The type of pointers.
  */
-export type PointerTypes = 'mouse' | 'touch';
+export type PointerType = 'mouse' | 'touch';

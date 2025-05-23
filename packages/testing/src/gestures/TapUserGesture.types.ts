@@ -1,6 +1,6 @@
-import { MousePointer, Pointers, PointerTypes } from '../Pointers';
+import { MousePointer, Pointers, PointerType } from '../Pointers';
 
-export type TapUserGestureOptions<P extends PointerTypes> = {
+export type TapUserGestureOptions<P extends PointerType> = {
   /**
    * The target element to tap on.
    */
@@ -36,7 +36,7 @@ export type TapUserGestureOptions<P extends PointerTypes> = {
       pointers?: Pointers;
     };
 
-export type TapUserGestureRoot<P extends PointerTypes> = {
+export type TapUserGestureRoot<P extends PointerType> = {
   /**
    * Taps on the target element.
    *
