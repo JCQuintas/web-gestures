@@ -1,4 +1,4 @@
-import { Pointers } from '../Pointers';
+import { Pointers } from '../types/Pointers';
 
 export type PanUserGestureOptions = {
   /**

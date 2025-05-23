@@ -1,6 +1,6 @@
 import { PointerManager } from './PointerManager';
-import { PointerType } from './Pointers';
-import { UserGesturePlugin } from './UserGesturePlugin';
+import { PointerType } from './types/Pointers';
+import { UserGesturePlugin } from './types/UserGesturePlugin';
 
 /**
  * Global user gesture options.

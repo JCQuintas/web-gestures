@@ -1,4 +1,4 @@
-import { MousePointer } from '../Pointers';
+import { MousePointer } from '../types/Pointers';
 
 export type TurnWheelUserGestureOptions = {
   /**

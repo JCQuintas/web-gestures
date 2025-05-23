@@ -1,4 +1,4 @@
-import { PointerManager } from './PointerManager';
+import { PointerManager } from '../PointerManager';
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 export type UserGesturePlugin<Options extends Record<string, any> = any> = {

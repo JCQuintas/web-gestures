@@ -1,7 +1,7 @@
 import { Mock, afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { PointerManager } from './PointerManager';
 import { UserGesture } from './UserGesture';
-import { UserGesturePlugin } from './UserGesturePlugin';
+import { UserGesturePlugin } from './types/UserGesturePlugin';
 
 describe('UserGesture - Plugin System', () => {
   let userGesture: UserGesture;

@@ -1,4 +1,4 @@
-import { Pointer, PointerAmount, Pointers, PointerType } from './Pointers';
+import { Pointer, PointerAmount, Pointers, PointerType } from './types/Pointers';
 
 export type PointerState = {
   id: number;

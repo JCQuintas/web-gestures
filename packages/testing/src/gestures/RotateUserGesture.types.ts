@@ -1,5 +1,5 @@
-import { Point } from '../Point';
-import { Pointers } from '../Pointers';
+import { Point } from '../types/Point';
+import { Pointers } from '../types/Pointers';
 
 export type RotateUserGestureOptions = {
   /**

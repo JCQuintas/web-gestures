@@ -41,52 +41,22 @@ export class TouchUserGesture extends UserGesture implements TouchUserGestureRoo
     super('touch');
   }
 
-  /**
-   * Taps on the target element.
-   *
-   * @param options - Options for the tap gesture.
-   * @returns A promise that resolves when the tap gesture is completed.
-   */
   async tap(options: TapUserGestureOptions<'touch'>): Promise<void> {
     return tap(this.pointerManager, options, this.advanceTimers);
   }
 
-  /**
-   * Presses on the target element.
-   *
-   * @param options - Options for the press gesture.
-   * @returns A promise that resolves when the press gesture is completed.
-   */
   async press(options: PressUserGestureOptions<'touch'>): Promise<void> {
     return press(this.pointerManager, options, this.advanceTimers);
   }
 
-  /**
-   * Performs a pinch gesture on the target element.
-   *
-   * @param options - Options for the pinch gesture.
-   * @returns A promise that resolves when the pinch gesture is completed.
-   */
   async pinch(options: PinchUserGestureOptions): Promise<void> {
     return pinch(this.pointerManager, options, this.advanceTimers);
   }
 
-  /**
-   * Performs a pan gesture on the target element.
-   *
-   * @param options - Options for the pan gesture.
-   * @returns A promise that resolves when the pan gesture is completed.
-   */
   async pan(options: PanUserGestureOptions): Promise<void> {
     return pan(this.pointerManager, options, this.advanceTimers);
   }
 
-  /**
-   * Performs a rotate gesture on the target element.
-   *
-   * @param options - Options for the rotate gesture.
-   * @returns A promise that resolves when the rotate gesture is completed.
-   */
   async rotate(options: RotateUserGestureOptions): Promise<void> {
     return rotate(this.pointerManager, options, this.advanceTimers);
   }
