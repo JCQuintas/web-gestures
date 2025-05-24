@@ -12,6 +12,7 @@ import {
 import { tap } from './gestures/TapUserGesture';
 import { TapUserGestureOptions, TapUserGestureRoot } from './gestures/TapUserGesture.types';
 import { UserGesture, UserGestureOptions } from './UserGesture';
+import { createProxy } from './utils/createProxy';
 
 /**
  * Used for providing a custom touch gesture.
@@ -63,4 +64,4 @@ export class TouchUserGesture extends UserGesture implements TouchUserGestureRoo
 }
 
 // Export an instance of TouchUserGesture as the default export
-export const touchGesture = new TouchUserGesture();
+export const touchGesture = createProxy(new TouchUserGesture());

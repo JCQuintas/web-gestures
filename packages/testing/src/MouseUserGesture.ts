@@ -10,6 +10,7 @@ import {
   TurnWheelUserGestureRoot,
 } from './gestures/TurnWheelUserGesture.types';
 import { UserGesture, UserGestureOptions } from './UserGesture';
+import { createProxy } from './utils/createProxy';
 
 /**
  * Used for providing a custom mouse gesture.
@@ -56,4 +57,4 @@ export class MouseUserGesture extends UserGesture implements MouseUserGestureRoo
 }
 
 // Export an instance of MouseUserGesture as the default export
-export const mouseGesture = new MouseUserGesture();
+export const mouseGesture = createProxy(new MouseUserGesture());

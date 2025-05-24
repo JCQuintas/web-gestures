@@ -35,14 +35,14 @@ export class UserGesture {
    * @param options - Global options for the gestures.
    * @returns This instance.
    */
-  setup(options: UserGestureOptions): this {
+  setup(options?: UserGestureOptions): this {
     // Preserve advanceTimers if it was set previously and not overridden
-    if (options.advanceTimers !== undefined) {
+    if (options?.advanceTimers !== undefined) {
       this.advanceTimers = options.advanceTimers;
     }
 
     // Register plugins if provided
-    options.plugins?.forEach(plugin => {
+    options?.plugins?.forEach(plugin => {
       // @ts-expect-error, we are using a dynamic key
       if (this[plugin.name]) {
         throw new Error(
