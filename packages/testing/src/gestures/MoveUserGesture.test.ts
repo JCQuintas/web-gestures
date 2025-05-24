@@ -168,7 +168,7 @@ describe('MoveUserGesture', () => {
       };
 
       pointerMove.mockClear();
-      await move(pointerManager, options);
+      await move(new PointerManager('mouse'), options);
 
       const lastMoveEvent = pointerMove.mock.lastCall?.[0];
       // Webkit does not support fractional pixels

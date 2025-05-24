@@ -28,8 +28,8 @@ export class PointerManager {
     if (this.mode === 'mouse') {
       this.pointers.set(1, {
         id: 1,
-        x: 0,
-        y: 0,
+        x: NaN,
+        y: NaN,
         target: document.body,
       });
     }
@@ -100,28 +100,32 @@ export class PointerManager {
     return 500 + this.count;
   }
 
-  // TODO: use old position if position is present and new one is not provided.
   parseMousePointer(pointer: Pointer | undefined, target: Element): Required<Pointer> {
     if (this.mode !== 'mouse') {
       throw new Error('Mouse pointer can only be used in mouse mode');
     }
 
+    // Get the existing mouse pointer (always id: 1)
+    const existingPointer = this.pointers.get(1);
+
+    const existingX = Number.isNaN(existingPointer?.x) ? undefined : existingPointer?.x;
+    const existingY = Number.isNaN(existingPointer?.y) ? undefined : existingPointer?.y;
+
     const finalTarget = pointer?.target ?? target;
     const targetRect = finalTarget.getBoundingClientRect();
-    const x = pointer?.x ?? targetRect.left + targetRect.width / 2;
-    const y = pointer?.y ?? targetRect.top + targetRect.height / 2;
 
-    const finalPointer = {
+    // Use existing coordinates if available and not being overridden
+    const x = pointer?.x ?? existingX ?? targetRect.left + targetRect.width / 2;
+    const y = pointer?.y ?? existingY ?? targetRect.top + targetRect.height / 2;
+
+    return {
       id: 1,
       x,
       y,
       target: finalTarget,
     };
-
-    return finalPointer;
   }
 
-  // TODO: use old position if position is present and new one is not provided.
   parsePointers(
     pointers: Pointers | undefined,
     target: Element,
@@ -154,12 +158,16 @@ export class PointerManager {
 
       // Create pointers in a circle around the center of the target
       pointersArray = Array.from({ length: amount }).map((_, index) => {
+        const pointerId = ids?.[index] ?? this.nextId();
+        const existingPointer = ids?.[index] ? this.pointers.get(ids[index]) : undefined;
+
+        // Only calculate new positions if no existing position is available
         const angle = (Math.PI * 2 * index) / amount;
-        const x = centerX + (Math.cos(angle) * pointerDistance) / 2;
-        const y = centerY + (Math.sin(angle) * pointerDistance) / 2;
+        const x = existingPointer?.x ?? centerX + (Math.cos(angle) * pointerDistance) / 2;
+        const y = existingPointer?.y ?? centerY + (Math.sin(angle) * pointerDistance) / 2;
 
         return {
-          id: ids?.[index] ?? this.nextId(),
+          id: pointerId,
           x,
           y,
           target,
@@ -180,12 +188,20 @@ export class PointerManager {
         })
       );
 
-      pointersArray = normalizedPointers.map(pointer => ({
-        id: pointer.id ?? this.nextId(),
-        target: pointer.target ?? target,
-        x: pointer.x ?? targetRectMap.get(pointer.target ?? target)!.centerX,
-        y: pointer.y ?? targetRectMap.get(pointer.target ?? target)!.centerY,
-      }));
+      pointersArray = normalizedPointers.map(pointer => {
+        const pointerId = pointer.id ?? this.nextId();
+        const existingPointer = pointer.id ? this.pointers.get(pointer.id) : undefined;
+
+        return {
+          id: pointerId,
+          target: pointer.target ?? target,
+          // Use existing coordinates if available and not being overridden
+          x:
+            pointer.x ?? existingPointer?.x ?? targetRectMap.get(pointer.target ?? target)!.centerX,
+          y:
+            pointer.y ?? existingPointer?.y ?? targetRectMap.get(pointer.target ?? target)!.centerY,
+        };
+      });
     }
 
     this.addPointers(pointersArray);

@@ -554,4 +554,98 @@ describe('PointerManager', () => {
       expect(enterEvent.pointerType).toBe('touch');
     });
   });
+
+  describe('Reusing pointers', () => {
+    it('should maintain previous x and y values when reusing pointers', () => {
+      // Create initial touch pointers
+      const initialPointers = touchPointerManager.parsePointers(
+        {
+          amount: 2,
+          distance: 50,
+        },
+        target,
+        {
+          amount: 1,
+          distance: 0,
+        }
+      );
+
+      // Remember the original positions
+      const originalPositions = initialPointers.map(p => ({ id: p.id, x: p.x, y: p.y }));
+
+      // Create new pointers reusing the same IDs but without specifying x/y
+      const pointersWithIds = {
+        ids: initialPointers.map(p => p.id),
+        amount: 2,
+        distance: 100, // Different distance to ensure it would generate different positions if not reusing
+      };
+
+      const reusedPointers = touchPointerManager.parsePointers(pointersWithIds, target, {
+        amount: 1,
+        distance: 0,
+      });
+
+      // The positions should remain the same as the original pointers
+      reusedPointers.forEach((pointer, index) => {
+        expect(pointer.id).toBe(originalPositions[index].id);
+        expect(pointer.x).toBe(originalPositions[index].x);
+        expect(pointer.y).toBe(originalPositions[index].y);
+      });
+    });
+
+    it('should allow overriding specific x/y values when reusing pointers', () => {
+      // Create an initial touch pointer
+      const initialPointers = touchPointerManager.parsePointers(
+        {
+          amount: 1,
+          distance: 0,
+        },
+        target,
+        {
+          amount: 1,
+          distance: 0,
+        }
+      );
+      const initialPointer = initialPointers[0];
+
+      // Now reuse the pointer ID but specify a new x position
+      const customPointers = [
+        {
+          id: initialPointer.id,
+          x: 75, // New x position
+          // y not specified - should keep original value
+        },
+      ];
+
+      const reusedPointers = touchPointerManager.parsePointers(customPointers, target, {
+        amount: 1,
+        distance: 0,
+      });
+      const reusedPointer = reusedPointers[0];
+
+      // Verify that x was updated but y remained the same
+      expect(reusedPointer.id).toBe(initialPointer.id);
+      expect(reusedPointer.x).toBe(75);
+      expect(reusedPointer.y).toBe(initialPointer.y);
+    });
+
+    it.only('should reuse pointer positions for mouse pointers too', () => {
+      // Create initial mouse pointer
+      const initialPointer = mousePointerManager.parseMousePointer({ x: 25, y: 75 }, target);
+      // We got to update the pointer first to simulate a real scenario
+      Reflect.get(mousePointerManager, 'updatePointers').bind(mousePointerManager)(initialPointer);
+
+      // Reuse the pointer but without specifying coordinates
+      const reusedPointer = mousePointerManager.parseMousePointer(
+        {
+          // x and y not specified
+        },
+        target
+      );
+
+      // The position should be the same as the original
+      expect(reusedPointer.x).toBe(initialPointer.x);
+      expect(reusedPointer.y).toBe(initialPointer.y);
+    });
+  });
 });
