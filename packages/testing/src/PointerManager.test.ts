@@ -343,4 +343,215 @@ describe('PointerManager', () => {
       expect(pointerUp).toHaveBeenCalledTimes(2);
     });
   });
+
+  describe('Pointer Enter and Leave Events', () => {
+    let pointerOver: ReturnType<typeof vi.fn>;
+    let pointerEnter: ReturnType<typeof vi.fn>;
+    let pointerOut: ReturnType<typeof vi.fn>;
+    let pointerLeave: ReturnType<typeof vi.fn>;
+    let secondTarget: HTMLElement;
+
+    beforeEach(() => {
+      // Create a second target for pointer movement between elements
+      secondTarget = document.createElement('div');
+      secondTarget.style.width = '100px';
+      secondTarget.style.height = '100px';
+      secondTarget.style.position = 'absolute';
+      secondTarget.style.left = '200px';
+      document.body.appendChild(secondTarget);
+
+      // Set up event listeners for over/enter/out/leave events
+      pointerOver = vi.fn();
+      pointerEnter = vi.fn();
+      pointerOut = vi.fn();
+      pointerLeave = vi.fn();
+
+      target.addEventListener('pointerover', pointerOver);
+      target.addEventListener('pointerenter', pointerEnter);
+      target.addEventListener('pointerout', pointerOut);
+      target.addEventListener('pointerleave', pointerLeave);
+
+      secondTarget.addEventListener('pointerover', pointerOver);
+      secondTarget.addEventListener('pointerenter', pointerEnter);
+      secondTarget.addEventListener('pointerout', pointerOut);
+      secondTarget.addEventListener('pointerleave', pointerLeave);
+    });
+
+    afterEach(() => {
+      // Clean up
+      if (secondTarget.parentNode) {
+        secondTarget.parentNode.removeChild(secondTarget);
+      }
+
+      target.removeEventListener('pointerover', pointerOver);
+      target.removeEventListener('pointerenter', pointerEnter);
+      target.removeEventListener('pointerout', pointerOut);
+      target.removeEventListener('pointerleave', pointerLeave);
+
+      secondTarget.removeEventListener('pointerover', pointerOver);
+      secondTarget.removeEventListener('pointerenter', pointerEnter);
+      secondTarget.removeEventListener('pointerout', pointerOut);
+      secondTarget.removeEventListener('pointerleave', pointerLeave);
+    });
+
+    it('should fire pointerover and pointerenter events when a pointer enters an element', () => {
+      // Call the protected pointerEnter method using type casting to access it
+      const pointer = mousePointerManager.parseMousePointer({ x: 50, y: 50 }, target);
+      mousePointerManager.pointerMove(pointer);
+
+      // Verify events were fired
+      expect(pointerOver).toHaveBeenCalledTimes(1);
+      expect(pointerEnter).toHaveBeenCalledTimes(1);
+
+      // Verify event properties
+      const overEvent = pointerOver.mock.calls[0][0];
+      expect(overEvent.type).toBe('pointerover');
+      expect(overEvent.target).toBe(target);
+
+      const enterEvent = pointerEnter.mock.calls[0][0];
+      expect(enterEvent.type).toBe('pointerenter');
+      expect(enterEvent.target).toBe(target);
+    });
+
+    it('should fire pointerout and pointerleave events when a pointer leaves an element', () => {
+      // Call the protected pointerLeave method using type casting to access it
+      const pointer = mousePointerManager.parseMousePointer({ x: 50, y: 50 }, target);
+      mousePointerManager.pointerMove(pointer);
+      const secondPointer = mousePointerManager.parseMousePointer({ x: 50, y: 50 }, secondTarget);
+      mousePointerManager.pointerMove(secondPointer);
+
+      // Verify events were fired
+      expect(pointerOut).toHaveBeenCalledTimes(1);
+      expect(pointerLeave).toHaveBeenCalledTimes(1);
+
+      // Verify event properties
+      const outEvent = pointerOut.mock.calls[0][0];
+      expect(outEvent.type).toBe('pointerout');
+      expect(outEvent.target).toBe(target);
+
+      const leaveEvent = pointerLeave.mock.calls[0][0];
+      expect(leaveEvent.type).toBe('pointerleave');
+      expect(leaveEvent.target).toBe(target);
+    });
+  });
+
+  describe('Pointer movement between elements', () => {
+    let pointerOver: ReturnType<typeof vi.fn>;
+    let pointerEnter: ReturnType<typeof vi.fn>;
+    let pointerOut: ReturnType<typeof vi.fn>;
+    let pointerLeave: ReturnType<typeof vi.fn>;
+    let secondTarget: HTMLElement;
+
+    beforeEach(() => {
+      // Create a second target
+      secondTarget = document.createElement('div');
+      secondTarget.id = 'secondTarget';
+      secondTarget.style.width = '100px';
+      secondTarget.style.height = '100px';
+      secondTarget.style.position = 'absolute';
+      secondTarget.style.left = '200px';
+      document.body.appendChild(secondTarget);
+
+      // Set up event listeners
+      pointerOver = vi.fn();
+      pointerEnter = vi.fn();
+      pointerOut = vi.fn();
+      pointerLeave = vi.fn();
+
+      target.addEventListener('pointerover', pointerOver);
+      target.addEventListener('pointerenter', pointerEnter);
+      target.addEventListener('pointerout', pointerOut);
+      target.addEventListener('pointerleave', pointerLeave);
+
+      secondTarget.addEventListener('pointerover', pointerOver);
+      secondTarget.addEventListener('pointerenter', pointerEnter);
+      secondTarget.addEventListener('pointerout', pointerOut);
+      secondTarget.addEventListener('pointerleave', pointerLeave);
+    });
+
+    afterEach(() => {
+      // Clean up
+      if (secondTarget.parentNode) {
+        secondTarget.parentNode.removeChild(secondTarget);
+      }
+
+      target.removeEventListener('pointerover', pointerOver);
+      target.removeEventListener('pointerenter', pointerEnter);
+      target.removeEventListener('pointerout', pointerOut);
+      target.removeEventListener('pointerleave', pointerLeave);
+
+      secondTarget.removeEventListener('pointerover', pointerOver);
+      secondTarget.removeEventListener('pointerenter', pointerEnter);
+      secondTarget.removeEventListener('pointerout', pointerOut);
+      secondTarget.removeEventListener('pointerleave', pointerLeave);
+    });
+
+    it('should fire appropriate events when moving pointer between elements', () => {
+      // Create pointer on first target
+      const pointer = mousePointerManager.parseMousePointer({ x: 50, y: 50 }, target);
+
+      // Simulate pointer down on first target
+      mousePointerManager.pointerDown(pointer);
+
+      // Reset mocks before the move
+      pointerOver.mockReset();
+      pointerEnter.mockReset();
+      pointerOut.mockReset();
+      pointerLeave.mockReset();
+
+      // Move pointer to second target
+      const updatedPointer = { ...pointer, x: 250, y: 50, target: secondTarget };
+      mousePointerManager.pointerMove(updatedPointer);
+
+      // Verify leave events were fired for first target
+      expect(pointerOut).toHaveBeenCalled();
+      expect(pointerLeave).toHaveBeenCalled();
+
+      // Verify enter events were fired for second target
+      expect(pointerOver).toHaveBeenCalled();
+      expect(pointerEnter).toHaveBeenCalled();
+
+      // Verify target of events
+      const outEvent = pointerOut.mock.calls[0][0];
+      const leaveEvent = pointerLeave.mock.calls[0][0];
+      const overEvent = pointerOver.mock.calls[0][0];
+      const enterEvent = pointerEnter.mock.calls[0][0];
+
+      expect(outEvent.target).toBe(target);
+      expect(leaveEvent.target).toBe(target);
+      expect(overEvent.target).toBe(secondTarget);
+      expect(enterEvent.target).toBe(secondTarget);
+    });
+
+    it('should correctly handle touch pointer movement between elements', () => {
+      // Create touch pointer on first target
+      const pointer = touchPointerManager.parsePointers({ amount: 1, distance: 0 }, target, {
+        amount: 1,
+        distance: 0,
+      })[0];
+
+      // Simulate pointer down
+      touchPointerManager.pointerDown(pointer);
+
+      // Reset mocks
+      pointerOver.mockReset();
+      pointerEnter.mockReset();
+      pointerOut.mockReset();
+      pointerLeave.mockReset();
+
+      // Move to second target
+      const updatedPointer = { ...pointer, target: secondTarget, x: 250, y: 50 };
+      touchPointerManager.pointerMove(updatedPointer);
+
+      // Verify events
+      expect(pointerOut).toHaveBeenCalled();
+      expect(pointerLeave).toHaveBeenCalled();
+      expect(pointerOver).toHaveBeenCalled();
+      expect(pointerEnter).toHaveBeenCalled();
+
+      // Verify pointer type in events
+      const enterEvent = pointerEnter.mock.calls[0][0];
+      expect(enterEvent.pointerType).toBe('touch');
+    });
+  });
 });

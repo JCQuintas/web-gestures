@@ -85,7 +85,6 @@ describe('Move Gesture', () => {
     ]);
   });
 
-  // TODO: testing library needs to handle pointer enter/leave events
   it('should fire a moveEnd when leaving the target', async () => {
     const gesture = mouseGesture.setup();
 
