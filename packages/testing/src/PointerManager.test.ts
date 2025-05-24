@@ -629,7 +629,7 @@ describe('PointerManager', () => {
       expect(reusedPointer.y).toBe(initialPointer.y);
     });
 
-    it.only('should reuse pointer positions for mouse pointers too', () => {
+    it('should reuse pointer positions for mouse pointers too', () => {
       // Create initial mouse pointer
       const initialPointer = mousePointerManager.parseMousePointer({ x: 25, y: 75 }, target);
       // We got to update the pointer first to simulate a real scenario
