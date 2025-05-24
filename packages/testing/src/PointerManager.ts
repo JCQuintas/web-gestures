@@ -10,27 +10,29 @@ export type PointerState = {
 
 export type PointerTargetChange = {
   pointer: PointerState;
-  oldTarget: Element;
+  oldTarget?: Element;
 };
 
 export class PointerManager {
-  protected pointers: Map<number, PointerState> = new Map([
-    [
-      1,
-      {
-        id: 1,
-        x: 0,
-        y: 0,
-        isDown: false,
-        target: document.body,
-      },
-    ],
-  ]);
+  protected pointers: Map<number, PointerState> = new Map();
   protected count = 0;
   public readonly mode: PointerType;
 
   constructor(mode: PointerType) {
     this.mode = mode;
+    this.clearPointers();
+  }
+
+  protected clearPointers(): void {
+    this.pointers.clear();
+    if (this.mode === 'mouse') {
+      this.pointers.set(1, {
+        id: 1,
+        x: 0,
+        y: 0,
+        target: document.body,
+      });
+    }
   }
 
   protected addPointers(pointer: PointerState | PointerState[]): void {
@@ -69,11 +71,11 @@ export class PointerManager {
     return this.pointers.get(id);
   }
 
-  protected updatePointers(pointer: PointerState): PointerTargetChange | undefined;
-  protected updatePointers(pointer: PointerState[]): (PointerTargetChange | undefined)[];
+  protected updatePointers(pointer: PointerState): PointerTargetChange;
+  protected updatePointers(pointer: PointerState[]): PointerTargetChange[];
   protected updatePointers(
     pointer: PointerState | PointerState[]
-  ): PointerTargetChange | (PointerTargetChange | undefined)[] | undefined {
+  ): PointerTargetChange | PointerTargetChange[] {
     if (Array.isArray(pointer)) {
       return pointer.map(p => this.updatePointers(p));
     }
@@ -86,7 +88,7 @@ export class PointerManager {
     this.pointers.set(pointer.id, newPointer);
 
     if (newPointer.target === existingPointer.target) {
-      return;
+      return { pointer: newPointer };
     }
 
     const oldTarget = existingPointer.target;
@@ -98,6 +100,7 @@ export class PointerManager {
     return 500 + this.count;
   }
 
+  // TODO: use old position if position is present and new one is not provided.
   parseMousePointer(pointer: Pointer | undefined, target: Element): Required<Pointer> {
     if (this.mode !== 'mouse') {
       throw new Error('Mouse pointer can only be used in mouse mode');
@@ -115,11 +118,10 @@ export class PointerManager {
       target: finalTarget,
     };
 
-    this.updatePointers(finalPointer);
-
     return finalPointer;
   }
 
+  // TODO: use old position if position is present and new one is not provided.
   parsePointers(
     pointers: Pointers | undefined,
     target: Element,
@@ -191,9 +193,62 @@ export class PointerManager {
     return pointersArray;
   }
 
+  protected pointerEnter(pointer: Required<Pointer>): void {
+    const over = new PointerEvent('pointerover', {
+      bubbles: true,
+      cancelable: true,
+      clientX: pointer.x,
+      clientY: pointer.y,
+      pointerId: pointer.id,
+      pointerType: this.mode,
+    });
+    const enter = new PointerEvent('pointerenter', {
+      bubbles: false,
+      cancelable: false,
+      clientX: pointer.x,
+      clientY: pointer.y,
+      pointerId: pointer.id,
+      pointerType: this.mode,
+    });
+    pointer.target.dispatchEvent(over);
+    pointer.target.dispatchEvent(enter);
+  }
+
+  protected pointerLeave(pointer: Required<Pointer>, oldTarget: Element): void {
+    const out = new PointerEvent('pointerout', {
+      bubbles: true,
+      cancelable: true,
+      clientX: pointer.x,
+      clientY: pointer.y,
+      pointerId: pointer.id,
+      pointerType: this.mode,
+    });
+    const leave = new PointerEvent('pointerleave', {
+      bubbles: false,
+      cancelable: false,
+      clientX: pointer.x,
+      clientY: pointer.y,
+      pointerId: pointer.id,
+      pointerType: this.mode,
+    });
+    oldTarget.dispatchEvent(out);
+    oldTarget.dispatchEvent(leave);
+  }
+
   pointerDown(pointer: Required<Pointer>): void {
     if (this.pointers.get(pointer.id)?.isDown === true) {
       return;
+    }
+
+    const change = this.updatePointers({
+      ...pointer,
+      isDown: true,
+    });
+
+    if (change?.oldTarget) {
+      const { oldTarget, pointer } = change;
+      this.pointerLeave(pointer, oldTarget);
+      this.pointerEnter(pointer);
     }
 
     const event = new PointerEvent('pointerdown', {
@@ -205,15 +260,18 @@ export class PointerManager {
       pointerType: this.mode,
     });
 
-    this.updatePointers({
-      ...pointer,
-      isDown: true,
-    });
-
     pointer.target.dispatchEvent(event);
   }
 
   pointerMove(pointer: Required<Pointer>): void {
+    const change = this.updatePointers(pointer);
+
+    if (change?.oldTarget) {
+      const { oldTarget, pointer } = change;
+      this.pointerLeave(pointer, oldTarget);
+      this.pointerEnter(pointer);
+    }
+
     const event = new PointerEvent('pointermove', {
       bubbles: true,
       cancelable: true,
@@ -223,12 +281,11 @@ export class PointerManager {
       pointerType: this.mode,
     });
 
-    this.updatePointers(pointer);
-
     pointer.target.dispatchEvent(event);
   }
 
   pointerUp(pointer: Required<Pointer>): void {
+    // TODO: Only fire if all pointers are up
     const event = new PointerEvent('pointerup', {
       bubbles: true,
       cancelable: true,

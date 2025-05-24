@@ -86,8 +86,10 @@ describe('Move Gesture', () => {
   });
 
   // TODO: testing library needs to handle pointer enter/leave events
-  it.skip('should fire a moveEnd when leaving the target', async () => {
-    await mouseGesture.move({
+  it('should fire a moveEnd when leaving the target', async () => {
+    const gesture = mouseGesture.setup();
+
+    await gesture.move({
       target,
       steps: 2,
       distance: 100,
@@ -97,9 +99,10 @@ describe('Move Gesture', () => {
     target2.style.width = '200px';
     target2.style.height = '200px';
     target2.style.backgroundColor = 'blue';
+    target2.id = 'target2';
     document.body.appendChild(target2);
 
-    await mouseGesture.move({
+    await gesture.move({
       target: target2,
       steps: 2,
       distance: 100,
@@ -110,6 +113,7 @@ describe('Move Gesture', () => {
       'moveStart: 1 | x: 150 | y: 100',
       'move: 1 | x: 150 | y: 100',
       'move: 1 | x: 200 | y: 100',
+      'moveEnd: 1 | x: 200 | y: 100',
     ]);
   });
 });
