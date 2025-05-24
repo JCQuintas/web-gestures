@@ -1,32 +1,33 @@
 import { UserGesture, UserGestureOptions } from '../';
 
 export const createProxy = <T extends UserGesture>(target: T): T => {
-  let isSetupCalled = false;
-
   const proxy = new Proxy(target, {
-    get(obj, prop, receiver) {
+    get(obj, prop) {
       if (prop === 'setup') {
         return (options: UserGestureOptions) => {
-          isSetupCalled = true;
-          Reflect.get(obj, 'setup').bind(obj)(options);
-          return receiver;
+          const mode = Reflect.get(obj, 'pointerManager').mode;
+
+          // Calling setup pretty much clears this proxy by creating a new instance
+          // This new instance will NOT be a proxy.
+          // @ts-expect-error, constructor is a function...
+          return new obj.constructor(mode).setup(options);
         };
       }
 
       const value = Reflect.get(obj, prop);
 
+      // If the property is not a function, we return it as is.
       if (typeof value !== 'function') {
         return value;
       }
 
+      // If we are trying to call a method on the proxy,
+      // we ensure that we clear the pointers after the method is called.
+      // This is useful for tests where we want to ensure no pointers are left hanging
       return async (...args: unknown[]) => {
         await value.bind(obj)(...args);
-        if (!isSetupCalled) {
-          // We clear the pointers if setup was not called
-          // This is useful for tests where we want to ensure no pointers are left hanging
-          const pointerManager = Reflect.get(obj, 'pointerManager');
-          Reflect.get(pointerManager, 'clearPointers').bind(pointerManager)();
-        }
+        const pointerManager = Reflect.get(obj, 'pointerManager');
+        Reflect.get(pointerManager, 'clearPointers').bind(pointerManager)();
       };
     },
   });
