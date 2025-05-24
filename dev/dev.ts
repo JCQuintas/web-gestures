@@ -383,3 +383,25 @@ changeRotationButton.addEventListener('click', () => {
 
 // Initial log message
 addLogEntry('Gesture demo initialized');
+
+const red = document.getElementById('red') as HTMLDivElement;
+const green = document.getElementById('green') as HTMLDivElement;
+const blue = document.getElementById('blue') as HTMLDivElement;
+
+[red, green, blue].forEach(el => {
+  [
+    'pointerdown',
+    'pointerup',
+    'pointercancel',
+    'pointerout',
+    'pointerover',
+    'pointerenter',
+    'pointerleave',
+  ].forEach(eventType => {
+    // @ts-expect-error, dynamic
+    el.addEventListener(eventType, (event: PointerEvent) => {
+      const logMessage = `${eventType} on ${el.id}`;
+      console.log(logMessage, event);
+    });
+  });
+});
