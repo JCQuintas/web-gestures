@@ -8,7 +8,13 @@ class GoodGesture extends Gesture<string> {
   protected readonly isSinglePhase!: false;
   protected readonly eventType!: never;
   protected readonly optionsType!: never;
-  protected readonly mutableOptionsType!: { preventDefault?: boolean };
+  protected readonly mutableOptionsType!: {
+    preventDefault?: boolean;
+    stopPropagation?: boolean;
+    preventIf?: string[];
+    complexOption?: { nestedValue: number; enabled: boolean };
+    arrayOption?: string[];
+  };
   protected readonly mutableStateType!: never;
   protected resetState(): void {}
 
@@ -16,8 +22,21 @@ class GoodGesture extends Gesture<string> {
     return new GoodGesture({
       name: this.name,
       preventDefault: this.preventDefault,
+      stopPropagation: this.stopPropagation,
+      preventIf: this.preventIf,
       ...overrides,
     });
+  }
+
+  // Add custom properties for testing complex options
+  public complexOption?: { nestedValue: number; enabled: boolean };
+  public arrayOption?: string[];
+
+  // Override the updateOptions method to handle our custom properties
+  protected updateOptions(options: typeof this.mutableOptionsType): void {
+    super.updateOptions(options);
+    this.complexOption = options.complexOption ?? this.complexOption;
+    this.arrayOption = options.arrayOption ?? this.arrayOption;
   }
 }
 
@@ -80,5 +99,49 @@ describe('toUpdateOptionsTo matcher', () => {
 
     // @ts-expect-error, using a string for error to be clearer
     expect(badGesture).toUpdateOptionsTo({ preventDefault: 'fake' });
+  });
+
+  // New tests for complex options
+  it('should handle multiple options simultaneously', () => {
+    const goodGesture = new GoodGesture({ name: 'fake' });
+
+    expect(goodGesture).toUpdateOptionsTo({
+      preventDefault: true,
+      stopPropagation: true,
+    });
+  });
+
+  it('should handle array options', () => {
+    const goodGesture = new GoodGesture({ name: 'fake' });
+
+    expect(goodGesture).toUpdateOptionsTo({
+      preventIf: ['pan', 'pinch'],
+    });
+  });
+
+  it('should handle complex nested objects', () => {
+    const goodGesture = new GoodGesture({ name: 'fake' });
+
+    expect(goodGesture).toUpdateOptionsTo({
+      complexOption: { nestedValue: 42, enabled: true },
+    });
+  });
+
+  it('should handle multiple complex options together', () => {
+    const goodGesture = new GoodGesture({ name: 'fake' });
+
+    expect(goodGesture).toUpdateOptionsTo({
+      preventDefault: true,
+      stopPropagation: true,
+      preventIf: ['pan', 'pinch'],
+      complexOption: { nestedValue: 42, enabled: true },
+      arrayOption: ['option1', 'option2'],
+    });
+  });
+
+  it('should handle invalid inputs gracefully', { fails: true }, () => {
+    const goodGesture = new GoodGesture({ name: 'fake' });
+
+    expect(goodGesture).toUpdateOptionsTo({});
   });
 });
