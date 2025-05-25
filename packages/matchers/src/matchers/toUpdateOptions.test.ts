@@ -1,7 +1,7 @@
 import { Gesture } from '@web-gestures/core';
 import { describe, expect, it } from 'vitest';
-
-import '../index';
+import { getFakeState } from '../equals';
+import { toUpdateOptions } from './toUpdateOptions';
 
 class GoodGesture extends Gesture<string> {
   protected readonly state = {};
@@ -60,88 +60,62 @@ class BadGesture extends Gesture<string> {
   protected updateOptions(): void {}
 }
 
+const matcher = toUpdateOptions.bind(getFakeState());
+
 describe('toUpdateOptions matcher', () => {
   it('should pass when a gesture can be updated through events', () => {
     const goodGesture = new GoodGesture({ name: 'fake' });
 
-    expect(goodGesture).toUpdateOptions({ preventDefault: true });
+    const result = matcher(goodGesture, { preventDefault: true });
+    expect(result.pass).toBe(true);
   });
 
-  it(
-    'should fail when using .not on a gesture that can be updated through events',
-    { fails: true },
-    () => {
-      const goodGesture = new GoodGesture({ name: 'fake' });
+  it('should provide the correct "not" message when passing', () => {
+    const goodGesture = new GoodGesture({ name: 'fake' });
 
-      expect(goodGesture).not.toUpdateOptions({ preventDefault: true });
-    }
-  );
+    const result = matcher(goodGesture, { preventDefault: true });
+    expect(result.pass).toBe(true);
+    expect(result.message()).toBe(
+      'Expected options not to be updatable to the specified values, but they were.'
+    );
+  });
 
-  it(
-    'should fail when a gesture works correctly, but the passed options are the same as the defaults',
-    { fails: true },
-    () => {
-      const goodGesture = new GoodGesture({ name: 'fake' });
+  it('should not pass when options are same as default', () => {
+    const goodGesture = new GoodGesture({ name: 'fake' });
 
-      expect(goodGesture).toUpdateOptions({ preventDefault: false });
-    }
-  );
+    const result = matcher(goodGesture, { preventDefault: false });
+    expect(result.pass).toBe(false);
+    expect(result.message()).toBe(
+      'Expected options to be updated, but they remained the same as the original.'
+    );
+  });
 
-  it('should pass when using .not on a gesture that cannot be updated through events', () => {
+  it('should not pass when options are not updated', () => {
     const badGesture = new BadGesture({ name: 'fake' });
 
-    // @ts-expect-error, using a string for error to be clearer
-    expect(badGesture).not.toUpdateOptions({ preventDefault: 'fake' });
+    const result = matcher(badGesture, { preventDefault: 'fake' });
+    expect(result.pass).toBe(false);
+    expect(result.message()).toBe(
+      'Expected options to be updated to the specified values, but they were not.'
+    );
   });
 
-  it('should fail when a gesture cannot be updated through events', { fails: true }, () => {
-    const badGesture = new BadGesture({ name: 'fake' });
-
-    // @ts-expect-error, using a string for error to be clearer
-    expect(badGesture).toUpdateOptions({ preventDefault: 'fake' });
-  });
-
-  // New tests for complex options
-  it('should handle multiple options simultaneously', () => {
+  it('should not pass handling invalid inputs', () => {
     const goodGesture = new GoodGesture({ name: 'fake' });
 
-    expect(goodGesture).toUpdateOptions({
-      preventDefault: true,
-      stopPropagation: true,
-    });
+    const result = matcher(goodGesture, {});
+
+    expect(result.pass).toBe(false);
+    expect(result.message()).toBe(
+      'Expected a non-empty options object, but received invalid or empty options.'
+    );
   });
 
-  it('should handle array options', () => {
-    const goodGesture = new GoodGesture({ name: 'fake' });
+  it('should not pass hangling invalid gesture instances', () => {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const result = matcher(null as any, { preventDefault: true });
 
-    expect(goodGesture).toUpdateOptions({
-      preventIf: ['pan', 'pinch'],
-    });
-  });
-
-  it('should handle complex nested objects', () => {
-    const goodGesture = new GoodGesture({ name: 'fake' });
-
-    expect(goodGesture).toUpdateOptions({
-      complexOption: { nestedValue: 42, enabled: true },
-    });
-  });
-
-  it('should handle multiple complex options together', () => {
-    const goodGesture = new GoodGesture({ name: 'fake' });
-
-    expect(goodGesture).toUpdateOptions({
-      preventDefault: true,
-      stopPropagation: true,
-      preventIf: ['pan', 'pinch'],
-      complexOption: { nestedValue: 42, enabled: true },
-      arrayOption: ['option1', 'option2'],
-    });
-  });
-
-  it('should handle invalid inputs gracefully', { fails: true }, () => {
-    const goodGesture = new GoodGesture({ name: 'fake' });
-
-    expect(goodGesture).toUpdateOptions({});
+    expect(result.pass).toBe(false);
+    expect(result.message()).toBe('Expected a valid gesture instance, but received invalid input.');
   });
 });

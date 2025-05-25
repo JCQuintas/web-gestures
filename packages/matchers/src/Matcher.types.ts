@@ -11,9 +11,12 @@ interface SyncExpectationResult {
 
 type AsyncExpectationResult = Promise<SyncExpectationResult>;
 
-export type ExpectationResult = SyncExpectationResult | AsyncExpectationResult;
-
-export interface RawMatcherFn<T extends MatcherState = MatcherState> {
+export interface SyncMatcherFn<T extends MatcherState = MatcherState> {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  (this: T, received: any, ...expected: Array<any>): ExpectationResult;
+  (this: T, received: any, ...expected: Array<any>): SyncExpectationResult;
+}
+
+export interface AsyncMatcherFn<T extends MatcherState = MatcherState> {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  (this: T, received: any, ...expected: Array<any>): AsyncExpectationResult;
 }

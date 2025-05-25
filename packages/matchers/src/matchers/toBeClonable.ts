@@ -1,5 +1,5 @@
 import { Gesture } from '@web-gestures/core';
-import { MatcherState, RawMatcherFn } from '../Matcher.types';
+import { MatcherState, SyncMatcherFn } from '../Matcher.types';
 
 export type ToBeClonable<R = unknown> = {
   /**
@@ -28,7 +28,7 @@ export type ToBeClonable<R = unknown> = {
   ): R;
 };
 
-export const toBeClonable: RawMatcherFn = function <
+export const toBeClonable: SyncMatcherFn = function <
   G extends Gesture<string>,
   T extends MatcherState = MatcherState,
   // @ts-expect-error, accessing protected property for testing purposes

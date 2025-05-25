@@ -1,6 +1,6 @@
 import { Gesture, PointerManager } from '@web-gestures/core';
 import { ActiveGesturesRegistry } from '../../../core/src/ActiveGesturesRegistry';
-import { MatcherState, RawMatcherFn } from '../Matcher.types';
+import { MatcherState, SyncMatcherFn } from '../Matcher.types';
 
 export type ToUpdateOptions<R = Gesture<string>> = {
   /**
@@ -38,7 +38,7 @@ export type ToUpdateOptions<R = Gesture<string>> = {
   ): R;
 };
 
-export const toUpdateOptions: RawMatcherFn = function <
+export const toUpdateOptions: SyncMatcherFn = function <
   G extends Gesture<string>,
   T extends MatcherState = MatcherState,
   // @ts-expect-error, accessing protected property for testing purposes
@@ -107,7 +107,7 @@ export const toUpdateOptions: RawMatcherFn = function <
   document.body.removeChild(target);
 
   const hasUpdated = this.equals(actualOptions, expectedOptions);
-  const isSameAsOriginal = this.equals(actualOptions, originalOptions);
+  const isSameAsOriginal = this.equals(originalOptions, expectedOptions);
   const pass = hasUpdated && !isSameAsOriginal;
 
   // If pass, we set the message if the "not" condition is true
