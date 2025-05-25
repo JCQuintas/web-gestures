@@ -7,6 +7,24 @@ export type ToBeClonable<R = unknown> = {
    * has the same properties as the original gesture, or overridden properties
    * if specified.
    *
+   * Internally it will:
+   * 1. Create a clone of the original gesture
+   * 2. Verify the clone is a different instance than the original
+   * 3. Check that the clone has all required gesture properties and methods
+   * 4. Ensure any provided overrides are correctly applied to the clone
+   * 5. Verify that non-overridden properties match the original gesture
+   *
+   * This matcher is useful for ensuring that gestures can be properly duplicated
+   * while maintaining their functionality and allowing customization.
+   *
+   * ## Requirements
+   *
+   * For this matcher to work correctly, the gesture must:
+   * - Properly implement the `clone()` method to create a new instance
+   * - Return a different instance than the original when cloned
+   * - Apply any provided overrides to the cloned instance
+   * - Maintain non-overridden property values from the original
+   *
    * @example
    * ```ts
    * // Check if the gesture can be cloned with the same properties
