@@ -140,7 +140,7 @@ describe('Move Gesture', () => {
     expect(events.length).toBe(0);
   });
 
-  it('should test updating options', () => {
+  it('should update options', () => {
     const gestureInstance = new MoveGesture({
       name: 'move',
       preventDefault: false,
