@@ -5,14 +5,14 @@ export default defineConfig({
     coverage: {
       provider: 'v8',
       reporter: ['text', 'json', 'html', 'json-summary'],
-      include: ['packages/core/src/**', 'packages/testing/src/**'],
+      include: ['packages/core/src/**', 'packages/testing/src/**', 'packages/matchers/src/**'],
       skipFull: process.env.CI !== 'true',
       thresholds: {
         autoUpdate: true,
-        statements: 46.75,
+        statements: 51.08,
         branches: 89.07,
         functions: 79.85,
-        lines: 46.75,
+        lines: 51.08,
       },
       exclude: [
         'coverage/**',

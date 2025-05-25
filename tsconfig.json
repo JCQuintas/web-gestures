@@ -16,7 +16,8 @@
     "erasableSyntaxOnly": true,
     "paths": {
       "@web-gestures/core": ["./packages/core/src"],
-      "@web-gestures/testing": ["./packages/testing/src"]
+      "@web-gestures/testing": ["./packages/testing/src"],
+      "@web-gestures/matchers": ["./packages/matchers/src"]
     }
   },
   "exclude": ["node_modules", "dist"]

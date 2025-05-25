@@ -19,6 +19,10 @@ export default defineWorkspace([
           find: `@web-gestures/testing`,
           replacement: resolve(WORKSPACE_ROOT, `./packages/testing/src`),
         },
+        {
+          find: `@web-gestures/matchers`,
+          replacement: resolve(WORKSPACE_ROOT, `./packages/matchers/src`),
+        },
       ],
       name: 'browser',
       setupFiles: ['./vitest.setup.ts'],
