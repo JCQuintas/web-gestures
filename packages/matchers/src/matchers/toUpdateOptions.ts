@@ -2,7 +2,7 @@ import { Gesture, PointerManager } from '@web-gestures/core';
 import { ActiveGesturesRegistry } from '../../../core/src/ActiveGesturesRegistry';
 import { MatcherState, RawMatcherFn } from '../Matcher.types';
 
-export type ToUpdateOptionsTo<R = Gesture<string>> = {
+export type ToUpdateOptions<R = Gesture<string>> = {
   /**
    * Asserts that the provided gesture options can be updated by emitting a change event
    * and that the options match the expected values.
@@ -26,10 +26,10 @@ export type ToUpdateOptionsTo<R = Gesture<string>> = {
    *
    * @example
    * ```ts
-   * expect(new MoveGesture({ name: 'move' })).toUpdateOptionsTo({ preventDefault: true });
+   * expect(new MoveGesture({ name: 'move' })).toUpdateOptions({ preventDefault: true });
    * ```
    */
-  toUpdateOptionsTo<
+  toUpdateOptions<
     // Note: We're using a more explicit type parameter name to indicate what we're expecting
     // @ts-expect-error, accessing protected property for testing purposes
     ExpectedOptions extends Partial<R['mutableOptionsType']> = Partial<R['mutableOptionsType']>,
@@ -38,7 +38,7 @@ export type ToUpdateOptionsTo<R = Gesture<string>> = {
   ): R;
 };
 
-export const toUpdateOptionsTo: RawMatcherFn = function <
+export const toUpdateOptions: RawMatcherFn = function <
   G extends Gesture<string>,
   T extends MatcherState = MatcherState,
   // @ts-expect-error, accessing protected property for testing purposes

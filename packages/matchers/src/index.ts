@@ -1,8 +1,8 @@
 import { expect } from 'vitest';
 import { ToBeClonable, toBeClonable } from './matchers/toBeClonable';
-import { ToUpdateOptionsTo, toUpdateOptionsTo } from './matchers/toUpdateOptionsTo';
+import { ToUpdateOptions, toUpdateOptions } from './matchers/toUpdateOptions';
 
-export type GestureMatchers<R = unknown> = ToUpdateOptionsTo<R> & ToBeClonable<R>;
+export type GestureMatchers<R = unknown> = ToUpdateOptions<R> & ToBeClonable<R>;
 
 declare module 'vitest' {
   // eslint-disable-next-line @typescript-eslint/no-empty-object-type, @typescript-eslint/no-explicit-any
@@ -12,6 +12,6 @@ declare module 'vitest' {
 }
 
 expect.extend({
-  toUpdateOptionsTo,
+  toUpdateOptions,
   toBeClonable,
 });

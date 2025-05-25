@@ -60,11 +60,11 @@ class BadGesture extends Gesture<string> {
   protected updateOptions(): void {}
 }
 
-describe('toUpdateOptionsTo matcher', () => {
+describe('toUpdateOptions matcher', () => {
   it('should pass when a gesture can be updated through events', () => {
     const goodGesture = new GoodGesture({ name: 'fake' });
 
-    expect(goodGesture).toUpdateOptionsTo({ preventDefault: true });
+    expect(goodGesture).toUpdateOptions({ preventDefault: true });
   });
 
   it(
@@ -73,7 +73,7 @@ describe('toUpdateOptionsTo matcher', () => {
     () => {
       const goodGesture = new GoodGesture({ name: 'fake' });
 
-      expect(goodGesture).not.toUpdateOptionsTo({ preventDefault: true });
+      expect(goodGesture).not.toUpdateOptions({ preventDefault: true });
     }
   );
 
@@ -83,7 +83,7 @@ describe('toUpdateOptionsTo matcher', () => {
     () => {
       const goodGesture = new GoodGesture({ name: 'fake' });
 
-      expect(goodGesture).toUpdateOptionsTo({ preventDefault: false });
+      expect(goodGesture).toUpdateOptions({ preventDefault: false });
     }
   );
 
@@ -91,21 +91,21 @@ describe('toUpdateOptionsTo matcher', () => {
     const badGesture = new BadGesture({ name: 'fake' });
 
     // @ts-expect-error, using a string for error to be clearer
-    expect(badGesture).not.toUpdateOptionsTo({ preventDefault: 'fake' });
+    expect(badGesture).not.toUpdateOptions({ preventDefault: 'fake' });
   });
 
   it('should fail when a gesture cannot be updated through events', { fails: true }, () => {
     const badGesture = new BadGesture({ name: 'fake' });
 
     // @ts-expect-error, using a string for error to be clearer
-    expect(badGesture).toUpdateOptionsTo({ preventDefault: 'fake' });
+    expect(badGesture).toUpdateOptions({ preventDefault: 'fake' });
   });
 
   // New tests for complex options
   it('should handle multiple options simultaneously', () => {
     const goodGesture = new GoodGesture({ name: 'fake' });
 
-    expect(goodGesture).toUpdateOptionsTo({
+    expect(goodGesture).toUpdateOptions({
       preventDefault: true,
       stopPropagation: true,
     });
@@ -114,7 +114,7 @@ describe('toUpdateOptionsTo matcher', () => {
   it('should handle array options', () => {
     const goodGesture = new GoodGesture({ name: 'fake' });
 
-    expect(goodGesture).toUpdateOptionsTo({
+    expect(goodGesture).toUpdateOptions({
       preventIf: ['pan', 'pinch'],
     });
   });
@@ -122,7 +122,7 @@ describe('toUpdateOptionsTo matcher', () => {
   it('should handle complex nested objects', () => {
     const goodGesture = new GoodGesture({ name: 'fake' });
 
-    expect(goodGesture).toUpdateOptionsTo({
+    expect(goodGesture).toUpdateOptions({
       complexOption: { nestedValue: 42, enabled: true },
     });
   });
@@ -130,7 +130,7 @@ describe('toUpdateOptionsTo matcher', () => {
   it('should handle multiple complex options together', () => {
     const goodGesture = new GoodGesture({ name: 'fake' });
 
-    expect(goodGesture).toUpdateOptionsTo({
+    expect(goodGesture).toUpdateOptions({
       preventDefault: true,
       stopPropagation: true,
       preventIf: ['pan', 'pinch'],
@@ -142,6 +142,6 @@ describe('toUpdateOptionsTo matcher', () => {
   it('should handle invalid inputs gracefully', { fails: true }, () => {
     const goodGesture = new GoodGesture({ name: 'fake' });
 
-    expect(goodGesture).toUpdateOptionsTo({});
+    expect(goodGesture).toUpdateOptions({});
   });
 });
