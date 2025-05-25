@@ -10,6 +10,7 @@ class GoodGesture extends Gesture<string> {
   protected readonly optionsType!: never;
   protected readonly mutableOptionsType!: { preventDefault?: boolean };
   protected readonly mutableStateType!: never;
+  protected resetState(): void {}
 
   public clone(overrides?: Record<string, unknown>): GoodGesture {
     return new GoodGesture({
@@ -18,8 +19,6 @@ class GoodGesture extends Gesture<string> {
       ...overrides,
     });
   }
-
-  protected resetState(): void {}
 }
 
 class BadGesture extends Gesture<string> {
@@ -29,6 +28,7 @@ class BadGesture extends Gesture<string> {
   protected readonly optionsType!: never;
   protected readonly mutableOptionsType!: { preventDefault?: boolean };
   protected readonly mutableStateType!: never;
+  protected resetState(): void {}
 
   public clone(overrides?: Record<string, unknown>): BadGesture {
     return new BadGesture({
@@ -39,7 +39,6 @@ class BadGesture extends Gesture<string> {
 
   // We remove the updateOptions implementation
   protected updateOptions(): void {}
-  protected resetState(): void {}
 }
 
 describe('toUpdateOptionsTo matcher', () => {

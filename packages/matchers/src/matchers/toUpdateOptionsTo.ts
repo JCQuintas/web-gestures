@@ -18,9 +18,9 @@ export type ToUpdateOptionsTo<R = Gesture<string>> = {
    */
   toUpdateOptionsTo<
     // @ts-expect-error, accessing protected property for testing purposes
-    MutableOptions extends R['mutableOptionsType'] = R['mutableOptionsType'],
+    ExpectedOptions extends R['mutableOptionsType'] = R['mutableOptionsType'],
   >(
-    expected: MutableOptions
+    expectedOptions: ExpectedOptions
   ): R;
 };
 
