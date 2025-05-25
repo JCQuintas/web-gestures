@@ -12,7 +12,7 @@ import {
 // Initialize gesture manager with templates
 const gestureManager = new GestureManager({
   root: document.body,
-  touchAction: 'none',
+  touchAction: 'pan-y',
   gestures: [
     new PanGesture({
       name: 'pan',
@@ -402,6 +402,7 @@ const blue = document.getElementById('blue') as HTMLDivElement;
     el.addEventListener(eventType, (event: PointerEvent) => {
       const logMessage = `${eventType} on ${el.id}`;
       console.log(logMessage, event);
+      addLogEntry(logMessage);
     });
   });
 });

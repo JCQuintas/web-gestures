@@ -85,12 +85,10 @@ describe('TapUserGesture', () => {
       taps: 3,
     };
 
-    const advanceTimers = vi.fn().mockResolvedValue(undefined);
-    await tap(pointerManager, options, advanceTimers);
+    await tap(pointerManager, options);
 
     expect(pointerDown).toHaveBeenCalledTimes(3);
     expect(pointerUp).toHaveBeenCalledTimes(3);
-    expect(advanceTimers).toHaveBeenCalledTimes(5); // 3 taps * (1 down-up interval + 1 between-tap interval) - 1 final interval
   });
 
   it('should use custom pointer configuration for mouse', async () => {

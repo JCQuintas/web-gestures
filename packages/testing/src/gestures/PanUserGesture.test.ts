@@ -176,6 +176,42 @@ describe('PanUserGesture', () => {
     expect(up).toHaveBeenCalledTimes(1);
   });
 
+  it('should only release specific pointers when releasePointers is an array of IDs', async () => {
+    const options = {
+      target,
+      pointers: [
+        { id: 10, x: 50, y: 50 },
+        { id: 20, x: 150, y: 50 },
+        { id: 30, x: 250, y: 50 },
+      ],
+      distance: 50,
+      duration: 500,
+      steps: 10,
+      angle: 0,
+      releasePointers: [10, 30], // Only release pointers with IDs 10 and 30
+    };
+
+    await pan(pointerManager, options);
+
+    expect(down).toHaveBeenCalledTimes(3); // 3 pointers down
+    expect(move).toHaveBeenCalledTimes(30); // 3 pointers * 10 steps
+    expect(up).toHaveBeenCalledTimes(2); // Only 2 pointers released (IDs 10 and 30)
+
+    // Verify that pointer ID 20 is still down by performing another pan without a down event
+    await pan(pointerManager, {
+      target,
+      pointers: [{ id: 20, x: 200, y: 50 }], // Continue from the final position of pointer 20
+      distance: 30,
+      duration: 300,
+      steps: 5,
+      angle: 0,
+    });
+
+    expect(down).toHaveBeenCalledTimes(3); // No new down events
+    expect(move).toHaveBeenCalledTimes(35); // 30 previous + 5 new moves
+    expect(up).toHaveBeenCalledTimes(3); // The remaining pointer is now released
+  });
+
   it('should use advanceTimers function if provided', async () => {
     const advanceTimers = vi.fn<(ms: number) => Promise<void>>(
       (ms: number) => new Promise(resolve => setTimeout(resolve, ms))
