@@ -46,8 +46,8 @@ jobs:
       - name: Install Playwright browsers
         run: pnpm exec playwright install --with-deps chromium firefox webkit
 
-      - name: Run tests
-        run: pnpm test
+      - name: Run tests with coverage
+        run: pnpm test --coverage
 
       - name: Upload test results
         if: success() || failure()
@@ -56,6 +56,13 @@ jobs:
           name: test-results
           path: |
             **/src/__screenshots__/**/*.png
+
+      - name: Upload coverage report
+        if: success() || failure()
+        uses: actions/upload-artifact@v4.6.2
+        with:
+          name: coverage-report
+          path: coverage/
 
   build:
     name: Build
@@ -105,7 +112,7 @@ jobs:
         run: pnpm install
 
       - name: Run Prettier check
-        run: pnpm prettier
+        run: pnpm prettier --check
 
       - name: Run ESLint
         run: pnpm eslint --max-warnings 0
