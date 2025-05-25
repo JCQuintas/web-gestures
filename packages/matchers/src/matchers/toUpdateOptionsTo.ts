@@ -50,16 +50,22 @@ export const toUpdateOptionsTo: RawMatcherFn = function <
   document.body.removeChild(target);
 
   // Check if the options were updated correctly
-  // @ts-expect-error, accessing protected property for testing purposes
+  // @ts-expect-error, forcing empty object
   const actualOptions: MutableOptions = {};
+  // @ts-expect-error, forcing empty object
+  const originalOptions: MutableOptions = {};
   for (const key in expectedOptions) {
     if (Reflect.has(clone, key)) {
       // @ts-expect-error, we checked that the key exists
       actualOptions[key] = clone[key];
+      // @ts-expect-error, we don't care if the key exists
+      originalOptions[key] = original[key];
     }
   }
 
-  const pass = this.equals(actualOptions, expectedOptions);
+  const hasUpdated = this.equals(actualOptions, expectedOptions);
+  const isSameAsOriginal = this.equals(actualOptions, originalOptions);
+  const pass = hasUpdated && !isSameAsOriginal;
 
   // If pass, we set the message if the "not" condition is true
   if (pass) {
@@ -73,7 +79,12 @@ export const toUpdateOptionsTo: RawMatcherFn = function <
 
   return {
     pass: false,
-    message: () => `Expected options to be the same, but they were not.`,
+    message: () => {
+      if (isSameAsOriginal) {
+        return 'Expected options are the same as the original, which will automatically fail.';
+      }
+      return 'Expected options to be the same, but they were not.';
+    },
     actual: actualOptions,
     expected: expectedOptions,
   };

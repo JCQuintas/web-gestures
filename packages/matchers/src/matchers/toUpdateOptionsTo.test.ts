@@ -59,6 +59,16 @@ describe('toUpdateOptionsTo matcher', () => {
     }
   );
 
+  it(
+    'should fail when a gesture works correctly, but the passed options are the same as the defaults',
+    { fails: true },
+    () => {
+      const goodGesture = new GoodGesture({ name: 'fake' });
+
+      expect(goodGesture).toUpdateOptionsTo({ preventDefault: false });
+    }
+  );
+
   it('should pass when using .not on a gesture that cannot be updated through events', () => {
     const badGesture = new BadGesture({ name: 'fake' });
 
