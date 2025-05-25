@@ -61,18 +61,16 @@ class BadGesture extends Gesture<string> {
 }
 
 const matcher = toUpdateOptions.bind(getFakeState());
+const goodGesture = new GoodGesture({ name: 'fake' });
+const badGesture = new BadGesture({ name: 'fake' });
 
 describe('toUpdateOptions matcher', () => {
   it('should pass when a gesture can be updated through events', () => {
-    const goodGesture = new GoodGesture({ name: 'fake' });
-
     const result = matcher(goodGesture, { preventDefault: true });
     expect(result.pass).toBe(true);
   });
 
   it('should provide the correct "not" message when passing', () => {
-    const goodGesture = new GoodGesture({ name: 'fake' });
-
     const result = matcher(goodGesture, { preventDefault: true });
     expect(result.pass).toBe(true);
     expect(result.message()).toBe(
@@ -81,8 +79,6 @@ describe('toUpdateOptions matcher', () => {
   });
 
   it('should not pass when options are same as default', () => {
-    const goodGesture = new GoodGesture({ name: 'fake' });
-
     const result = matcher(goodGesture, { preventDefault: false });
     expect(result.pass).toBe(false);
     expect(result.message()).toBe(
@@ -91,8 +87,6 @@ describe('toUpdateOptions matcher', () => {
   });
 
   it('should not pass when options are not updated', () => {
-    const badGesture = new BadGesture({ name: 'fake' });
-
     const result = matcher(badGesture, { preventDefault: 'fake' });
     expect(result.pass).toBe(false);
     expect(result.message()).toBe(
@@ -101,10 +95,7 @@ describe('toUpdateOptions matcher', () => {
   });
 
   it('should not pass handling invalid inputs', () => {
-    const goodGesture = new GoodGesture({ name: 'fake' });
-
     const result = matcher(goodGesture, {});
-
     expect(result.pass).toBe(false);
     expect(result.message()).toBe(
       'Expected a non-empty options object, but received invalid or empty options.'
@@ -114,7 +105,6 @@ describe('toUpdateOptions matcher', () => {
   it('should not pass hangling invalid gesture instances', () => {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const result = matcher(null as any, { preventDefault: true });
-
     expect(result.pass).toBe(false);
     expect(result.message()).toBe('Expected a valid gesture instance, but received invalid input.');
   });
