@@ -60,17 +60,6 @@ export class PointerManager {
     this.pointers.delete(id);
   }
 
-  protected getPointers(id: number): PointerState | undefined;
-  protected getPointers(id: number[]): (PointerState | undefined)[];
-  protected getPointers(
-    id: number | number[]
-  ): PointerState | (PointerState | undefined)[] | undefined {
-    if (Array.isArray(id)) {
-      return id.map(pointerId => this.pointers.get(pointerId));
-    }
-    return this.pointers.get(id);
-  }
-
   protected updatePointers(pointer: PointerState): PointerTargetChange;
   protected updatePointers(pointer: PointerState[]): PointerTargetChange[];
   protected updatePointers(
