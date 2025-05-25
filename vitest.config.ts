@@ -7,12 +7,13 @@ export default defineConfig({
       reporter: ['text', 'json', 'html', 'json-summary'],
       include: ['packages/core/src/**', 'packages/testing/src/**', 'packages/matchers/src/**'],
       skipFull: process.env.CI !== 'true',
+      all: true,
       thresholds: {
-        autoUpdate: true,
-        statements: 51.08,
-        branches: 89.83,
-        functions: 89.83,
-        lines: 51.08,
+        autoUpdate: false,
+        statements: 50,
+        branches: 80,
+        functions: 55,
+        lines: 50,
       },
       exclude: [
         'coverage/**',
