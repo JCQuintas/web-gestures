@@ -69,6 +69,11 @@ jobs:
           name: coverage-report
           path: coverage/
 
+      - name: 'Report Coverage'
+        uses: davelosert/vitest-coverage-report-action@v2.8.3
+        with:
+          comment-on: none
+
   build:
     name: Build
     runs-on: ubuntu-latest

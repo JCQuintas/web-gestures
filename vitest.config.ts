@@ -4,7 +4,7 @@ export default defineConfig({
   test: {
     coverage: {
       provider: 'v8',
-      reporter: ['text', 'json', 'html'],
+      reporter: ['text', 'json', 'html', 'json-summary'],
       include: ['packages/core/src/**', 'packages/testing/src/**'],
       skipFull: process.env.CI !== 'true',
       thresholds: {
