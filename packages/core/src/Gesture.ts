@@ -197,7 +197,7 @@ export abstract class Gesture<GestureName extends string> {
    * Handle option change events
    * @param event Custom event with new options in the detail property
    */
-  protected handleOptionsChange(event: CustomEvent<typeof this.mutableOptionsType>): void {
+  private handleOptionsChange(event: CustomEvent<typeof this.mutableOptionsType>): void {
     if (event && event.detail) {
       this.updateOptions(event.detail);
     }
@@ -218,7 +218,7 @@ export abstract class Gesture<GestureName extends string> {
    * Handle state change events
    * @param event Custom event with new state values in the detail property
    */
-  protected handleStateChange(event: CustomEvent<typeof this.mutableStateType>): void {
+  private handleStateChange(event: CustomEvent<typeof this.mutableStateType>): void {
     if (event && event.detail) {
       this.updateState(event.detail);
     }
@@ -228,7 +228,7 @@ export abstract class Gesture<GestureName extends string> {
    * Update the gesture state with new values
    * @param stateChanges Object containing state properties to update
    */
-  protected updateState(stateChanges: typeof this.mutableStateType): void {
+  private updateState(stateChanges: typeof this.mutableStateType): void {
     // This is a base implementation - concrete gesture classes should override
     // to handle specific state updates based on their state structure
     Object.assign(this.state, stateChanges);
