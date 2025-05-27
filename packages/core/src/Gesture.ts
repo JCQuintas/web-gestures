@@ -228,7 +228,7 @@ export abstract class Gesture<GestureName extends string> {
    * Update the gesture state with new values
    * @param stateChanges Object containing state properties to update
    */
-  private updateState(stateChanges: typeof this.mutableStateType): void {
+  protected updateState(stateChanges: typeof this.mutableStateType): void {
     // This is a base implementation - concrete gesture classes should override
     // to handle specific state updates based on their state structure
     Object.assign(this.state, stateChanges);

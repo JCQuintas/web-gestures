@@ -94,7 +94,7 @@ describe('toUpdateOptions matcher', () => {
     );
   });
 
-  it('should not pass handling invalid inputs', () => {
+  it('should not pass when handling invalid inputs', () => {
     const result = matcher(goodGesture, {});
     expect(result.pass).toBe(false);
     expect(result.message()).toBe(
@@ -102,7 +102,7 @@ describe('toUpdateOptions matcher', () => {
     );
   });
 
-  it('should not pass hangling invalid gesture instances', () => {
+  it('should not pass when handling invalid gesture instances', () => {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const result = matcher(null as any, { preventDefault: true });
     expect(result.pass).toBe(false);
