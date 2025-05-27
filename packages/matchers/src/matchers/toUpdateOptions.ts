@@ -39,12 +39,15 @@ export type ToUpdateOptions<R = AnyGesture> = {
   ): void;
 };
 
-// TODO: check isNot and throw error
 export const toUpdateOptions: SyncMatcherFn = function (
   this: MatcherState,
   received: AnyGesture,
   expected: Record<string, unknown>
 ) {
+  // Check if the matcher is being used with .not and throw an error since it's not supported
+  if (this.isNot) {
+    throw new Error(messages.negationError('toUpdateOptions'));
+  }
   // Validate inputs
   if (!received) {
     return {

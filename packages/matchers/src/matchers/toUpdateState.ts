@@ -45,6 +45,11 @@ export const toUpdateState: SyncMatcherFn = function (
   received: AnyGesture,
   expected: Record<string, unknown>
 ) {
+  // Check if the matcher is being used with .not and throw an error since it's not supported
+  if (this.isNot) {
+    throw new Error(messages.negationError('toUpdateState'));
+  }
+
   // Validate inputs
   if (!received) {
     return {

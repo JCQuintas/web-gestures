@@ -27,6 +27,7 @@ import { MatcherState } from './Matcher.types';
 
 export const getFakeState = (): MatcherState =>
   ({
+    isNot: false,
     equals,
   }) as MatcherState;
 

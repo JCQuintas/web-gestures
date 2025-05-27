@@ -18,82 +18,43 @@ Add the matchers to your Vitest setup file:
 
 ```ts
 // In your vitest.setup.ts or similar
-import { matchers } from '@web-gestures/matchers';
-
-expect.extend(matchers);
+import '@web-gestures/matchers';
 ```
 
-Now you can use the custom matchers in your tests:
-
-```ts
-import { expect, test } from 'vitest';
-
-test('handle move gesture', () => {
-  const element = document.createElement('div');
-  // Trigger some gesture on the element
-
-  // Use matchers to verify the gesture behavior
-  expect(receivedEvent).toBeGestureEventOfType('move');
-  expect(receivedEvent).toHaveGestureProperty('deltaX', 10);
-  expect(receivedEvent).toHaveGestureCoordinates(100, 200);
-});
-```
+Now you can use the custom matchers in your tests.
 
 ## Available Matchers
 
-### `toBeGestureEventOfType(type: string)`
+### `toUpdateOptions(expectedOptions: object)`
 
-Checks if the received value is a gesture event of the specified type.
-
-```ts
-// Pass
-expect({
-  type: 'move',
-  detail: { type: 'move', x: 100, y: 200 },
-}).toBeGestureEventOfType('move');
-
-// Fail
-expect({ type: 'click' }).toBeGestureEventOfType('move');
-```
-
-### `toHaveGestureProperty(property: string, value?: unknown)`
-
-Checks if the received gesture event has the specified property with an optional expected value.
+Asserts that the provided gesture options can be updated by emitting a change event and that the options match the expected values.
 
 ```ts
-const gestureEvent = {
-  type: 'pinch',
-  detail: {
-    type: 'pinch',
-    scale: 1.5,
-    center: { x: 100, y: 200 },
-  },
-};
-
-// Check property exists
-expect(gestureEvent).toHaveGestureProperty('scale');
-
-// Check property has specific value
-expect(gestureEvent).toHaveGestureProperty('scale', 1.5);
+// Check if gesture options can be updated
+expect(MoveGesture).toUpdateOptions({ preventDefault: true });
 ```
 
-### `toHaveGestureCoordinates(x: number, y: number, delta?: number)`
+### `toBeClonable(overrides?: object)`
 
-Checks if the received gesture event has coordinates matching the expected values, with an optional delta for floating-point comparison.
+Asserts that the provided gesture can be cloned and that the clone has the same properties as the original gesture, or overridden properties if specified.
 
 ```ts
-const gestureEvent = {
-  type: 'pan',
-  detail: {
-    type: 'pan',
-    x: 100,
-    y: 200,
-  },
-};
+// Check if the gesture can be cloned with the same properties
+expect(MoveGesture).toBeClonable();
 
-// Exact coordinates
-expect(gestureEvent).toHaveGestureCoordinates(100, 200);
-
-// Coordinates within delta
-expect(gestureEvent).toHaveGestureCoordinates(100.005, 200.008, 0.01);
+// Check if the gesture can be cloned with overridden properties
+expect(MoveGesture).toBeClonable({ preventDefault: true });
 ```
+
+### `toUpdateState(expectedState: object)`
+
+Asserts that the provided gesture state can be updated by emitting a change event and that the state properties match the expected values.
+
+```ts
+// Check if gesture state can be updated
+expect(MoveGesture).toUpdateState({ isDragging: true });
+```
+
+## Notes
+
+- The matchers `toUpdateOptions`, `toBeClonable`, and `toUpdateState` do not support negation (using `.not` before the matcher). Using these with `.not` will throw an error.
