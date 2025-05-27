@@ -1,18 +1,21 @@
 import { Gesture } from '@web-gestures/core';
+import { AnyGesture } from '../AnyGesture';
 import { MatcherState, SyncMatcherFn } from '../Matcher.types';
+import { messages } from '../messages';
 
-export type ToBeClonable<R = unknown> = {
+export type ToBeClonable<R = AnyGesture> = {
   /**
    * Asserts that the provided gesture can be cloned and that the clone
    * has the same properties as the original gesture, or overridden properties
    * if specified.
    *
    * Internally it will:
-   * 1. Create a clone of the original gesture
-   * 2. Verify the clone is a different instance than the original
-   * 3. Check that the clone has all required gesture properties and methods
-   * 4. Ensure any provided overrides are correctly applied to the clone
-   * 5. Verify that non-overridden properties match the original gesture
+   * 1. Instantiate the gesture
+   * 2. Create a clone of the initial gesture
+   * 3. Verify the clone is a different instance than the original
+   * 4. Check that the clone has all required gesture properties and methods
+   * 5. Ensure any provided overrides are correctly applied to the clone
+   * 6. Verify that non-overridden properties match the original gesture
    *
    * This matcher is useful for ensuring that gestures can be properly duplicated
    * while maintaining their functionality and allowing customization.
@@ -28,46 +31,42 @@ export type ToBeClonable<R = unknown> = {
    * @example
    * ```ts
    * // Check if the gesture can be cloned with the same properties
-   * expect(new MoveGesture({ name: 'move' })).toBeClonable();
+   * expect(MoveGesture).toBeClonable();
    *
    * // Check if the gesture can be cloned with overridden properties
-   * expect(new MoveGesture({ name: 'move' })).toBeClonable({
-   *   preventDefault: true,
-   *   stopPropagation: true
-   * });
+   * expect(MoveGesture).toBeClonable({ preventDefault: true });
    * ```
    */
   toBeClonable<
-    G extends Gesture<string>,
+    G = R extends new (...args: any[]) => infer J ? (J extends Gesture<string> ? J : never) : never,
     // @ts-expect-error, accessing protected property for testing purposes
-    OverrideOptions extends Partial<G['mutableOptionsType']> = Record<string, unknown>,
+    OverrideOptions extends Partial<G['mutableOptionsType']> = Partial<G['mutableOptionsType']>,
   >(
     overrides?: OverrideOptions
-  ): R;
+  ): void;
 };
 
-export const toBeClonable: SyncMatcherFn = function <
-  G extends Gesture<string>,
-  T extends MatcherState = MatcherState,
-  // @ts-expect-error, accessing protected property for testing purposes
-  OverrideOptions extends Partial<G['mutableOptionsType']> = Record<string, unknown>,
->(this: T, received: G, expected?: OverrideOptions) {
+export const toBeClonable: SyncMatcherFn = function (
+  this: MatcherState,
+  received: AnyGesture,
+  expected: Record<string, unknown>
+) {
   // Validate inputs
-  if (!received || typeof received !== 'object') {
+  if (!received) {
     return {
       pass: false,
-      message: () => 'Expected a valid gesture instance, but received invalid input.',
+      message: messages.invalidClass,
     };
   }
 
   if (expected !== null && expected !== undefined && typeof expected !== 'object') {
     return {
       pass: false,
-      message: () => 'Expected valid options, but received an invalid value.',
+      message: () => messages.invalidObjectParam('options'),
     };
   }
 
-  const original = received;
+  const original = new received({ name: 'beClonable' });
   const overrides = expected;
   const clone = original.clone(overrides);
 
@@ -95,6 +94,7 @@ export const toBeClonable: SyncMatcherFn = function <
   for (const key in original) {
     // Skip checking overridden properties and functions
     if (overrides && key in overrides) continue;
+    // @ts-expect-error, its ok if original[key] = undefined
     if (typeof original[key] === 'function') continue;
 
     if (Reflect.has(clone, key)) {

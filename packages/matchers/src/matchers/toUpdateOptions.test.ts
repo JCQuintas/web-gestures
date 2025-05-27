@@ -61,17 +61,15 @@ class BadGesture extends Gesture<string> {
 }
 
 const matcher = toUpdateOptions.bind(getFakeState());
-const goodGesture = new GoodGesture({ name: 'fake' });
-const badGesture = new BadGesture({ name: 'fake' });
 
 describe('toUpdateOptions matcher', () => {
   it('should pass when a gesture can be updated through events', () => {
-    const result = matcher(goodGesture, { preventDefault: true });
+    const result = matcher(GoodGesture, { preventDefault: true });
     expect(result.pass).toBe(true);
   });
 
   it('should provide the correct "not" message when passing', () => {
-    const result = matcher(goodGesture, { preventDefault: true });
+    const result = matcher(GoodGesture, { preventDefault: true });
     expect(result.pass).toBe(true);
     expect(result.message()).toBe(
       'Expected options not to be updatable to the specified values, but they were.'
@@ -79,7 +77,7 @@ describe('toUpdateOptions matcher', () => {
   });
 
   it('should not pass when options are same as default', () => {
-    const result = matcher(goodGesture, { preventDefault: false });
+    const result = matcher(GoodGesture, { preventDefault: false });
     expect(result.pass).toBe(false);
     expect(result.message()).toBe(
       'Expected options to be updated, but they remained the same as the original.'
@@ -87,7 +85,7 @@ describe('toUpdateOptions matcher', () => {
   });
 
   it('should not pass when options are not updated', () => {
-    const result = matcher(badGesture, { preventDefault: 'fake' });
+    const result = matcher(BadGesture, { preventDefault: 'fake' });
     expect(result.pass).toBe(false);
     expect(result.message()).toBe(
       'Expected options to be updated to the specified values, but they were not.'
@@ -95,7 +93,7 @@ describe('toUpdateOptions matcher', () => {
   });
 
   it('should not pass when handling invalid inputs', () => {
-    const result = matcher(goodGesture, {});
+    const result = matcher(GoodGesture, {});
     expect(result.pass).toBe(false);
     expect(result.message()).toBe(
       'Expected a non-empty options object, but received invalid or empty options.'
@@ -106,6 +104,8 @@ describe('toUpdateOptions matcher', () => {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const result = matcher(null as any, { preventDefault: true });
     expect(result.pass).toBe(false);
-    expect(result.message()).toBe('Expected a valid gesture instance, but received invalid input.');
+    expect(result.message()).toBe(
+      'Expected a valid gesture class, but received invalid input or an instantiated class instead.'
+    );
   });
 });

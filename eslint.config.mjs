@@ -30,6 +30,13 @@ export default defineConfig([
           ignoreRestSiblings: true,
         },
       ],
+      '@typescript-eslint/no-explicit-any': [
+        'error',
+        {
+          ignoreRestArgs: true,
+          fixToUnknown: true,
+        },
+      ],
     },
   },
   {

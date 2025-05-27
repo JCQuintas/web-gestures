@@ -81,12 +81,10 @@ class BadGesture extends Gesture<string> {
 }
 
 const matcher = toUpdateState.bind(getFakeState());
-const goodGesture = new GoodGesture({ name: 'fake' });
-const badGesture = new BadGesture({ name: 'fake' });
 
 describe('toUpdateState matcher', () => {
   it('should pass when a gesture state can be updated through events', () => {
-    const result = matcher(goodGesture, {
+    const result = matcher(GoodGesture, {
       isDragging: true,
       startPosition: { x: 100, y: 200 },
     });
@@ -94,7 +92,7 @@ describe('toUpdateState matcher', () => {
   });
 
   it('should provide the correct "not" message when passing', () => {
-    const result = matcher(goodGesture, { isDragging: true });
+    const result = matcher(GoodGesture, { isDragging: true });
     expect(result.pass).toBe(true);
     expect(result.message()).toBe(
       'Expected state not to be updatable to the specified values, but it was.'
@@ -102,7 +100,7 @@ describe('toUpdateState matcher', () => {
   });
 
   it('should not pass when options are same as default', () => {
-    const result = matcher(goodGesture, { isDragging: false });
+    const result = matcher(GoodGesture, { isDragging: false });
     expect(result.pass).toBe(false);
     expect(result.message()).toBe(
       'Expected state to be updated, but it remained the same as the original.'
@@ -110,7 +108,7 @@ describe('toUpdateState matcher', () => {
   });
 
   it('should not pass when state is not updated', () => {
-    const result = matcher(badGesture, {
+    const result = matcher(BadGesture, {
       isDragging: true,
       startPosition: { x: 100, y: 200 },
     });
@@ -121,7 +119,7 @@ describe('toUpdateState matcher', () => {
   });
 
   it('should not pass when handling invalid inputs', () => {
-    const result = matcher(goodGesture, {});
+    const result = matcher(GoodGesture, {});
     expect(result.pass).toBe(false);
     expect(result.message()).toBe(
       'Expected a non-empty state object, but received invalid or empty state.'
@@ -132,6 +130,8 @@ describe('toUpdateState matcher', () => {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const result = matcher(null as any, { preventDefault: true });
     expect(result.pass).toBe(false);
-    expect(result.message()).toBe('Expected a valid gesture instance, but received invalid input.');
+    expect(result.message()).toBe(
+      'Expected a valid gesture class, but received invalid input or an instantiated class instead.'
+    );
   });
 });

@@ -2,14 +2,14 @@ import { expect } from 'vitest';
 
 export type MatcherState = ReturnType<typeof expect.getState>;
 
-interface SyncExpectationResult {
+export interface SyncExpectationResult {
   pass: boolean;
   message: () => string;
   actual?: unknown;
   expected?: unknown;
 }
 
-type AsyncExpectationResult = Promise<SyncExpectationResult>;
+export type AsyncExpectationResult = Promise<SyncExpectationResult>;
 
 export interface SyncMatcherFn<T extends MatcherState = MatcherState> {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any

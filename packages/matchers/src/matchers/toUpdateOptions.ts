@@ -1,15 +1,17 @@
 import { Gesture, PointerManager } from '@web-gestures/core';
 import { ActiveGesturesRegistry } from '../../../core/src/ActiveGesturesRegistry';
+import { AnyGesture } from '../AnyGesture';
 import { MatcherState, SyncMatcherFn } from '../Matcher.types';
+import { messages } from '../messages';
 
-export type ToUpdateOptions<R = Gesture<string>> = {
+export type ToUpdateOptions<R = AnyGesture> = {
   /**
    * Asserts that the provided gesture options can be updated by emitting a change event
    * and that the options match the expected values.
    *
    * Internally it will:
-   * 1. Clone the gesture to avoid modifying the original
-   * 2. Initialize the clone with a temporary element
+   * 1. Instantiate the gesture twice
+   * 2. Initialize one of the instances with a temporary element
    * 3. Emit a custom event named `${gestureName}ChangeOptions` with the expected options
    * 4. Verify that the options were properly updated
    * 5. Clean up resources by destroying the gesture and removing the temporary element
@@ -19,49 +21,48 @@ export type ToUpdateOptions<R = Gesture<string>> = {
    * ## Requirements
    *
    * For this matcher to work correctly, the gesture must:
-   * - Properly implement the `clone()` method
    * - Listen for events named `${gestureName}ChangeOptions`
    * - Implement the `updateOptions()` method to update its properties
    * - Have a working `destroy()` method to clean up resources
    *
    * @example
    * ```ts
-   * expect(new MoveGesture({ name: 'move' })).toUpdateOptions({ preventDefault: true });
+   * expect(MoveGesture).toUpdateOptions({ preventDefault: true });
    * ```
    */
   toUpdateOptions<
-    // Note: We're using a more explicit type parameter name to indicate what we're expecting
+    G = R extends new (...args: any[]) => infer J ? (J extends Gesture<string> ? J : never) : never,
     // @ts-expect-error, accessing protected property for testing purposes
-    ExpectedOptions extends Partial<R['mutableOptionsType']> = Partial<R['mutableOptionsType']>,
+    ExpectedOptions extends Partial<G['mutableOptionsType']> = Partial<G['mutableOptionsType']>,
   >(
     expectedOptions: ExpectedOptions
-  ): R;
+  ): void;
 };
 
-export const toUpdateOptions: SyncMatcherFn = function <
-  G extends Gesture<string>,
-  T extends MatcherState = MatcherState,
-  // @ts-expect-error, accessing protected property for testing purposes
-  MutableOptions = Partial<G['mutableOptionsType']>,
->(this: T, received: G, expected: MutableOptions) {
+// TODO: check isNot and throw error
+export const toUpdateOptions: SyncMatcherFn = function (
+  this: MatcherState,
+  received: AnyGesture,
+  expected: Record<string, unknown>
+) {
   // Validate inputs
-  if (!received || typeof received !== 'object') {
+  if (!received) {
     return {
       pass: false,
-      message: () => 'Expected a valid gesture instance, but received invalid input.',
+      message: messages.invalidClass,
     };
   }
 
   if (!expected || typeof expected !== 'object' || Object.keys(expected).length === 0) {
     return {
       pass: false,
-      message: () => 'Expected a non-empty options object, but received invalid or empty options.',
+      message: () => messages.invalidOrEmptyObjectParam('options'),
     };
   }
 
-  const original = received;
+  const original = new received({ name: 'updateOptions' });
+  const clone = new received({ name: 'updateOptions' });
   const expectedOptions = expected;
-  const clone = original.clone();
   const target = document.createElement('div');
   document.body.appendChild(target);
 
@@ -79,10 +80,8 @@ export const toUpdateOptions: SyncMatcherFn = function <
   target.dispatchEvent(changeOptionsEvent);
 
   // Collect actual and original option values
-  // @ts-expect-error, forcing empty object
-  const actualOptions: MutableOptions = {};
-  // @ts-expect-error, forcing empty object
-  const originalOptions: MutableOptions = {};
+  const actualOptions = {};
+  const originalOptions = {};
 
   // Track which keys didn't update correctly
   const incorrectKeys: string[] = [];

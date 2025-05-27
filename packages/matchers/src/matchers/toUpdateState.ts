@@ -1,15 +1,17 @@
 import { Gesture, PointerManager } from '@web-gestures/core';
 import { ActiveGesturesRegistry } from '../../../core/src/ActiveGesturesRegistry';
+import { AnyGesture } from '../AnyGesture';
 import { MatcherState, SyncMatcherFn } from '../Matcher.types';
+import { messages } from '../messages';
 
-export type ToUpdateState<R = Gesture<string>> = {
+export type ToUpdateState<R = AnyGesture> = {
   /**
    * Asserts that the provided gesture state can be updated by emitting a change event
    * and that the state properties match the expected values.
    *
    * Internally it will:
-   * 1. Clone the gesture to avoid modifying the original
-   * 2. Initialize the clone with a temporary element
+   * 1. Instantiate the gesture twice
+   * 2. Initialize one of the instances with a temporary element
    * 3. Emit a custom event named `${gestureName}ChangeState` with the expected state
    * 4. Verify that the state was properly updated
    * 5. Clean up resources by destroying the gesture and removing the temporary element
@@ -19,7 +21,6 @@ export type ToUpdateState<R = Gesture<string>> = {
    * ## Requirements
    *
    * For this matcher to work correctly, the gesture must:
-   * - Properly implement the `clone()` method
    * - Listen for events named `${gestureName}ChangeState`
    * - Implement the `updateState()` method to update its state properties
    * - Have a working `destroy()` method to clean up resources
@@ -27,44 +28,41 @@ export type ToUpdateState<R = Gesture<string>> = {
    * @example
    * ```ts
    * // Check if gesture state can be updated
-   * expect(new MoveGesture({ name: 'move' })).toUpdateState({
-   *   isDragging: true,
-   *   startPosition: { x: 100, y: 100 }
-   * });
+   * expect(MoveGesture).toUpdateState({ isDragging: true });
    * ```
    */
   toUpdateState<
+    G = R extends new (...args: any[]) => infer J ? (J extends Gesture<string> ? J : never) : never,
     // @ts-expect-error, accessing protected property for testing purposes
-    ExpectedState extends Partial<R['mutableStateType']> = Partial<R['mutableStateType']>,
+    ExpectedState extends Partial<G['mutableStateType']> = Partial<G['mutableStateType']>,
   >(
     expectedState: ExpectedState
-  ): R;
+  ): void;
 };
 
-export const toUpdateState: SyncMatcherFn = function <
-  G extends Gesture<string>,
-  T extends MatcherState = MatcherState,
-  // @ts-expect-error, accessing protected property for testing purposes
-  MutableState = Partial<G['mutableStateType']>,
->(this: T, received: G, expected: MutableState) {
+export const toUpdateState: SyncMatcherFn = function (
+  this: MatcherState,
+  received: AnyGesture,
+  expected: Record<string, unknown>
+) {
   // Validate inputs
-  if (!received || typeof received !== 'object') {
+  if (!received) {
     return {
       pass: false,
-      message: () => 'Expected a valid gesture instance, but received invalid input.',
+      message: messages.invalidClass,
     };
   }
 
   if (!expected || typeof expected !== 'object' || Object.keys(expected).length === 0) {
     return {
       pass: false,
-      message: () => 'Expected a non-empty state object, but received invalid or empty state.',
+      message: () => messages.invalidOrEmptyObjectParam('state'),
     };
   }
 
-  const original = received;
+  const original = new received({ name: 'updateState' });
+  const clone = new received({ name: 'updateState' });
   const expectedState = expected;
-  const clone = original.clone();
   const target = document.createElement('div');
   document.body.appendChild(target);
 
@@ -81,10 +79,8 @@ export const toUpdateState: SyncMatcherFn = function <
 
   target.dispatchEvent(changeStateEvent);
 
-  // Check if state was updated correctly
-  // We need to access the state which is a protected property
-  const actualStateValues: Partial<MutableState> = {};
-  const originalStateValues: Partial<MutableState> = {};
+  const actualStateValues = {};
+  const originalStateValues = {};
 
   // Track which keys didn't update correctly
   const incorrectKeys: string[] = [];
