@@ -26,6 +26,7 @@ export default defineConfig({
         '**/__tests__/**',
         '**/{karma,rollup,webpack,vite,vitest,jest,ava,babel,nyc,cypress}.config.*',
         'packages/matchers/src/equals.ts',
+        'packages/matchers/src/mocks/**',
       ],
     },
   },
