@@ -117,6 +117,41 @@ describe('Move Gesture', () => {
     ]);
   });
 
+  it('should fire a moveStart when entering a new target even if no move was made', async () => {
+    const gesture = mouseGesture.setup();
+    const target2 = document.createElement('div');
+    target2.style.width = '200px';
+    target2.style.height = '200px';
+    target2.style.backgroundColor = 'blue';
+    target2.id = 'target2';
+    document.body.appendChild(target2);
+    target2.addEventListener('pointerenter', () => {
+      events.push('pointerenter on target2');
+    });
+
+    await gesture.move({
+      target: target2,
+      distance: 100,
+      steps: 1,
+    });
+
+    expect(events).toStrictEqual(['pointerenter on target2']);
+
+    events = []; // Clear events for next assertions
+
+    await gesture.move({
+      target,
+      distance: 100,
+      steps: 1,
+    });
+
+    expect(events).toStrictEqual([
+      'moveStart: 1 | x: 300 | y: 500',
+      'move: 1 | x: 300 | y: 500',
+      'move: 1 | x: 300 | y: 500',
+    ]);
+  });
+
   it('should handle pointer events with non-mouse/pen pointer types', () => {
     const gestureInstance = new MoveGesture({ name: 'move' });
     // Set up the gesture instance
@@ -141,38 +176,20 @@ describe('Move Gesture', () => {
   });
 
   it('should update options', () => {
-    const gestureInstance = new MoveGesture({
-      name: 'move',
-      preventDefault: false,
-      stopPropagation: false,
+    expect(MoveGesture).toUpdateOptions({
+      preventDefault: true,
+      stopPropagation: true,
+      preventIf: ['pan'],
     });
+  });
 
-    // Set up the gesture instance
-    gestureInstance.init(
-      target,
-      gestureManager['pointerManager'],
-      gestureManager['activeGesturesRegistry']
-    );
-
-    // Create an options change event
-    const changeOptionsEvent = new CustomEvent('moveChangeOptions', {
-      detail: {
-        preventDefault: true,
-        stopPropagation: true,
-        preventIf: ['pan'],
-      },
-    });
-
-    // Dispatch the event
-    target.dispatchEvent(changeOptionsEvent);
-
-    expect(gestureInstance['preventDefault']).toBe(true);
-    expect(gestureInstance['stopPropagation']).toBe(true);
-    expect(gestureInstance['preventIf']).toEqual(['pan']);
+  it('should update state', { fails: true }, () => {
+    // @ts-expect-error, type is never
+    expect(MoveGesture).toUpdateState({});
   });
 
   it('should properly clone', () => {
-    const originalGesture = new MoveGesture({
+    expect(MoveGesture).toBeClonable({
       name: 'move',
       preventDefault: true,
       stopPropagation: true,
@@ -181,19 +198,5 @@ describe('Move Gesture', () => {
       maxPointers: 2,
       preventIf: ['pan', 'pinch'],
     });
-
-    const clonedGesture = originalGesture.clone({ threshold: 20 });
-
-    // Verify that properties were copied correctly
-    expect(clonedGesture['name']).toBe('move');
-    expect(clonedGesture['preventDefault']).toBe(true);
-    expect(clonedGesture['stopPropagation']).toBe(true);
-    expect(clonedGesture['threshold']).toBe(20); // This should be overridden
-    expect(clonedGesture['minPointers']).toBe(1);
-    expect(clonedGesture['maxPointers']).toBe(2);
-    expect(clonedGesture['preventIf']).toEqual(['pan', 'pinch']);
-
-    // Ensure they are different objects
-    expect(clonedGesture).not.toBe(originalGesture);
   });
 });
