@@ -23,7 +23,7 @@ export class UserGesture {
   protected advanceTimers?: (ms: number) => Promise<void>;
 
   /**
-   * Creates a new MouseUserGesture instance.
+   * Creates a new UserGesture instance.
    */
   constructor(pointerType: PointerType) {
     this.pointerManager = new PointerManager(pointerType);

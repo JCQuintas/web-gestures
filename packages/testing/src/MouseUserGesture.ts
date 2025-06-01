@@ -34,7 +34,7 @@ export type MouseUserGestureRoot = {
  * Class implementing mouse gestures for testing.
  * Provides methods for tap, press, move, and wheel gestures with a mouse pointer.
  */
-export class MouseUserGesture extends UserGesture implements MouseUserGestureRoot {
+class MouseUserGesture extends UserGesture implements MouseUserGestureRoot {
   constructor() {
     super('mouse');
   }
@@ -56,5 +56,7 @@ export class MouseUserGesture extends UserGesture implements MouseUserGestureRoo
   }
 }
 
-// Export an instance of MouseUserGesture as the default export
+/**
+ * Provides methods for tap, press, move, and wheel gestures with a mouse pointer.
+ */
 export const mouseGesture = createProxy(new MouseUserGesture());

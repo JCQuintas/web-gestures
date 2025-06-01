@@ -33,11 +33,7 @@ export type TouchUserGestureRoot = {
   RotateUserGestureRoot &
   TouchUserGestureRootExtension;
 
-/**
- * Class implementing touch gestures for testing.
- * Provides methods for tap, press, pinch, pan, and rotate gestures with touch pointers.
- */
-export class TouchUserGesture extends UserGesture implements TouchUserGestureRoot {
+class TouchUserGesture extends UserGesture implements TouchUserGestureRoot {
   constructor() {
     super('touch');
   }
@@ -63,5 +59,7 @@ export class TouchUserGesture extends UserGesture implements TouchUserGestureRoo
   }
 }
 
-// Export an instance of TouchUserGesture as the default export
+/**
+ * Provides methods for tap, press, pinch, pan, and rotate gestures with touch pointers.
+ */
 export const touchGesture = createProxy(new TouchUserGesture());
