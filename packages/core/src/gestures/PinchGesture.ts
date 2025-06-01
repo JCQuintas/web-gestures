@@ -15,6 +15,8 @@ import { PointerData } from '../PointerManager';
 import { TargetElement } from '../types/TargetElement';
 import { calculateAverageDistance, calculateCentroid, createEventName } from '../utils';
 
+const DIRECTION_THRESHOLD = 0.00001;
+
 /**
  * Configuration options for the PinchGesture
  * Uses the same options as the base PointerGesture
@@ -180,22 +182,11 @@ export class PinchGesture<GestureName extends string> extends PointerGesture<Ges
 
           // Store the original target element
           this.originalTarget = targetElement;
-
-          // Mark gesture as active
-          this.isActive = true;
-
-          // Emit start event
-          this.emitPinchEvent(targetElement, 'start', relevantPointers, event);
-          this.emitPinchEvent(targetElement, 'ongoing', relevantPointers, event);
         }
         break;
 
       case 'pointermove':
-        if (
-          this.isActive &&
-          this.state.startDistance &&
-          relevantPointers.length >= this.minPointers
-        ) {
+        if (this.state.startDistance && relevantPointers.length >= this.minPointers) {
           // Calculate current distance between pointers
           const currentDistance = calculateAverageDistance(relevantPointers);
 
@@ -213,9 +204,10 @@ export class PinchGesture<GestureName extends string> extends PointerGesture<Ges
             this.state.totalScale *= scaleChange;
             // Calculate velocity (change in scale over time)
             const deltaTime = (event.timeStamp - this.state.lastTime) / 1000; // convert to seconds
-            if (deltaTime > 0 && this.state.lastDistance) {
+            if (this.state.lastDistance) {
               const deltaDistance = currentDistance - this.state.lastDistance;
-              this.state.velocity = deltaDistance / deltaTime;
+              const result = deltaDistance / deltaTime;
+              this.state.velocity = Number.isNaN(result) ? 0 : result;
             }
 
             // Update state
@@ -224,8 +216,17 @@ export class PinchGesture<GestureName extends string> extends PointerGesture<Ges
             this.state.lastScale = scale;
             this.state.lastTime = event.timeStamp;
 
-            // Emit ongoing event
-            this.emitPinchEvent(targetElement, 'ongoing', relevantPointers, event);
+            if (!this.isActive) {
+              // Mark gesture as active
+              this.isActive = true;
+
+              // Emit start event
+              this.emitPinchEvent(targetElement, 'start', relevantPointers, event);
+              this.emitPinchEvent(targetElement, 'ongoing', relevantPointers, event);
+            } else {
+              // Emit ongoing event
+              this.emitPinchEvent(targetElement, 'ongoing', relevantPointers, event);
+            }
           }
         }
         break;
@@ -290,7 +291,12 @@ export class PinchGesture<GestureName extends string> extends PointerGesture<Ges
       distance,
       velocity: this.state.velocity,
       activeGestures,
-      direction: this.state.velocity > 0 ? 1 : this.state.velocity < 0 ? -1 : 0,
+      direction:
+        this.state.velocity > DIRECTION_THRESHOLD
+          ? 1
+          : this.state.velocity < -DIRECTION_THRESHOLD
+            ? -1
+            : 0,
       customData: this.customData,
     };
 
