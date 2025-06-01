@@ -1,6 +1,7 @@
 import type { Direction } from '../gestures/PanGesture';
 
-const MAIN_THRESHOLD = 0;
+const MAIN_THRESHOLD = 0.00001;
+const ANGLE_THRESHOLD = 0.00001;
 const SECONDARY_THRESHOLD = 0.15;
 
 /**
@@ -62,9 +63,9 @@ function isDiagonalMovement(
 
   // Check if the angle is within the diagonal range
   return (
-    (angle >= -45 && angle <= -22.5) ||
-    (angle >= 22.5 && angle <= 45) ||
-    (angle >= 135 && angle <= 157.5) ||
-    (angle >= -157.5 && angle <= -135)
+    (angle >= -45 + ANGLE_THRESHOLD && angle <= -22.5 + ANGLE_THRESHOLD) ||
+    (angle >= 22.5 + ANGLE_THRESHOLD && angle <= 45 + ANGLE_THRESHOLD) ||
+    (angle >= 135 + ANGLE_THRESHOLD && angle <= 157.5 + ANGLE_THRESHOLD) ||
+    (angle >= -157.5 + ANGLE_THRESHOLD && angle <= -135 + ANGLE_THRESHOLD)
   );
 }
