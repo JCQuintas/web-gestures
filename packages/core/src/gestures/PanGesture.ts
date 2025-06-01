@@ -259,6 +259,14 @@ export class PanGesture<GestureName extends string> extends PointerGesture<Gestu
             currentCentroid
           );
 
+          // Calculate change in position since last move
+          const lastDeltaX = this.state.lastCentroid
+            ? currentCentroid.x - this.state.lastCentroid.x
+            : 0;
+          const lastDeltaY = this.state.lastCentroid
+            ? currentCentroid.y - this.state.lastCentroid.y
+            : 0;
+
           // Check if movement passes the threshold and is in an allowed direction
           if (
             !this.state.movementThresholdReached &&
@@ -268,26 +276,21 @@ export class PanGesture<GestureName extends string> extends PointerGesture<Gestu
             this.state.movementThresholdReached = true;
             this.isActive = true;
 
+            // Update total accumulated delta
+            this.state.lastDeltas = { x: currentCentroid.x, y: currentCentroid.y };
+            this.state.totalDeltaX += lastDeltaX;
+            this.state.totalDeltaY += lastDeltaY;
+
             // Emit start event
             this.emitPanEvent(targetElement, 'start', relevantPointers, event, currentCentroid);
             this.emitPanEvent(targetElement, 'ongoing', relevantPointers, event, currentCentroid);
           }
           // If we've already crossed the threshold, continue tracking
           else if (this.state.movementThresholdReached && this.isActive) {
-            // Calculate change in position since last move
-            const lastDeltaX = this.state.lastCentroid
-              ? currentCentroid.x - this.state.lastCentroid.x
-              : 0;
-            const lastDeltaY = this.state.lastCentroid
-              ? currentCentroid.y - this.state.lastCentroid.y
-              : 0;
-
             // Update total accumulated delta
-            if (this.state.movementThresholdReached) {
-              this.state.lastDeltas = { x: lastDeltaX, y: lastDeltaY };
-              this.state.totalDeltaX += lastDeltaX;
-              this.state.totalDeltaY += lastDeltaY;
-            }
+            this.state.lastDeltas = { x: lastDeltaX, y: lastDeltaY };
+            this.state.totalDeltaX += lastDeltaX;
+            this.state.totalDeltaY += lastDeltaY;
 
             // Emit ongoing event
             this.emitPanEvent(targetElement, 'ongoing', relevantPointers, event, currentCentroid);
