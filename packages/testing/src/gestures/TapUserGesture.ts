@@ -26,17 +26,23 @@ export const tap = async <P extends PointerType>(
     // For mouse, we use the MousePointer type from the options
     const mousePointer = 'pointer' in options ? options.pointer : undefined;
     pointersArray = [pointerManager.parseMousePointer(mousePointer, target)];
-  } else {
-    // For touch, we use the Pointers type from the options
-    const touchPointers = 'pointers' in options ? options.pointers : undefined;
-    pointersArray = pointerManager.parsePointers(touchPointers, target, {
-      amount: 1,
-      distance: 0,
-    });
   }
 
   // Perform the specified number of taps
   for (let tapCount = 0; tapCount < taps; tapCount++) {
+    if (pointerManager.mode === 'touch') {
+      // For touch, we use the Pointers type from the options
+      const touchPointers = 'pointers' in options ? options.pointers : undefined;
+      pointersArray = pointerManager.parsePointers(touchPointers, target, {
+        amount: 1,
+        distance: 0,
+      });
+    }
+
+    if (!pointersArray || pointersArray.length === 0) {
+      return;
+    }
+
     // For each tap, press and release all pointers
     for (const pointer of pointersArray) {
       pointerManager.pointerDown(pointer);
