@@ -27,6 +27,7 @@
   },
   "files": [
     "dist",
+    "expect.d.ts",
     "LICENSE",
     "README.md"
   ],
@@ -40,7 +41,9 @@
       "import": "./dist/index.js",
       "require": "./dist/index.umd.cjs"
     },
-    "./types": "./dist/types.d.ts"
+    "./expect": {
+      "types": "./expect.d.ts"
+    }
   },
   "peerDependencies": {
     "vitest": "^3.0.0",
