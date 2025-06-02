@@ -168,20 +168,13 @@ export class RotateGesture<GestureName extends string> extends PointerGesture<Ge
           this.state.lastAngle = initialAngle;
           this.state.lastTime = event.timeStamp;
 
-          // Mark gesture as active
-          this.isActive = true;
-
           // Store the original target element
           this.originalTarget = targetElement;
-
-          // Emit start event
-          this.emitRotateEvent(targetElement, 'start', relevantPointers, event);
-          this.emitRotateEvent(targetElement, 'ongoing', relevantPointers, event);
         }
         break;
 
       case 'pointermove':
-        if (this.isActive && relevantPointers.length >= 2) {
+        if (relevantPointers.length >= 2) {
           // Calculate current rotation angle
           const currentAngle = calculateRotationAngle(relevantPointers);
 
@@ -210,7 +203,16 @@ export class RotateGesture<GestureName extends string> extends PointerGesture<Ge
 
           // Emit ongoing event if there's an actual rotation
           // We don't want to emit events for tiny movements that might be just noise
-          if (Math.abs(delta) > 0.1) {
+          if (Math.abs(delta) <= 0.1) {
+            return;
+          }
+
+          if (!this.isActive) {
+            this.isActive = true;
+            // Emit start event
+            this.emitRotateEvent(targetElement, 'start', relevantPointers, event);
+            this.emitRotateEvent(targetElement, 'ongoing', relevantPointers, event);
+          } else {
             this.emitRotateEvent(targetElement, 'ongoing', relevantPointers, event);
           }
         }
@@ -259,17 +261,6 @@ export class RotateGesture<GestureName extends string> extends PointerGesture<Ge
     // Create custom event data
     const rotation = this.state.totalRotation;
 
-    // Use the stored lastDelta for move events
-    let delta = 0;
-    if (phase === 'start') {
-      delta = 0;
-    } else if (phase === 'end') {
-      delta = rotation; // Total rotation for end event
-    } else {
-      // For move events, use the last calculated delta
-      delta = this.state.lastDelta;
-    }
-
     // Get list of active gestures
     const activeGestures = this.gesturesRegistry.getActiveGestures(element);
 
@@ -282,7 +273,7 @@ export class RotateGesture<GestureName extends string> extends PointerGesture<Ge
       pointers,
       timeStamp: event.timeStamp,
       rotation,
-      delta,
+      delta: this.state.lastDelta,
       totalRotation: this.state.totalRotation,
       velocity: this.state.velocity,
       activeGestures,
