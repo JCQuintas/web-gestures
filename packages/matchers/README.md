@@ -1,15 +1,18 @@
 # @web-gestures/matchers
 
-Custom Vitest matchers for testing web gestures.
+Vitest matchers for testing custom gestures, making it easier to ensure your gesture implementations behave as expected.
 
 ## Installation
 
 ```bash
+# Using npm
 npm install --save-dev @web-gestures/matchers
-# or
-yarn add --dev @web-gestures/matchers
-# or
+
+# Using pnpm
 pnpm add -D @web-gestures/matchers
+
+# Using yarn
+yarn add --dev @web-gestures/matchers
 ```
 
 ## Usage
