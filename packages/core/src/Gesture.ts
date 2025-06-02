@@ -6,6 +6,7 @@ import { ActiveGesturesRegistry } from './ActiveGesturesRegistry';
 import { PointerData, PointerManager } from './PointerManager';
 import { CustomEventListener } from './types/CustomEventListener';
 import { TargetElement } from './types/TargetElement';
+import { eventList } from './utils/eventList';
 
 /**
  * The possible phases of a gesture during its lifecycle.
@@ -161,6 +162,15 @@ export abstract class Gesture<GestureName extends string> {
    * @param options - Configuration options for this gesture
    */
   constructor(options: GestureOptions<GestureName>) {
+    if (!options || !options.name) {
+      throw new Error('Gesture must be initialized with a valid name.');
+    }
+    if (options.name in eventList) {
+      throw new Error(
+        `Gesture can't be created with a native event name. Tried to use "${options.name}". Please use a custom name instead.`
+      );
+    }
+
     this.name = options.name;
     this.preventDefault = options.preventDefault ?? false;
     this.stopPropagation = options.stopPropagation ?? false;
