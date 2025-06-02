@@ -1,3 +1,4 @@
+import { server } from '@vitest/browser/context';
 import { touchGesture } from '@web-gestures/testing';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { GestureManager } from '../GestureManager';
@@ -72,14 +73,27 @@ describe('Rotate Gesture', () => {
       steps: 2,
     });
 
-    expect(events).toStrictEqual([
-      'rotateStart: rotation: 23° | delta: 23° | totalRotation: 23°',
-      'rotate: rotation: 23° | delta: 23° | totalRotation: 23°',
-      'rotate: rotation: 45° | delta: 23° | totalRotation: 45°',
-      'rotate: rotation: 68° | delta: 23° | totalRotation: 68°',
-      'rotate: rotation: 90° | delta: 23° | totalRotation: 90°',
-      'rotateEnd: rotation: 90° | delta: 23° | totalRotation: 90°',
-    ]);
+    // Adjust for Webkit's pixel rounding
+    const isWebkit = server.browser === 'webkit';
+    expect(events).toStrictEqual(
+      isWebkit
+        ? [
+            'rotateStart: rotation: 22° | delta: 22° | totalRotation: 22°',
+            'rotate: rotation: 22° | delta: 22° | totalRotation: 22°',
+            'rotate: rotation: 45° | delta: 23° | totalRotation: 45°',
+            'rotate: rotation: 67° | delta: 22° | totalRotation: 67°',
+            'rotate: rotation: 89° | delta: 22° | totalRotation: 89°',
+            'rotateEnd: rotation: 89° | delta: 22° | totalRotation: 89°',
+          ]
+        : [
+            'rotateStart: rotation: 23° | delta: 23° | totalRotation: 23°',
+            'rotate: rotation: 23° | delta: 23° | totalRotation: 23°',
+            'rotate: rotation: 45° | delta: 23° | totalRotation: 45°',
+            'rotate: rotation: 68° | delta: 23° | totalRotation: 68°',
+            'rotate: rotation: 90° | delta: 23° | totalRotation: 90°',
+            'rotateEnd: rotation: 90° | delta: 23° | totalRotation: 90°',
+          ]
+    );
   });
 
   it('should detect counter-clockwise rotation', async () => {
@@ -89,14 +103,27 @@ describe('Rotate Gesture', () => {
       steps: 2,
     });
 
-    expect(events).toStrictEqual([
-      'rotateStart: rotation: -22° | delta: -22° | totalRotation: -22°',
-      'rotate: rotation: -22° | delta: -22° | totalRotation: -22°',
-      'rotate: rotation: -45° | delta: -22° | totalRotation: -45°',
-      'rotate: rotation: -67° | delta: -22° | totalRotation: -67°',
-      'rotate: rotation: -90° | delta: -22° | totalRotation: -90°',
-      'rotateEnd: rotation: -90° | delta: -22° | totalRotation: -90°',
-    ]);
+    // Adjust for Webkit's pixel rounding
+    const isWebkit = server.browser === 'webkit';
+    expect(events).toStrictEqual(
+      isWebkit
+        ? [
+            'rotateStart: rotation: -23° | delta: -23° | totalRotation: -23°',
+            'rotate: rotation: -23° | delta: -23° | totalRotation: -23°',
+            'rotate: rotation: -45° | delta: -22° | totalRotation: -45°',
+            'rotate: rotation: -67° | delta: -22° | totalRotation: -67°',
+            'rotate: rotation: -90° | delta: -23° | totalRotation: -90°',
+            'rotateEnd: rotation: -90° | delta: -23° | totalRotation: -90°',
+          ]
+        : [
+            'rotateStart: rotation: -22° | delta: -22° | totalRotation: -22°',
+            'rotate: rotation: -22° | delta: -22° | totalRotation: -22°',
+            'rotate: rotation: -45° | delta: -22° | totalRotation: -45°',
+            'rotate: rotation: -67° | delta: -22° | totalRotation: -67°',
+            'rotate: rotation: -90° | delta: -22° | totalRotation: -90°',
+            'rotateEnd: rotation: -90° | delta: -22° | totalRotation: -90°',
+          ]
+    );
   });
 
   it('should track total rotation across multiple gestures', async () => {
@@ -114,16 +141,31 @@ describe('Rotate Gesture', () => {
       steps: 1,
     });
 
-    expect(events).toStrictEqual([
-      'rotateStart: rotation: 23° | delta: 23° | totalRotation: 23°',
-      'rotate: rotation: 23° | delta: 23° | totalRotation: 23°',
-      'rotate: rotation: 45° | delta: 23° | totalRotation: 45°',
-      'rotateEnd: rotation: 45° | delta: 23° | totalRotation: 45°',
-      'rotateStart: rotation: 68° | delta: 23° | totalRotation: 68°',
-      'rotate: rotation: 68° | delta: 23° | totalRotation: 68°',
-      'rotate: rotation: 90° | delta: 23° | totalRotation: 90°',
-      'rotateEnd: rotation: 90° | delta: 23° | totalRotation: 90°',
-    ]);
+    // Adjust for Webkit's pixel rounding
+    const isWebkit = server.browser === 'webkit';
+    expect(events).toStrictEqual(
+      isWebkit
+        ? [
+            'rotateStart: rotation: 22° | delta: 22° | totalRotation: 22°',
+            'rotate: rotation: 22° | delta: 22° | totalRotation: 22°',
+            'rotate: rotation: 45° | delta: 23° | totalRotation: 45°',
+            'rotateEnd: rotation: 45° | delta: 23° | totalRotation: 45°',
+            'rotateStart: rotation: 67° | delta: 22° | totalRotation: 67°',
+            'rotate: rotation: 67° | delta: 22° | totalRotation: 67°',
+            'rotate: rotation: 90° | delta: 23° | totalRotation: 90°',
+            'rotateEnd: rotation: 90° | delta: 23° | totalRotation: 90°',
+          ]
+        : [
+            'rotateStart: rotation: 23° | delta: 23° | totalRotation: 23°',
+            'rotate: rotation: 23° | delta: 23° | totalRotation: 23°',
+            'rotate: rotation: 45° | delta: 23° | totalRotation: 45°',
+            'rotateEnd: rotation: 45° | delta: 23° | totalRotation: 45°',
+            'rotateStart: rotation: 68° | delta: 23° | totalRotation: 68°',
+            'rotate: rotation: 68° | delta: 23° | totalRotation: 68°',
+            'rotate: rotation: 90° | delta: 23° | totalRotation: 90°',
+            'rotateEnd: rotation: 90° | delta: 23° | totalRotation: 90°',
+          ]
+    );
   });
 
   it('should update options', () => {
