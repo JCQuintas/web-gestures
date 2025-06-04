@@ -88,10 +88,15 @@ Detects when a user presses and holds on an element for a specified duration.
 import { PressGesture } from '@web-gestures/core';
 
 const pressGesture = new PressGesture({
-  pointers: 1, // Number of pointers required
+  name: 'press', // Required name for the gesture
+  minPointers: 1, // Minimum number of pointers required
+  maxPointers: 1, // Maximum number of pointers allowed
   duration: 500, // Time required to hold (ms)
   maxDistance: 10, // Maximum distance pointer can move during press
-  preventDefault: true,
+  threshold: 0, // Distance threshold for gesture activation (px)
+  preventDefault: true, // Prevent default browser behavior
+  stopPropagation: false, // Stop event propagation
+  preventIf: [], // Gesture names that should prevent this gesture
 });
 
 pressGesture.addEventListener('pressStart', event => console.log(event.detail));
@@ -107,8 +112,13 @@ Detects when a pointer enters, moves within, and leaves an element. This gesture
 import { MoveGesture } from '@web-gestures/core';
 
 const moveGesture = new MoveGesture({
-  // TODO: Docs
-  preventDefault: false,
+  name: 'move', // Required name for the gesture
+  minPointers: 1, // Minimum number of pointers required
+  maxPointers: 1, // Maximum number of pointers allowed
+  threshold: 0, // Distance threshold for gesture activation (px)
+  preventDefault: false, // Prevent default browser behavior
+  stopPropagation: false, // Stop event propagation
+  preventIf: [], // Gesture names that should prevent this gesture
 });
 
 moveGesture.addEventListener('moveStart', event => console.log(event.detail));
@@ -124,8 +134,14 @@ Detects when a user drags across an element in any direction.
 import { PanGesture } from '@web-gestures/core';
 
 const panGesture = new PanGesture({
-  // TODO: Docs
-  preventDefault: true,
+  name: 'pan', // Required name for the gesture
+  minPointers: 1, // Minimum number of pointers required
+  maxPointers: Infinity, // Maximum number of pointers allowed
+  threshold: 10, // Distance threshold for gesture activation (px)
+  direction: ['up', 'down', 'left', 'right'], // Allowed directions
+  preventDefault: true, // Prevent default browser behavior
+  stopPropagation: false, // Stop event propagation
+  preventIf: [], // Gesture names that should prevent this gesture
 });
 
 panGesture.addEventListener('panStart', event => console.log(event.detail));
@@ -142,8 +158,13 @@ Detects when a user pinches in or out on an element using two or more pointers.
 import { PinchGesture } from '@web-gestures/core';
 
 const pinchGesture = new PinchGesture({
-  // TODO: Docs
-  preventDefault: true,
+  name: 'pinch', // Required name for the gesture
+  minPointers: 2, // Minimum number of pointers required
+  maxPointers: Infinity, // Maximum number of pointers allowed
+  threshold: 2, // Distance threshold for gesture activation (px)
+  preventDefault: true, // Prevent default browser behavior
+  stopPropagation: false, // Stop event propagation
+  preventIf: [], // Gesture names that should prevent this gesture
 });
 
 pinchGesture.addEventListener('pinchStart', event => console.log(event.detail));
@@ -160,8 +181,13 @@ Detects when a user rotates pointers around a center point.
 import { RotateGesture } from '@web-gestures/core';
 
 const rotateGesture = new RotateGesture({
-  // TODO: Docs
-  preventDefault: true,
+  name: 'rotate', // Required name for the gesture
+  minPointers: 2, // Minimum number of pointers required
+  maxPointers: Infinity, // Maximum number of pointers allowed
+  threshold: 0, // Distance threshold for gesture activation (px)
+  preventDefault: true, // Prevent default browser behavior
+  stopPropagation: false, // Stop event propagation
+  preventIf: [], // Gesture names that should prevent this gesture
 });
 
 rotateGesture.addEventListener('rotateStart', event => console.log(event.detail));
@@ -177,9 +203,16 @@ Detects mouse wheel events on an element.
 ```javascript
 import { TurnWheelGesture } from '@web-gestures/core';
 
-const wheelGesture = new TurnWheelGesture({
-  // TODO: Docs
+const turnWheelGesture = new TurnWheelGesture({
+  name: 'turnWheel', // Required name for the gesture
+  sensitivity: 1, // Sensitivity multiplier for wheel events
+  max: Number.MAX_SAFE_INTEGER, // Maximum value for accumulated deltas
+  min: Number.MIN_SAFE_INTEGER, // Minimum value for accumulated deltas
+  initialDelta: 0, // Initial value for totalDelta values
+  invert: false, // Invert the direction of delta changes
   preventDefault: true, // Prevent default browser scrolling
+  stopPropagation: false, // Stop event propagation
+  preventIf: [], // Gesture names that should prevent this gesture
 });
 
 turnWheelGesture.addEventListener('turnWheel', event => console.log(event.detail));
