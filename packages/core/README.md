@@ -69,16 +69,25 @@ Detects when a user taps on an element. Configurable for number of taps and poin
 import { TapGesture } from '@web-gestures/core';
 
 const tapGesture = new TapGesture({
-  name: 'tap', // Optional name for the gesture
-  pointers: 1, // Number of pointers required (fingers/mouse)
-  taps: 1, // Number of taps required (1 for single tap, 2 for double tap, etc.)
-  interval: 300, // Maximum time between taps (ms)
-  maxDistance: 10, // Maximum distance pointer can move for it to still be a tap
-  preventDefault: true, // Prevent default browser behavior
+  name: 'tap',
 });
 
 tapGesture.addEventListener('tap', event => console.log(event.detail));
 ```
+
+#### Tap Gesture Options
+
+| Option            | Type       | Required | Default    | Description                                                              |
+| ----------------- | ---------- | -------- | ---------- | ------------------------------------------------------------------------ |
+| `name`            | `string`   | ✓        | -          | Unique name for the gesture instance                                     |
+| `minPointers`     | `number`   |          | `1`        | Minimum number of pointers required                                      |
+| `maxPointers`     | `number`   |          | `Infinity` | Maximum number of pointers allowed                                       |
+| `threshold`       | `number`   |          | `0`        | Movement threshold in pixels before gesture activates                    |
+| `maxDistance`     | `number`   |          | `10`       | Maximum distance pointer can move for it to still be a tap               |
+| `taps`            | `number`   |          | `1`        | Number of consecutive taps required (1 for single tap, 2 for double tap) |
+| `preventDefault`  | `boolean`  |          | `false`    | Prevent default browser behavior                                         |
+| `stopPropagation` | `boolean`  |          | `false`    | Stop event propagation                                                   |
+| `preventIf`       | `string[]` |          | `[]`       | Gesture names that should prevent this gesture                           |
 
 ### Press Gesture
 
@@ -88,21 +97,27 @@ Detects when a user presses and holds on an element for a specified duration.
 import { PressGesture } from '@web-gestures/core';
 
 const pressGesture = new PressGesture({
-  name: 'press', // Required name for the gesture
-  minPointers: 1, // Minimum number of pointers required
-  maxPointers: 1, // Maximum number of pointers allowed
-  duration: 500, // Time required to hold (ms)
-  maxDistance: 10, // Maximum distance pointer can move during press
-  threshold: 0, // Distance threshold for gesture activation (px)
-  preventDefault: true, // Prevent default browser behavior
-  stopPropagation: false, // Stop event propagation
-  preventIf: [], // Gesture names that should prevent this gesture
+  name: 'press',
 });
 
 pressGesture.addEventListener('pressStart', event => console.log(event.detail));
 pressGesture.addEventListener('press', event => console.log(event.detail));
 pressGesture.addEventListener('pressEnd', event => console.log(event.detail));
 ```
+
+#### Press Gesture Options
+
+| Option            | Type       | Required | Default | Description                                           |
+| ----------------- | ---------- | -------- | ------- | ----------------------------------------------------- |
+| `name`            | `string`   | ✓        | -       | Unique name for the gesture instance                  |
+| `minPointers`     | `number`   |          | `1`     | Minimum number of pointers required                   |
+| `maxPointers`     | `number`   |          | `1`     | Maximum number of pointers allowed                    |
+| `threshold`       | `number`   |          | `0`     | Movement threshold in pixels before gesture activates |
+| `duration`        | `number`   |          | `500`   | Time required to hold in milliseconds                 |
+| `maxDistance`     | `number`   |          | `10`    | Maximum distance pointer can move during press        |
+| `preventDefault`  | `boolean`  |          | `false` | Prevent default browser behavior                      |
+| `stopPropagation` | `boolean`  |          | `false` | Stop event propagation                                |
+| `preventIf`       | `string[]` |          | `[]`    | Gesture names that should prevent this gesture        |
 
 ### Move Gesture
 
@@ -112,19 +127,25 @@ Detects when a pointer enters, moves within, and leaves an element. This gesture
 import { MoveGesture } from '@web-gestures/core';
 
 const moveGesture = new MoveGesture({
-  name: 'move', // Required name for the gesture
-  minPointers: 1, // Minimum number of pointers required
-  maxPointers: 1, // Maximum number of pointers allowed
-  threshold: 0, // Distance threshold for gesture activation (px)
-  preventDefault: false, // Prevent default browser behavior
-  stopPropagation: false, // Stop event propagation
-  preventIf: [], // Gesture names that should prevent this gesture
+  name: 'move',
 });
 
 moveGesture.addEventListener('moveStart', event => console.log(event.detail));
 moveGesture.addEventListener('move', event => console.log(event.detail));
 moveGesture.addEventListener('moveEnd', event => console.log(event.detail));
 ```
+
+#### Move Gesture Options
+
+| Option            | Type       | Required | Default | Description                                           |
+| ----------------- | ---------- | -------- | ------- | ----------------------------------------------------- |
+| `name`            | `string`   | ✓        | -       | Unique name for the gesture instance                  |
+| `minPointers`     | `number`   |          | `1`     | Minimum number of pointers required                   |
+| `maxPointers`     | `number`   |          | `1`     | Maximum number of pointers allowed                    |
+| `threshold`       | `number`   |          | `0`     | Movement threshold in pixels before gesture activates |
+| `preventDefault`  | `boolean`  |          | `false` | Prevent default browser behavior                      |
+| `stopPropagation` | `boolean`  |          | `false` | Stop event propagation                                |
+| `preventIf`       | `string[]` |          | `[]`    | Gesture names that should prevent this gesture        |
 
 ### Pan Gesture
 
@@ -134,14 +155,7 @@ Detects when a user drags across an element in any direction.
 import { PanGesture } from '@web-gestures/core';
 
 const panGesture = new PanGesture({
-  name: 'pan', // Required name for the gesture
-  minPointers: 1, // Minimum number of pointers required
-  maxPointers: Infinity, // Maximum number of pointers allowed
-  threshold: 10, // Distance threshold for gesture activation (px)
-  direction: ['up', 'down', 'left', 'right'], // Allowed directions
-  preventDefault: true, // Prevent default browser behavior
-  stopPropagation: false, // Stop event propagation
-  preventIf: [], // Gesture names that should prevent this gesture
+  name: 'pan',
 });
 
 panGesture.addEventListener('panStart', event => console.log(event.detail));
@@ -149,6 +163,19 @@ panGesture.addEventListener('pan', event => console.log(event.detail));
 panGesture.addEventListener('panEnd', event => console.log(event.detail));
 panGesture.addEventListener('panCancel', event => console.log(event.detail));
 ```
+
+#### Pan Gesture Options
+
+| Option            | Type       | Required | Default                           | Description                                           |
+| ----------------- | ---------- | -------- | --------------------------------- | ----------------------------------------------------- |
+| `name`            | `string`   | ✓        | -                                 | Unique name for the gesture instance                  |
+| `minPointers`     | `number`   |          | `1`                               | Minimum number of pointers required                   |
+| `maxPointers`     | `number`   |          | `Infinity`                        | Maximum number of pointers allowed                    |
+| `threshold`       | `number`   |          | `10`                              | Movement threshold in pixels before gesture activates |
+| `direction`       | `string[]` |          | `['up', 'down', 'left', 'right']` | Allowed pan directions                                |
+| `preventDefault`  | `boolean`  |          | `false`                           | Prevent default browser behavior                      |
+| `stopPropagation` | `boolean`  |          | `false`                           | Stop event propagation                                |
+| `preventIf`       | `string[]` |          | `[]`                              | Gesture names that should prevent this gesture        |
 
 ### Pinch Gesture
 
@@ -158,13 +185,7 @@ Detects when a user pinches in or out on an element using two or more pointers.
 import { PinchGesture } from '@web-gestures/core';
 
 const pinchGesture = new PinchGesture({
-  name: 'pinch', // Required name for the gesture
-  minPointers: 2, // Minimum number of pointers required
-  maxPointers: Infinity, // Maximum number of pointers allowed
-  threshold: 2, // Distance threshold for gesture activation (px)
-  preventDefault: true, // Prevent default browser behavior
-  stopPropagation: false, // Stop event propagation
-  preventIf: [], // Gesture names that should prevent this gesture
+  name: 'pinch',
 });
 
 pinchGesture.addEventListener('pinchStart', event => console.log(event.detail));
@@ -172,6 +193,18 @@ pinchGesture.addEventListener('pinch', event => console.log(event.detail));
 pinchGesture.addEventListener('pinchEnd', event => console.log(event.detail));
 pinchGesture.addEventListener('pinchCancel', event => console.log(event.detail));
 ```
+
+#### Pinch Gesture Options
+
+| Option            | Type       | Required | Default    | Description                                           |
+| ----------------- | ---------- | -------- | ---------- | ----------------------------------------------------- |
+| `name`            | `string`   | ✓        | -          | Unique name for the gesture instance                  |
+| `minPointers`     | `number`   |          | `2`        | Minimum number of pointers required                   |
+| `maxPointers`     | `number`   |          | `Infinity` | Maximum number of pointers allowed                    |
+| `threshold`       | `number`   |          | `2`        | Movement threshold in pixels before gesture activates |
+| `preventDefault`  | `boolean`  |          | `false`    | Prevent default browser behavior                      |
+| `stopPropagation` | `boolean`  |          | `false`    | Stop event propagation                                |
+| `preventIf`       | `string[]` |          | `[]`       | Gesture names that should prevent this gesture        |
 
 ### Rotate Gesture
 
@@ -181,13 +214,7 @@ Detects when a user rotates pointers around a center point.
 import { RotateGesture } from '@web-gestures/core';
 
 const rotateGesture = new RotateGesture({
-  name: 'rotate', // Required name for the gesture
-  minPointers: 2, // Minimum number of pointers required
-  maxPointers: Infinity, // Maximum number of pointers allowed
-  threshold: 0, // Distance threshold for gesture activation (px)
-  preventDefault: true, // Prevent default browser behavior
-  stopPropagation: false, // Stop event propagation
-  preventIf: [], // Gesture names that should prevent this gesture
+  name: 'rotate',
 });
 
 rotateGesture.addEventListener('rotateStart', event => console.log(event.detail));
@@ -195,6 +222,18 @@ rotateGesture.addEventListener('rotate', event => console.log(event.detail));
 rotateGesture.addEventListener('rotateEnd', event => console.log(event.detail));
 rotateGesture.addEventListener('rotateCancel', event => console.log(event.detail));
 ```
+
+#### Rotate Gesture Options
+
+| Option            | Type       | Required | Default    | Description                                           |
+| ----------------- | ---------- | -------- | ---------- | ----------------------------------------------------- |
+| `name`            | `string`   | ✓        | -          | Unique name for the gesture instance                  |
+| `minPointers`     | `number`   |          | `2`        | Minimum number of pointers required                   |
+| `maxPointers`     | `number`   |          | `Infinity` | Maximum number of pointers allowed                    |
+| `threshold`       | `number`   |          | `0`        | Movement threshold in pixels before gesture activates |
+| `preventDefault`  | `boolean`  |          | `false`    | Prevent default browser behavior                      |
+| `stopPropagation` | `boolean`  |          | `false`    | Stop event propagation                                |
+| `preventIf`       | `string[]` |          | `[]`       | Gesture names that should prevent this gesture        |
 
 ### Turn Wheel Gesture
 
@@ -204,19 +243,25 @@ Detects mouse wheel events on an element.
 import { TurnWheelGesture } from '@web-gestures/core';
 
 const turnWheelGesture = new TurnWheelGesture({
-  name: 'turnWheel', // Required name for the gesture
-  sensitivity: 1, // Sensitivity multiplier for wheel events
-  max: Number.MAX_SAFE_INTEGER, // Maximum value for accumulated deltas
-  min: Number.MIN_SAFE_INTEGER, // Minimum value for accumulated deltas
-  initialDelta: 0, // Initial value for totalDelta values
-  invert: false, // Invert the direction of delta changes
-  preventDefault: true, // Prevent default browser scrolling
-  stopPropagation: false, // Stop event propagation
-  preventIf: [], // Gesture names that should prevent this gesture
+  name: 'turnWheel',
 });
 
 turnWheelGesture.addEventListener('turnWheel', event => console.log(event.detail));
 ```
+
+#### Turn Wheel Gesture Options
+
+| Option            | Type       | Required | Default                   | Description                                    |
+| ----------------- | ---------- | -------- | ------------------------- | ---------------------------------------------- |
+| `name`            | `string`   | ✓        | -                         | Unique name for the gesture instance           |
+| `sensitivity`     | `number`   |          | `1`                       | Sensitivity multiplier for wheel events        |
+| `max`             | `number`   |          | `Number.MAX_SAFE_INTEGER` | Maximum value for accumulated deltas           |
+| `min`             | `number`   |          | `Number.MIN_SAFE_INTEGER` | Minimum value for accumulated deltas           |
+| `initialDelta`    | `number`   |          | `0`                       | Initial value for totalDelta values            |
+| `invert`          | `boolean`  |          | `false`                   | Invert the direction of delta changes          |
+| `preventDefault`  | `boolean`  |          | `false`                   | Prevent default browser behavior               |
+| `stopPropagation` | `boolean`  |          | `false`                   | Stop event propagation                         |
+| `preventIf`       | `string[]` |          | `[]`                      | Gesture names that should prevent this gesture |
 
 ## Advanced Usage
 
@@ -261,11 +306,10 @@ const gestureManager = new GestureManager({
   gestures: [
     new PanGesture({
       name: 'pan',
-      preventIf: ['pinch'], // Pan will be prevented when pinch is active
+      preventIf: ['pinch'],
     }),
     new PinchGesture({
       name: 'pinch',
-      preventIf: [], // Pinch has priority over other gestures
     }),
   ],
 });
