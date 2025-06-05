@@ -45,6 +45,10 @@
       "types": "./expect.d.ts"
     }
   },
+  "devDependencies": {
+    "@web-gestures/testing": "workspace:*",
+    "vitest": "^3.2.2"
+  },
   "peerDependencies": {
     "vitest": "^3.0.0",
     "@web-gestures/core": "^0.0.12"

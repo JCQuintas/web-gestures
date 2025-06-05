@@ -1,5 +1,8 @@
 {
   "extends": "../../tsconfig.json",
+  "compilerOptions": {
+    "types": ["../matchers/expect.d.ts"]
+  },
   "include": ["src"],
   "exclude": ["node_modules", "dist"]
 }
