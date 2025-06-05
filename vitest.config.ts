@@ -59,11 +59,11 @@ export default defineConfig({
       skipFull: process.env.CI !== 'true',
       all: true,
       thresholds: {
-        autoUpdate: false,
-        statements: 50,
-        branches: 80,
-        functions: 55,
-        lines: 50,
+        autoUpdate: true,
+        statements: 89.24,
+        branches: 84.33,
+        functions: 94.97,
+        lines: 89.24,
       },
       exclude: [
         'coverage/**',
