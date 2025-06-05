@@ -1,4 +1,3 @@
-import 'vitest';
 import { ToBeClonable } from './src/matchers/toBeClonable';
 import { ToUpdateOptions } from './src/matchers/toUpdateOptions';
 import { ToUpdateState } from './src/matchers/toUpdateState';
