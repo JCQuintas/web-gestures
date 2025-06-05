@@ -1,6 +1,6 @@
 # Web Gestures
 
-A modern and robust multi-pointer gesture detection library for JavaScript and TypeScript applications.
+A modern and robust multi-pointer gesture detection library for JavaScript and TypeScript applications. It is built on top of the Pointer Events API, and leverages the Event Target API to provide a flexible and extensible framework for detecting user gestures in across all modern browsers.
 
 ## Packages
 
