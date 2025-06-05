@@ -100,6 +100,31 @@ jobs:
       - name: Build packages
         run: pnpm build
 
+  typescript:
+    name: TypeScript
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4.2.2
+
+      - name: Setup PNPM
+        uses: pnpm/action-setup@v4.1.0
+        with:
+          run_install: false
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4.4.0
+        with:
+          node-version: 24.x
+          cache: 'pnpm'
+
+      - name: Install dependencies
+        run: pnpm install
+
+      - name: Run TypeScript check
+        run: pnpm tsc --noEmit
+
   lint:
     name: ESLint & Prettier
     runs-on: ubuntu-latest
